@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="SkillNodeDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scripts/systems/skills/SkillNodeDef.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "gold_boost_4"
+name = "Second Copy"
+desc = "Gain a second copy of Gold Boost."
+aux_id = "aux_gold_boost"
+parent_id = "gold_boost_3ba"
+child_ids = []
+prereq_ids = ["gold_boost_3aa", "gold_boost_3ba"]
+max_level = 1
+level_rules = [{"unlock_copies": 1}]
+grid = Vector2i(0, 5)

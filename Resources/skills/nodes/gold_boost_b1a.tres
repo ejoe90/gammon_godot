@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="SkillNodeDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scripts/systems/skills/SkillNodeDef.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "gold_boost_b1a"
+name = "Scaling II"
+desc = "+5 gold per use."
+aux_id = "aux_gold_boost"
+parent_id = "gold_boost_b1"
+child_ids = []
+max_level = 1
+level_rules = [{"gold_scaling_per_use": 5}]
+grid = Vector2i(1, 3)

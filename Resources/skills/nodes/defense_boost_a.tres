@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="SkillNodeDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scripts/systems/skills/SkillNodeDef.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "defense_boost_a"
+name = "Defense Boost: Guard"
+desc = "More frequent use."
+aux_id = "aux_defense_boost"
+parent_id = "defense_boost"
+child_ids = []
+max_level = 1
+level_rules = [{"cooldown_delta": -1}]
+grid = Vector2i(-1, 1)

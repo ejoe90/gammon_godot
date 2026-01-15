@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="SkillNodeDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scripts/systems/skills/SkillNodeDef.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "attack_boost_3ba"
+name = "ATK Mult +1"
+desc = "Attack Boost use increases ATK mult by +1 (multiplies damage)."
+aux_id = "aux_attack_boost"
+parent_id = "attack_boost_b2a"
+child_ids = ["attack_boost_4"]
+prereq_ids = ["attack_boost_b1a", "attack_boost_b2a"]
+max_level = 1
+level_rules = [{"attack_mult_enabled": true, "attack_mult_gain_per_use": 1}]
+grid = Vector2i(1, 4)

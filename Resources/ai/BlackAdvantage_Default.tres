@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="BlackAdvantage" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scripts/ai/BlackAdvantage.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+base_hit_damage = 1
+bearoff_damage = 5
+bearoff_home_fraction = 0.75
+damage_double_every_n_turns = 3
+speed_every_n_turns = 4

@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="CardDef" load_steps=8 format=3 uid="uid://cd0eeyabpe8u3"]
+
+[ext_resource type="Script" uid="uid://dxnljvcddxql4" path="res://Scripts/CardEffect.gd" id="1_k5jaq"]
+[ext_resource type="Resource" uid="uid://dhdbyqv81qgnv" path="res://Resources/reqs/req_double_down.tres" id="1_nkdh8"]
+[ext_resource type="Script" uid="uid://ur0p531l1ca4" path="res://Scripts/PatternReq.gd" id="2_f455w"]
+[ext_resource type="Texture2D" uid="uid://cgyldsqwys86c" path="res://Assets/textures/cards/1 plus red.jpg" id="2_nkdh8"]
+[ext_resource type="Script" uid="uid://y2pqqaui60qh" path="res://Scripts/cards/effects/EffectDoubleDown.gd" id="2_q5fpw"]
+[ext_resource type="Script" uid="uid://b1ylg81nigak7" path="res://Scripts/CardDef.gd" id="3_q5fpw"]
+
+[sub_resource type="Resource" id="Resource_nkdh8"]
+script = ExtResource("2_q5fpw")
+metadata/_custom_type_script = "uid://y2pqqaui60qh"
+
+[resource]
+script = ExtResource("3_q5fpw")
+id = "double_down"
+title = "Double Down"
+category = 1
+pip_value = -3
+effect = SubResource("Resource_nkdh8")
+art_texture = ExtResource("2_nkdh8")
+activation_req = ExtResource("1_nkdh8")
+metadata/_custom_type_script = "uid://b1ylg81nigak7"

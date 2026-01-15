@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="SkillNodeDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scripts/systems/skills/SkillNodeDef.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "dynamic_reposition_b"
+name = "Dynamic Reposition: Frequent"
+desc = "More frequent use."
+aux_id = "aux_dynamic_reposition"
+parent_id = "dynamic_reposition"
+child_ids = []
+max_level = 1
+level_rules = [{"cooldown_delta": -1}]
+grid = Vector2i(1, 1)

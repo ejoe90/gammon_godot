@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AIConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scripts/ai/AIConfig.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+aggression = 0.65
+randomness = 0.08
+time_budget_ms = 6.0
+beam_width = 40
+max_sequences = 2000
+w_hit = 30.0
+w_bearoff = 45.0
+w_race = 0.8
+w_own_blots = 18.0
+w_on_bar = 26.0
+w_make_point = 6.0
+w_prime = 2.0
+debug_print_top = 0

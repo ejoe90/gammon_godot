@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="WinBearOff" load_steps=2 format=3 uid="uid://lc7e5e8i2wgx"]
+
+[ext_resource type="Script" uid="uid://de4sv2kxa8qbu" path="res://Scripts/core/win/WinBearOff.gd" id="1_sgk26"]
+
+[resource]
+script = ExtResource("1_sgk26")
+id = "win_bearoff"
+metadata/_custom_type_script = "uid://de4sv2kxa8qbu"

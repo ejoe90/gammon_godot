@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="SkillNodeDef" load_steps=2 format=3 uid="uid://borw2vq3pdjtl"]
+
+[ext_resource type="Script" uid="uid://d1ic0a5scy7qc" path="res://Scripts/systems/skills/SkillNodeDef.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "attack_boost_a2"
+name = "-1 CD"
+desc = "Attack Boost cooldown -1."
+aux_id = "aux_attack_boost"
+parent_id = "attack_boost_a"
+child_ids = Array[String](["attack_boost_a2a"])
+level_rules = Array[Dictionary]([{
+"cooldown_delta": -1
+}])
+grid = Vector2i(-1, 2)

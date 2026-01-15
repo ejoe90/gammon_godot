@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="SkillNodeDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scripts/systems/skills/SkillNodeDef.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "gold_boost_3aa"
+name = "Convert"
+desc = "Gold Boost can convert its payout into HP or Pips."
+aux_id = "aux_gold_boost"
+parent_id = "gold_boost_a2a"
+child_ids = ["gold_boost_4"]
+prereq_ids = ["gold_boost_a1a", "gold_boost_a2a"]
+max_level = 1
+level_rules = [{"convert_enabled": true}]
+grid = Vector2i(-1, 4)

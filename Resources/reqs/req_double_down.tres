@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="ActivationReqDoubleDown" load_steps=2 format=3 uid="uid://dhdbyqv81qgnv"]
+
+[ext_resource type="Script" uid="uid://7wegxx4aabgd" path="res://Scripts/cards/ActivationReqDoubleDown.gd" id="1_cdrr8"]
+
+[resource]
+script = ExtResource("1_cdrr8")
+metadata/_custom_type_script = "uid://7wegxx4aabgd"

@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="EffectOneManArmy" load_steps=2 format=3 uid="uid://cvd87frdrm82g"]
+
+[ext_resource type="Script" uid="uid://c8ct37o2r0lcd" path="res://Scripts/cards/effects/EffectOneManArmy.gd" id="1_01rtf"]
+
+[resource]
+script = ExtResource("1_01rtf")
+kind = 2
+metadata/_custom_type_script = "uid://c8ct37o2r0lcd"

@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="AuxEffectPipBoost" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scripts/systems/aux/effects/AuxEffectPipBoost.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+pip_bonus = 1
+include_bonus_dice = false

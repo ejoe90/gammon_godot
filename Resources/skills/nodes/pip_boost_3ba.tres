@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="SkillNodeDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scripts/systems/skills/SkillNodeDef.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "pip_boost_3ba"
+name = "Dice Duplication"
+desc = "Using Pip Boost duplicates each available die (including bonus dice)."
+aux_id = "aux_pip_boost"
+parent_id = "pip_boost_b2a"
+child_ids = ["pip_boost_4"]
+prereq_ids = ["pip_boost_b1a", "pip_boost_b2a"]
+max_level = 1
+level_rules = [{"pip_dice_dup_enabled": true}]
+grid = Vector2i(1, 4)

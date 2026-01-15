@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="AuxCardCatalog" load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://AuxCardDef.gd" id="1"]
+[ext_resource type="Script" path="res://Scripts/systems/aux/AuxCardCatalog.gd" id="2"]
+[ext_resource type="Resource" path="res://Resources/aux_cards/aux_gold_boost.tres" id="3"]
+[ext_resource type="Resource" path="res://Resources/aux_cards/aux_pip_boost.tres" id="4"]
+[ext_resource type="Resource" path="res://Resources/aux_cards/aux_attack_boost.tres" id="5"]
+[ext_resource type="Resource" path="res://Resources/aux_cards/aux_defense_boost.tres" id="6"]
+[ext_resource type="Resource" path="res://Resources/aux_cards/aux_dynamic_reposition.tres" id="7"]
+[ext_resource type="Resource" path="res://Resources/aux_cards/aux_checker_transmog.tres" id="8"]
+
+[resource]
+script = ExtResource("2")
+aux_cards = Array[ExtResource("1")]([ExtResource("3"), ExtResource("4"), ExtResource("5"), ExtResource("6"), ExtResource("7"), ExtResource("8")])

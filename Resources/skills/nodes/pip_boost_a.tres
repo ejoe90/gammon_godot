@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="SkillNodeDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scripts/systems/skills/SkillNodeDef.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "pip_boost_a"
+name = "Pip Boost: -1 CD"
+desc = "Reduce Pip Boost cooldown by 1."
+aux_id = "aux_pip_boost"
+parent_id = "pip_boost"
+child_ids = ["pip_boost_a1", "pip_boost_a2"]
+max_level = 1
+level_rules = [{"cooldown_delta": -1}]
+grid = Vector2i(-1, 1)

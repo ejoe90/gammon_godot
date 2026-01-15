@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="SkillNodeDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scripts/systems/skills/SkillNodeDef.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "pip_boost_b1a"
+name = "Convert to HP"
+desc = "Option: convert all available dice pips into HP (5 pips = 1 HP). Includes bonus dice."
+aux_id = "aux_pip_boost"
+parent_id = "pip_boost_b1"
+child_ids = []
+max_level = 1
+level_rules = [{"pip_hp_convert_enabled": true}]
+grid = Vector2i(1, 3)

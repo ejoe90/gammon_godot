@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="EffectTargetedSendToBar" load_steps=2 format=3 uid="uid://b6pi68mpq4ucm"]
+
+[ext_resource type="Script" uid="uid://csr731svd3r0r" path="res://Scripts/cards/effects/EffectTargetedSendToBar.gd" id="1_7bdj8"]
+
+[resource]
+script = ExtResource("1_7bdj8")
+enemy_damage = 2
+kind = 1
+amount = 1
+metadata/_custom_type_script = "uid://csr731svd3r0r"

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="SkillNodeDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scripts/systems/skills/SkillNodeDef.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "attack_boost_b2a"
+name = "+1 Base ATK"
+desc = "Base attack power +1 (applies to all damage)."
+aux_id = "aux_attack_boost"
+parent_id = "attack_boost_b2"
+child_ids = ["attack_boost_3ba"]
+prereq_ids = []
+max_level = 1
+level_rules = [{"base_attack_delta": 1}]
+grid = Vector2i(2, 3)

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="SkillNodeDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scripts/systems/skills/SkillNodeDef.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "attack_boost_3aa"
+name = "Convert to Gold"
+desc = "Option: convert Attack Boost damage into gold (1 dmg = 5 gold)."
+aux_id = "aux_attack_boost"
+parent_id = "attack_boost_a2a"
+child_ids = ["attack_boost_4"]
+prereq_ids = ["attack_boost_a1a", "attack_boost_a2a"]
+max_level = 1
+level_rules = [{"attack_convert_enabled": true}]
+grid = Vector2i(-1, 4)

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="AuxCardDef" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://AuxCardDef.gd" id="1"]
+[ext_resource type="Resource" path="res://Resources/aux_cards/effects/notice_dynamic_reposition.tres" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "aux_dynamic_reposition"
+display_name = "Dynamic Reposition"
+description = "Positional utility."
+base_ap_cost = 1
+base_cooldown_turns = 4
+max_uses_per_round = 999999
+effect = ExtResource("2")

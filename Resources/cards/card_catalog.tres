@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardCatalog" load_steps=10 format=3 uid="uid://5o2fjm0okvs0"]
+
+[ext_resource type="Script" uid="uid://b1ylg81nigak7" path="res://Scripts/CardDef.gd" id="1_gfijg"]
+[ext_resource type="Script" uid="uid://cxrrf2trr2miv" path="res://CardCatalog.gd" id="2_k16gf"]
+[ext_resource type="Resource" uid="uid://u2mc6bpgk8fg" path="res://Resources/cards/combat/mortar.tres" id="2_thl06"]
+[ext_resource type="Resource" uid="uid://bkefbpe3vmfw5" path="res://Resources/cards/combat/ionic_crossbow.tres" id="3_ndmhq"]
+[ext_resource type="Resource" uid="uid://r3oowqrbvwex" path="res://Resources/cards/combat/subterfuge.tres" id="4_uwhgp"]
+[ext_resource type="Resource" uid="uid://bhpb7uacubm6y" path="res://Resources/cards/combat/one_man_army.tres" id="5_7tsok"]
+[ext_resource type="Resource" uid="uid://dvb4h6nac1w57" path="res://Resources/cards/combat/sniper.tres" id="6_ndmhq"]
+[ext_resource type="Resource" uid="uid://bh2q04kw8ng7n" path="res://Resources/cards/combat/depth_charge.tres" id="7_uwhgp"]
+[ext_resource type="Resource" uid="uid://cd0eeyabpe8u3" path="res://Resources/cards/combat/double_down.tres" id="8_7tsok"]
+
+[resource]
+script = ExtResource("2_k16gf")
+cards = Array[ExtResource("1_gfijg")]([ExtResource("2_thl06"), ExtResource("3_ndmhq"), ExtResource("4_uwhgp"), ExtResource("5_7tsok"), ExtResource("6_ndmhq"), ExtResource("7_uwhgp"), ExtResource("8_7tsok")])
+metadata/_custom_type_script = "uid://cxrrf2trr2miv"

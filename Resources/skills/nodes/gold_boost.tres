@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="SkillNodeDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scripts/systems/skills/SkillNodeDef.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "gold_boost"
+name = "Gold Boost"
+desc = "+10 gold, 2AP, 4CD (base card)."
+aux_id = "aux_gold_boost"
+parent_id = ""
+child_ids = ["gold_boost_a", "gold_boost_b"]
+max_level = 1
+level_rules = [{"unlock_copies": 1}]
+grid = Vector2i(0, 0)
