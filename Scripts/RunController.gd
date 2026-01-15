@@ -1,0 +1,156 @@
+extends Node
+class_name RunController
+
+# Scene expectations (RunController root scene):
+# - Child: Round (instanced scene whose root has RoundController.gd)
+# - Child: HUD (CanvasLayer or Control)
+#     - EndRoundShop (optional, Control with script EndRoundShop.gd)
+
+@onready var round: Node = $Round
+@onready var shop: Node = get_node_or_null("HUD/EndRoundShop")
+
+var run_state: RunState
+
+const TOTAL_ROUNDS: int = 12
+const ROUND_WIN_REWARD_GOLD: int = 10
+
+const PLAYER_BASE_HP: int = 20
+const ENEMY_BASE_HP: int = 20
+
+func _ready() -> void:
+	_start_new_run()
+	set_process_unhandled_input(true) # debug convenience: allow cycling gold convert mode
+
+	# Connect round signals (RoundController emits these)
+	if round != null:
+		if round.has_signal("round_won"):
+			round.connect("round_won", Callable(self, "_on_round_won"))
+		if round.has_signal("round_lost"):
+			round.connect("round_lost", Callable(self, "_on_round_lost"))
+		if round.has_signal("round_restarted"):
+			round.connect("round_restarted", Callable(self, "_on_round_restarted"))
+
+	# Connect shop finished (EndRoundShop emits this)
+	if shop != null and shop.has_signal("finished"):
+		shop.connect("finished", Callable(self, "_on_shop_finished"))
+
+	_start_current_round()
+
+func _start_new_run() -> void:
+	run_state = RunState.new()
+	run_state.round_index = 0
+	run_state.gold = 0
+
+	run_state.player_max_hp = PLAYER_BASE_HP
+	run_state.player_hp = PLAYER_BASE_HP
+
+	run_state.enemy_max_hp = ENEMY_BASE_HP
+	run_state.enemy_hp = ENEMY_BASE_HP
+
+	# placeholder deck container (safe if RunState already defines it)
+	if "deck" in run_state:
+		run_state.deck.clear()
+	# Starter deck (MVP)
+	if run_state.deck.is_empty():
+		var starter := ["ionic_crossbow", "one_man_army", "mortar", "subterfuge","sniper","depth_charge", "double_down"]
+		for id in starter:
+			if CardDB.get_def(id) != null:
+				run_state.deck.append(id)
+
+
+func _start_current_round() -> void:
+	if run_state.round_index >= TOTAL_ROUNDS:
+		print("[RunController] RUN COMPLETE")
+		# MVP behavior: restart run immediately
+		_start_new_run()
+		_start_current_round()
+		return
+
+	# Each round, you usually want a fresh enemy baseline (MVP)
+	run_state.enemy_hp = run_state.enemy_max_hp
+
+	if round != null and round.has_method("start_round"):
+		round.call("start_round", run_state)
+	else:
+		push_error("[RunController] Round child missing start_round(run_state).")
+
+func _on_round_won() -> void:
+	# Reward for winning round
+	if run_state.has_method("add_gold"):
+		run_state.call("add_gold", ROUND_WIN_REWARD_GOLD, true)
+	else:
+		run_state.gold += ROUND_WIN_REWARD_GOLD
+
+	# If this was the final round, end run
+	if run_state.round_index == TOTAL_ROUNDS - 1:
+		print("[RunController] FINAL ROUND WON — RUN COMPLETE")
+		_start_new_run()
+		_start_current_round()
+		return
+
+	# Open end-of-round shop before advancing
+	if shop != null and shop.has_method("open"):
+		shop.call("open", run_state)
+	else:
+		# If no shop exists yet, just advance
+		_on_shop_finished()
+
+func _on_shop_finished() -> void:
+	run_state.round_index += 1
+	_start_current_round()
+
+func _on_round_lost() -> void:
+	print("[RunController] RUN FAILED (round %d)" % run_state.round_index)
+	# MVP behavior: restart run immediately
+	_start_new_run()
+	_start_current_round()
+
+func _on_round_restarted() -> void:
+	# No-op for MVP (useful hook later if you want to refund/penalize)
+	pass
+
+func _unhandled_input(event: InputEvent) -> void:
+	# Debug: F2 cycles Gold Boost conversion mode (requires tier4-A to actually convert).
+	if event is InputEventKey and event.pressed and not event.echo:
+		var ek := event as InputEventKey
+		if ek.keycode == KEY_F2 and run_state != null:
+			var m := int(run_state.cycle_gold_convert_mode())
+			var label := "GOLD" if m == RunState.GoldConvertMode.GOLD else ("HP" if m == RunState.GoldConvertMode.HP else "PIPS")
+			print("[RunController] Gold Boost convert mode:", label)
+		if ek.keycode == KEY_F3 and run_state != null:
+			# Debug: F3 toggles Attack Boost conversion-to-gold (requires tier4-A to actually convert).
+			var mod: Dictionary = run_state.skill_state.get_aux_mod("aux_attack_boost") if run_state.skill_state != null else {}
+			if bool(mod.get("attack_convert_enabled", false)):
+				var on: bool = run_state.toggle_attack_convert_to_gold()
+				print("[RunController] Attack Boost convert-to-gold:", "ON" if on else "OFF")
+			else:
+				print("[RunController] Attack Boost convert-to-gold is locked (need tier 4A).")
+
+		if ek.keycode == KEY_F6 and run_state != null:
+			# Debug: F6 toggles Pip Boost conversion-to-HP (requires tier3-B1 to actually convert).
+			var mod_p: Dictionary = run_state.skill_state.get_aux_mod("aux_pip_boost") if run_state.skill_state != null else {}
+			if bool(mod_p.get("pip_hp_convert_enabled", false)):
+				var on_p: bool = run_state.toggle_pip_convert_to_hp()
+				print("[RunController] Pip Boost convert-to-HP:", "ON" if on_p else "OFF")
+			else:
+				print("[RunController] Pip Boost convert-to-HP is locked (need tier 3B1).")
+
+		# Debug: F4 force-opens the Skill Tree (ignores pips thresholds).
+		# - Tap F4: open with 2 picks (fast testing)
+		# - Shift+F4: open with max picks
+		if ek.keycode == KEY_F4:
+			var picks := 2
+			if ek.shift_pressed:
+				picks = 99
+			if round != null and round.has_method("debug_open_skill_tree"):
+				round.call("debug_open_skill_tree", picks)
+			else:
+				print("[RunController] Round missing debug_open_skill_tree().")
+
+		# Debug: F5 resets aux cooldowns + per-round use counters (fast testing).
+		if ek.keycode == KEY_F5:
+			if round != null and round.has_method("debug_reset_aux_cooldowns"):
+				round.call("debug_reset_aux_cooldowns")
+				print("[RunController] Aux cooldowns reset.")
+			else:
+				print("[RunController] Round missing debug_reset_aux_cooldowns().")
