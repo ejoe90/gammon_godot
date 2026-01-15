@@ -492,12 +492,22 @@ func _start_black_ai_turn() -> void:
 
 	# If truly no moves, pass.
 	if _count_legal_moves_black_ai() == 0:
+		_apply_black_bar_stuck_damage()
 		_ai_running = false
 		end_turn()
 		_set_input_enabled(true)
 		return
 
 	call_deferred("_black_ai_play")
+
+func _apply_black_bar_stuck_damage() -> void:
+	if run_state == null or state == null:
+		return
+	var bar_count: int = int(state.bar_black.size())
+	if bar_count <= 0:
+		return
+	run_state.enemy_hp = maxi(0, int(run_state.enemy_hp) - bar_count)
+	show_notice("Enemy takes %d damage from stranded bar checkers." % bar_count)
 
 
 func _count_legal_moves_black_ai() -> int:
