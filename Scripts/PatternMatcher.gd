@@ -65,6 +65,8 @@ static func _req_ok(r: PatternReq, ctx: PatternContext) -> bool:
 			return _adjacent_pair_ok(r, ctx)
 		PatternReq.Kind.ACROSS_PAIR:
 			return _across_pair_ok(r, ctx)
+		PatternReq.Kind.ACROSS_ADJACENT_PAIR:
+			return _across_adjacent_pair_ok(r, ctx)
 		_:
 			return false
 
@@ -157,6 +159,24 @@ static func _across_pair_ok(r: PatternReq, ctx: PatternContext) -> bool:
 	return false
 	
 
+static func _across_adjacent_pair_ok(r: PatternReq, ctx: PatternContext) -> bool:
+	for a in range(0, 23):
+		var b: int = a + 1
+		var opp_a: int = 23 - a
+		var opp_b: int = 23 - b
+
+		if _pair_matches_range(ctx, a, b, r.owner_a, r.min_count_a, r.max_count_a, r.require_empty_a) \
+		and _pair_matches_range(ctx, opp_a, opp_b, r.owner_b, r.min_count_b, r.max_count_b, r.require_empty_b):
+			return true
+
+		if r.adj_either_order:
+			if _pair_matches_range(ctx, a, b, r.owner_b, r.min_count_b, r.max_count_b, r.require_empty_b) \
+			and _pair_matches_range(ctx, opp_a, opp_b, r.owner_a, r.min_count_a, r.max_count_a, r.require_empty_a):
+				return true
+
+	return false
+
+
 
 static func _point_matches_range(
 	ctx: PatternContext,
@@ -181,6 +201,19 @@ static func _point_matches_range(
 		return false
 
 	return n >= min_c and n <= max_c
+
+
+static func _pair_matches_range(
+	ctx: PatternContext,
+	point_a: int,
+	point_b: int,
+	owner: int,
+	min_c: int,
+	max_c: int,
+	require_empty: bool
+) -> bool:
+	return _point_matches_range(ctx, point_a, owner, min_c, max_c, require_empty) \
+	and _point_matches_range(ctx, point_b, owner, min_c, max_c, require_empty)
 
 
 static func find_run_sequence_mixed_start(r: PatternReq, ctx: PatternContext) -> int:
