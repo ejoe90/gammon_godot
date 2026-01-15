@@ -9,8 +9,8 @@
 [ext_resource type="Resource" uid="uid://dvb4h6nac1w57" path="res://Resources/cards/combat/sniper.tres" id="6_ndmhq"]
 [ext_resource type="Resource" uid="uid://bh2q04kw8ng7n" path="res://Resources/cards/combat/depth_charge.tres" id="7_uwhgp"]
 [ext_resource type="Resource" uid="uid://cd0eeyabpe8u3" path="res://Resources/cards/combat/double_down.tres" id="8_7tsok"]
-[ext_resource type="Resource" uid="uid://o6w0u5c7x63v7" path="res://Resources/cards/combat/engulf.tres" id="9_8k6m4"]
-[ext_resource type="Resource" uid="uid://e2t4q0x6k0pcp" path="res://Resources/cards/combat/counter_measures.tres" id="10_8k6m4"]
+[ext_resource type="Resource" uid="uid://dlpe3ylhalhmw" path="res://Resources/cards/combat/engulf.tres" id="9_8k6m4"]
+[ext_resource type="Resource" uid="uid://7f85x1w0stkx" path="res://Resources/cards/combat/counter_measures.tres" id="10_8k6m4"]
 
 [resource]
 script = ExtResource("2_k16gf")
