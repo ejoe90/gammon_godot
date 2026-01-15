@@ -50,12 +50,12 @@ func _start_new_run() -> void:
 	# placeholder deck container (safe if RunState already defines it)
 	if "deck" in run_state:
 		run_state.deck.clear()
-	# Starter deck (MVP)
-	if run_state.deck.is_empty():
-		var starter := ["ionic_crossbow", "one_man_army", "mortar", "subterfuge","sniper","depth_charge", "double_down"]
-		for id in starter:
-			if CardDB.get_def(id) != null:
-				run_state.deck.append(id)
+	# Use the entire available card catalog for the starting deck.
+	var available_ids := CardDB.all_ids()
+	if available_ids.is_empty():
+		push_warning("[RunController] No card IDs found in CardDB; starting deck is empty.")
+	else:
+		run_state.deck = available_ids
 
 
 func _start_current_round() -> void:
