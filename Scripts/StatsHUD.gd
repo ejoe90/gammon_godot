@@ -48,12 +48,13 @@ func _refresh() -> void:
 
 	var rs: RunState = _round.run_state
 	if rs != null:
+		var black_mult: int = _black_attack_multiplier()
 		if round_label != null:
 			round_label.text = "Round: %d" % (rs.round_index + 1)
 		if player_hp_label != null:
 			player_hp_label.text = "Player HP: %d/%d" % [rs.player_hp, rs.player_max_hp]
 		if enemy_hp_label != null:
-			enemy_hp_label.text = "Enemy HP: %d/%d" % [rs.enemy_hp, rs.enemy_max_hp]
+			enemy_hp_label.text = "Enemy HP: %d/%d  ATK x%d" % [rs.enemy_hp, rs.enemy_max_hp, black_mult]
 		if gold_label != null:
 			gold_label.text = "Gold: %d" % rs.gold
 	else:
@@ -139,3 +140,10 @@ func _pips_remaining_for(s: BoardState, player: int) -> int:
 			total += 25
 
 	return total
+
+func _black_attack_multiplier() -> int:
+	if _round == null:
+		return 1
+	if _round.ai == null or _round.ai.advantage == null:
+		return 1
+	return maxi(1, int(_round.ai.advantage.damage_multiplier(_round.black_turn_index)))
