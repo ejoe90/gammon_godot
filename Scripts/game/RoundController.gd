@@ -388,7 +388,7 @@ func start_round(rs: RunState) -> void:
 	ap_left = base_ap_per_turn
 	hand.clear()
 	_reset_card_piles()
-	_draw_cards_into_hand(hand_size)
+	_draw_cards_into_hand(_count_empty_hand_slots())
 
 	# Clear any pending targeting
 	targeting_active = false
@@ -446,7 +446,7 @@ func start_turn() -> void:
 
 		# New WHITE turn: reset per-turn aux usage gates.
 		aux_used_this_turn.clear()
-		_draw_cards_into_hand(hand_size - hand.size())
+		_draw_cards_into_hand(_count_empty_hand_slots())
 
 		# Tick down aux cooldowns (supports multi-copy arrays).
 		for k in aux_cd_left.keys():
@@ -1809,8 +1809,13 @@ func _draw_cards_into_hand(count: int) -> void:
 	if count <= 0:
 		return
 
+	_ensure_hand_slots()
 	var draws_left: int = count
-	while draws_left > 0:
+	for i in range(hand.size()):
+		if draws_left <= 0:
+			break
+		if hand[i] != null:
+			continue
 		if draw_pile.is_empty():
 			if discard_pile.is_empty():
 				break
@@ -1823,7 +1828,7 @@ func _draw_cards_into_hand(count: int) -> void:
 		if def == null:
 			push_warning("[RoundController] Deck id not found in CardDB: %s" % id)
 			continue
-		hand.append(CardInstance.new(def))
+		hand[i] = CardInstance.new(def)
 		draws_left -= 1
 
 	emit_signal("hand_changed", hand)
@@ -1834,7 +1839,7 @@ func _on_card_consumed_internal(uid: int) -> void:
 		if hand[j] != null and hand[j].uid == uid:
 			if hand[j].def != null:
 				discard_pile.append(String(hand[j].def.id))
-			hand.remove_at(j)
+			hand[j] = null
 			removed = true
 			break
 
@@ -1845,7 +1850,9 @@ func _on_card_consumed_internal(uid: int) -> void:
 # These helpers are for the DebugCardMenu.
 
 func debug_clear_hand() -> void:
-	hand.clear()
+	_ensure_hand_slots()
+	for i in range(hand.size()):
+		hand[i] = null
 	emit_signal("hand_changed", hand)
 
 # Fill the hand with copies of a single CardDef.
@@ -1858,8 +1865,10 @@ func debug_fill_hand(def: CardDef, count: int = -1) -> void:
 		hs = hand_size
 	hs = maxi(0, hs)
 	hand.clear()
-	for _i: int in range(hs):
-		hand.append(CardInstance.new(def))
+	while hand.size() < hs:
+		hand.append(null)
+	for i: int in range(hs):
+		hand[i] = CardInstance.new(def)
 	emit_signal("hand_changed", hand)
 
 # Replace a specific hand index with a new CardInstance created from def.
@@ -1871,18 +1880,39 @@ func debug_set_hand_index(hand_index: int, def: CardDef) -> void:
 		return
 	var desired: int = maxi(hand_size, hand_index + 1)
 	while hand.size() < desired:
-		hand.append(CardInstance.new(def))
+		hand.append(null)
 	hand[hand_index] = CardInstance.new(def)
 	emit_signal("hand_changed", hand)
 
 func debug_remove_hand_index(hand_index: int) -> void:
 	if hand_index < 0 or hand_index >= hand.size():
 		return
-	hand.remove_at(hand_index)
+	hand[hand_index] = null
 	emit_signal("hand_changed", hand)
 
 func debug_append_card(def: CardDef) -> void:
 	if def == null:
 		return
-	hand.append(CardInstance.new(def))
+	_ensure_hand_slots()
+	for i in range(hand.size()):
+		if hand[i] == null:
+			hand[i] = CardInstance.new(def)
+			emit_signal("hand_changed", hand)
+			return
 	emit_signal("hand_changed", hand)
+
+func _ensure_hand_slots() -> void:
+	if hand_size < 0:
+		return
+	if hand.size() > hand_size:
+		hand.resize(hand_size)
+	while hand.size() < hand_size:
+		hand.append(null)
+
+func _count_empty_hand_slots() -> int:
+	_ensure_hand_slots()
+	var empty: int = 0
+	for ci in hand:
+		if ci == null:
+			empty += 1
+	return empty
