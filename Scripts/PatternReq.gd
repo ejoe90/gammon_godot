@@ -13,7 +13,8 @@ enum Kind {
 	RUN_SEQUENCE,   # For sequential same-side stacks
 	ADJACENT_PAIR,
 	RUN_SEQUENCE_MIXED,
-	ACROSS_PAIR  # For neighbor relationships (1 next to 4+ enemy)
+	ACROSS_PAIR,  # For neighbor relationships (1 next to 4+ enemy)
+	ACROSS_ADJACENT_PAIR
 }
 
 @export var kind: Kind = Kind.RUN_SEQUENCE

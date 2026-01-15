@@ -72,6 +72,7 @@ signal notice(text: String)
 
 var turn_hit_victims_by_attacker: Dictionary = {}
 var turn_double_down_ready: bool = false
+var _turn_base_attack_bonus: int = 0
 
 # --- Pip Boost choice prompt (Tier 1+) ---
 var _pip_choice_menu: PopupMenu = null
@@ -242,6 +243,15 @@ func _apply_pip_choice(bonus: int) -> void:
 
 func show_notice(text: String) -> void:
 	emit_signal("notice", text)
+
+func add_turn_base_attack_bonus(amount: int) -> void:
+	if run_state == null:
+		return
+	var delta: int = maxi(0, int(amount))
+	if delta <= 0:
+		return
+	_turn_base_attack_bonus += delta
+	run_state.base_attack_power = maxi(0, int(run_state.base_attack_power) + delta)
 
 func compute_player_damage(base_damage: int, include_base_attack: bool = true) -> int:
 	if run_state == null:
@@ -838,6 +848,10 @@ func _end_round_from_black_hp_win() -> void:
 func end_turn() -> void:
 	if not round_active:
 		return
+
+	if run_state != null and _turn_base_attack_bonus > 0:
+		run_state.base_attack_power = maxi(0, int(run_state.base_attack_power) - _turn_base_attack_bonus)
+		_turn_base_attack_bonus = 0
 
 	_ai_running = false
 	state.turn = state.opponent(state.turn)
