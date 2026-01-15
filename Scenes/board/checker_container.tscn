@@ -1,0 +1,28 @@
+[gd_scene load_steps=3 format=3 uid="uid://cgeoxquyy0hei"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ho67e"]
+size = Vector2(0.4874153, 47.703247)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_8eowx"]
+size = Vector2(58.909454, 2.469101)
+
+[node name="StaticBody2D" type="StaticBody2D"]
+scale = Vector2(2.43, 2.43)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(106.584366, 312.7572)
+scale = Vector2(1.9899999, 1.9899999)
+shape = SubResource("RectangleShape2D_ho67e")
+debug_color = Color(0.6117647, 0.8509804, 0, 0.41960785)
+
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="."]
+position = Vector2(120.164604, 312.7572)
+scale = Vector2(1.9899999, 1.9899999)
+shape = SubResource("RectangleShape2D_ho67e")
+debug_color = Color(0.6117647, 0.8509804, 0, 0.41960785)
+
+[node name="CollisionShape2D3" type="CollisionShape2D" parent="."]
+position = Vector2(114.40329, 361.31686)
+scale = Vector2(0.99999976, 0.99999976)
+shape = SubResource("RectangleShape2D_8eowx")
+debug_color = Color(0.25882354, 0.9137255, 0.34509805, 0.41960785)

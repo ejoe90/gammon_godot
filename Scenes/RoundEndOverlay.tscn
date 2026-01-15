@@ -1,0 +1,52 @@
+[gd_scene load_steps=3 format=3 uid="uid://bgvvwk28bs7tr"]
+
+[ext_resource type="Script" uid="uid://b3ndmwwwxhexp" path="res://RoundEndOverlay.gd" id="1_84sab"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_84sab"]
+bg_color = Color(0.1254902, 0.40392157, 0.7490196, 1)
+border_width_left = 10
+border_width_top = 10
+border_color = Color(0.32156864, 0.7607843, 0.6745098, 1)
+shadow_color = Color(0, 0, 0.5254902, 0.6)
+
+[node name="RoundEndOverlay" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_84sab")
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 0
+offset_right = 188.0
+offset_bottom = 93.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_84sab")
+
+[node name="RestartBtn" type="Button" parent="Panel"]
+layout_mode = 0
+offset_left = 14.0
+offset_top = 47.0
+offset_right = 79.0
+offset_bottom = 78.0
+keep_pressed_outside = true
+text = "Restart"
+icon_alignment = 1
+
+[node name="NextBtn" type="Button" parent="Panel"]
+layout_mode = 0
+offset_left = 83.0
+offset_top = 48.0
+offset_right = 183.0
+offset_bottom = 79.0
+text = "Next Round"
+
+[node name="TitleLabel" type="Label" parent="Panel"]
+layout_mode = 0
+offset_left = 73.0
+offset_top = 15.0
+offset_right = 113.0
+offset_bottom = 38.0
+horizontal_alignment = 1
+vertical_alignment = 1

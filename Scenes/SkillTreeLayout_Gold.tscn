@@ -1,0 +1,117 @@
+[gd_scene load_steps=3 format=3 uid="uid://dn6hpu3krojyr"]
+
+[ext_resource type="PackedScene" uid="uid://busrse7xgv62" path="res://Scenes/SkillTreeNodeWidget.tscn" id="1_ceuje"]
+
+[sub_resource type="Curve" id="Curve_ceuje"]
+_data = [Vector2(0.08979591, 0.46113998), 0.0, 43.738, 0, 0, Vector2(0.43469384, 0.874266), 0.0, 0.0, 0, 0, Vector2(0.732653, 0.53747845), 0.0, 0.0, 0, 0, Vector2(0.8632653, 0.2882557), 0.0, 0.0, 0, 0]
+point_count = 4
+metadata/_snap_count = 2
+
+[node name="SkillTreeLayout_Gold" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Lines" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Line2D" type="Line2D" parent="Lines"]
+points = PackedVector2Array(-40, -8, 40, 48, 136, 120, 176, 136, 192, 40, 248, 104, 256, 160)
+width_curve = SubResource("Curve_ceuje")
+default_color = Color(0, 0.5373164, 0.537359, 1)
+joint_mode = 2
+sharp_limit = 1.18
+round_precision = 7
+
+[node name="Nodes" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 0
+offset_left = 344.0
+offset_right = 344.0
+
+[node name="gold_boost" parent="Nodes" instance=ExtResource("1_ceuje")]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.0
+offset_left = -48.0
+offset_right = 52.0
+offset_bottom = 100.0
+grow_vertical = 1
+
+[node name="gold_boost_a" parent="Nodes" instance=ExtResource("1_ceuje")]
+layout_mode = 1
+offset_left = -134.0
+offset_top = 161.0
+offset_right = -34.0
+offset_bottom = 261.0
+
+[node name="gold_boost_b" parent="Nodes" instance=ExtResource("1_ceuje")]
+layout_mode = 1
+offset_left = 30.0
+offset_top = 161.0
+offset_right = 130.0
+offset_bottom = 261.0
+
+[node name="gold_a1" parent="Nodes" instance=ExtResource("1_ceuje")]
+layout_mode = 1
+offset_left = -288.0
+offset_top = 321.0
+offset_right = -188.0
+offset_bottom = 421.0
+
+[node name="gold_a2" parent="Nodes" instance=ExtResource("1_ceuje")]
+layout_mode = 1
+offset_left = -134.0
+offset_top = 321.0
+offset_right = -34.0
+offset_bottom = 421.0
+
+[node name="gold_b1" parent="Nodes" instance=ExtResource("1_ceuje")]
+layout_mode = 1
+offset_left = 30.0
+offset_top = 321.0
+offset_right = 130.0
+offset_bottom = 421.0
+
+[node name="gold_b2" parent="Nodes" instance=ExtResource("1_ceuje")]
+layout_mode = 1
+offset_left = 192.0
+offset_top = 321.0
+offset_right = 292.0
+offset_bottom = 421.0
+
+[node name="gold_t3_a" parent="Nodes" instance=ExtResource("1_ceuje")]
+layout_mode = 1
+offset_left = -134.0
+offset_top = 495.0
+offset_right = -34.0
+offset_bottom = 595.0
+
+[node name="gold_t3_b" parent="Nodes" instance=ExtResource("1_ceuje")]
+layout_mode = 1
+offset_left = 30.0
+offset_top = 495.0
+offset_right = 130.0
+offset_bottom = 595.0
+
+[node name="gold_t4" parent="Nodes" instance=ExtResource("1_ceuje")]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.0
+offset_left = -48.0
+offset_top = 672.0
+offset_right = 52.0
+offset_bottom = 772.0
+grow_vertical = 1

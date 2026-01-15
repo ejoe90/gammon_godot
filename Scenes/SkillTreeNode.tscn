@@ -1,0 +1,21 @@
+[gd_scene load_steps=2 format=3 uid="uid://dodbmbpgcaj84"]
+
+[ext_resource type="Script" uid="uid://8w511lhsgb1u" path="res://SkillTreeNode.gd" id="1_87e13"]
+
+[node name="SkillTreeNode" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_87e13")
+
+[node name="Button" type="Button" parent="."]
+layout_mode = 0
+offset_right = 8.0
+offset_bottom = 8.0
+
+[node name="Name" type="Label" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
+text = "Name"

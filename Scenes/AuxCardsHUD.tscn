@@ -1,0 +1,22 @@
+[gd_scene load_steps=3 format=3 uid="uid://c5ou1koxgc3o1"]
+
+[ext_resource type="Script" uid="uid://bpq60d61bghfi" path="res://AuxCardsHUD.gd" id="1_xg7sk"]
+[ext_resource type="PackedScene" uid="uid://cc7v5b3g1ypv8" path="res://Scenes/AuxCardSlot.tscn" id="2_4thew"]
+
+[node name="AuxCardsHUD" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_xg7sk")
+slot_scene = ExtResource("2_4thew")
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Slots" type="HBoxContainer" parent="Panel"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0

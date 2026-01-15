@@ -1,0 +1,46 @@
+[gd_scene load_steps=2 format=3 uid="uid://oscrpsfbqu6w"]
+
+[ext_resource type="Script" uid="uid://naqxd4e434j3" path="res://DebugCardMenu.gd" id="1_c86mg"]
+
+[node name="DebugCardMenu" type="CanvasLayer"]
+scale = Vector2(2, 2)
+transform = Transform2D(2, 0, 0, 2, 0, 0)
+script = ExtResource("1_c86mg")
+
+[node name="Panel" type="Panel" parent="."]
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Root" type="VBoxContainer" parent="Panel"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Filter" type="LineEdit" parent="Panel/Root"]
+layout_mode = 2
+placeholder_text = "search cards"
+
+[node name="CardPick" type="OptionButton" parent="Panel/Root"]
+layout_mode = 2
+
+[node name="Row" type="HBoxContainer" parent="Panel/Root"]
+layout_mode = 2
+
+[node name="Slot" type="SpinBox" parent="Panel/Root/Row"]
+layout_mode = 2
+max_value = 4.0
+
+[node name="SetButton" type="Button" parent="Panel/Root/Row"]
+layout_mode = 2
+text = "Set Slot"
+
+[node name="ClearButton" type="Button" parent="Panel/Root/Row"]
+layout_mode = 2
+text = "Clear Slot"
+
+[node name="FillButton" type="Button" parent="Panel/Root/Row"]
+layout_mode = 2
+text = "Fill Empty"
+
+[node name="Info" type="Label" parent="Panel/Root"]
+layout_mode = 2

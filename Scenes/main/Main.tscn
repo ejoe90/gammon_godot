@@ -1,0 +1,59 @@
+[gd_scene load_steps=8 format=3 uid="uid://dgf0swk4qk32y"]
+
+[ext_resource type="Script" uid="uid://ce32q778uma70" path="res://Scripts/RunController.gd" id="1_kjqwk"]
+[ext_resource type="PackedScene" uid="uid://bpvpieuxq84fg" path="res://Scenes/main/RoundScene.tscn" id="2_67yny"]
+[ext_resource type="PackedScene" uid="uid://cxgpodmyvwvsg" path="res://Scenes/EndRoundShop.tscn" id="3_67yny"]
+[ext_resource type="Texture2D" uid="uid://fw31hthjppvy" path="res://Assets/textures/star_sparkle_16x16.png" id="4_xvxb3"]
+
+[sub_resource type="Gradient" id="Gradient_xvxb3"]
+colors = PackedColorArray(0.426914, 0.8481075, 1, 0.8784314, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_uea07"]
+gradient = SubResource("Gradient_xvxb3")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_xvxb3"]
+particle_flag_disable_z = true
+emission_shape_scale = Vector3(21.84, 1, 1)
+emission_shape = 3
+emission_box_extents = Vector3(1, 1, 1)
+spread = 18.254
+gravity = Vector3(0, 20.88, 0)
+color = Color(0.6666667, 0.84705883, 1, 0.94509804)
+color_ramp = SubResource("GradientTexture1D_uea07")
+hue_variation_min = -0.15000002
+hue_variation_max = 0.029999977
+
+[node name="RunController" type="Node"]
+script = ExtResource("1_kjqwk")
+
+[node name="Round" parent="." instance=ExtResource("2_67yny")]
+
+[node name="HUD" type="CanvasLayer" parent="."]
+
+[node name="EndRoundShop" parent="HUD" instance=ExtResource("3_67yny")]
+offset_left = 544.0
+offset_top = 96.0
+offset_right = -1136.0
+offset_bottom = -664.0
+
+[node name="StarBG" type="CanvasLayer" parent="."]
+layer = -139
+
+[node name="BGGradient" type="ColorRect" parent="StarBG"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.013154227, 0.03528824, 0.15257561, 1)
+
+[node name="Stars" type="GPUParticles2D" parent="StarBG"]
+position = Vector2(968, -16)
+scale = Vector2(50, 50)
+amount = 250
+texture = ExtResource("4_xvxb3")
+lifetime = 15.5
+speed_scale = 0.34
+randomness = 1.0
+process_material = SubResource("ParticleProcessMaterial_xvxb3")

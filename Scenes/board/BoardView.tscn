@@ -1,0 +1,370 @@
+[gd_scene load_steps=14 format=3 uid="uid://dywwbt32odqgu"]
+
+[ext_resource type="Script" uid="uid://6dbour51pnf4" path="res://Scripts/view/board/BoardView.gd" id="1_p644t"]
+[ext_resource type="PackedScene" uid="uid://dabrlwguces02" path="res://Scenes/board/CheckerSprite.tscn" id="2_g6rmm"]
+[ext_resource type="Script" uid="uid://b8vt37yuelsst" path="res://Scripts/view/board/components/BoardInput.gd" id="2_mgt3i"]
+[ext_resource type="Script" uid="uid://cjwhccs256jjw" path="res://Scripts/view/board/components/BoardAnimator.gd" id="3_besul"]
+[ext_resource type="Texture2D" uid="uid://c75k3sxw8c3b5" path="res://Assets/textures/board/background 1.png" id="3_e3slj"]
+[ext_resource type="Script" uid="uid://b0lfqth5y5n28" path="res://Scripts/view/board/components/BoardPieces.gd" id="4_daymo"]
+[ext_resource type="PackedScene" uid="uid://cgeoxquyy0hei" path="res://Scenes/board/checker_container.tscn" id="7_besul"]
+[ext_resource type="Script" uid="uid://cs7kbon2fuobs" path="res://Scenes/board/BoardHighlights.gd" id="8_1uk2b"]
+[ext_resource type="Texture2D" uid="uid://04tpaglfnw1y" path="res://Assets/textures/other/icon.svg" id="9_gc0lg"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_mgt3i"]
+size = Vector2(46, 241)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_mgt3i"]
+radius = 49.335587
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_besul"]
+radius = 51.739735
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_1uk2b"]
+radius = 28.102983
+
+[node name="BoardView" type="Node2D"]
+scale = Vector2(1.5, 1.5)
+script = ExtResource("1_p644t")
+
+[node name="BoardInput" type="Node" parent="."]
+script = ExtResource("2_mgt3i")
+point_nodes = Array[NodePath]([NodePath("../P0"), NodePath("../P1"), NodePath("../P2"), NodePath("../P3"), NodePath("../P4"), NodePath("../P5"), NodePath("../P6"), NodePath("../P7"), NodePath("../P8"), NodePath("../P9"), NodePath("../P10"), NodePath("../P11"), NodePath("../P12"), NodePath("../P13"), NodePath("../P14"), NodePath("../P15"), NodePath("../P16"), NodePath("../P17"), NodePath("../P18"), NodePath("../P19"), NodePath("../P20"), NodePath("../P21"), NodePath("../P22"), NodePath("../P23")])
+bearoff_white_node = NodePath("../BearOffWhiteArea")
+bearoff_black_node = NodePath("../BearOffBlackArea")
+
+[node name="BoardAnimator" type="Node" parent="."]
+script = ExtResource("3_besul")
+
+[node name="BoardPieces" type="Node2D" parent="."]
+position = Vector2(1098, 884)
+script = ExtResource("4_daymo")
+point_markers = Array[NodePath]([NodePath("../PointMarkers/M0"), NodePath("../PointMarkers/M1"), NodePath("../PointMarkers/M2"), NodePath("../PointMarkers/M3"), NodePath("../PointMarkers/M4"), NodePath("../PointMarkers/M5"), NodePath("../PointMarkers/M6"), NodePath("../PointMarkers/M7"), NodePath("../PointMarkers/M8"), NodePath("../PointMarkers/M9"), NodePath("../PointMarkers/M10"), NodePath("../PointMarkers/M11"), NodePath("../PointMarkers/M12"), NodePath("../PointMarkers/M13"), NodePath("../PointMarkers/M14"), NodePath("../PointMarkers/M15"), NodePath("../PointMarkers/M16"), NodePath("../PointMarkers/M17"), NodePath("../PointMarkers/M18"), NodePath("../PointMarkers/M19"), NodePath("../PointMarkers/M20"), NodePath("../PointMarkers/M21"), NodePath("../PointMarkers/M22"), NodePath("../PointMarkers/M23")])
+bar_marker_white = NodePath("../BarWhiteMarker")
+bar_marker_black = NodePath("../BarBlackMarker")
+off_marker_white = NodePath("../BearOffWhiteArea")
+off_marker_black = NodePath("../BearOffBlackArea")
+checker_scene = ExtResource("2_g6rmm")
+checker_scale = 0.3
+stack_spacing = 25.0
+max_stack_visible = 10
+
+[node name="bkg image" type="Sprite2D" parent="."]
+position = Vector2(647, 502)
+texture = ExtResource("3_e3slj")
+
+[node name="P0" type="Area2D" parent="."]
+position = Vector2(1098, 139)
+disable_mode = 2
+
+[node name="P0" type="CollisionShape2D" parent="P0"]
+position = Vector2(-1, 91)
+shape = SubResource("RectangleShape2D_mgt3i")
+
+[node name="P1" type="Area2D" parent="."]
+position = Vector2(1024, 143)
+disable_mode = 2
+
+[node name="P1" type="CollisionShape2D" parent="P1"]
+position = Vector2(0, 87)
+shape = SubResource("RectangleShape2D_mgt3i")
+
+[node name="P2" type="Area2D" parent="."]
+position = Vector2(955, 144)
+disable_mode = 2
+
+[node name="P2" type="CollisionShape2D" parent="P2"]
+position = Vector2(-2, 85)
+shape = SubResource("RectangleShape2D_mgt3i")
+
+[node name="P3" type="Area2D" parent="."]
+position = Vector2(882, 119)
+disable_mode = 2
+
+[node name="P3" type="CollisionShape2D" parent="P3"]
+position = Vector2(-2, 113)
+shape = SubResource("RectangleShape2D_mgt3i")
+
+[node name="P4" type="Area2D" parent="."]
+position = Vector2(809, 130)
+disable_mode = 2
+
+[node name="P4" type="CollisionShape2D" parent="P4"]
+position = Vector2(2, 101)
+shape = SubResource("RectangleShape2D_mgt3i")
+
+[node name="P5" type="Area2D" parent="."]
+position = Vector2(738, 131)
+disable_mode = 2
+
+[node name="P5" type="CollisionShape2D" parent="P5"]
+position = Vector2(-1, 98)
+shape = SubResource("RectangleShape2D_mgt3i")
+
+[node name="P6" type="Area2D" parent="."]
+position = Vector2(552, 137)
+disable_mode = 2
+
+[node name="P6" type="CollisionShape2D" parent="P6"]
+position = Vector2(-1, 93)
+shape = SubResource("RectangleShape2D_mgt3i")
+
+[node name="P7" type="Area2D" parent="."]
+position = Vector2(480, 132)
+disable_mode = 2
+
+[node name="P7" type="CollisionShape2D" parent="P7"]
+position = Vector2(1, 99)
+shape = SubResource("RectangleShape2D_mgt3i")
+
+[node name="P8" type="Area2D" parent="."]
+position = Vector2(411, 138)
+disable_mode = 2
+
+[node name="P8" type="CollisionShape2D" parent="P8"]
+position = Vector2(-2, 92)
+shape = SubResource("RectangleShape2D_mgt3i")
+
+[node name="P9" type="Area2D" parent="."]
+position = Vector2(339, 133)
+disable_mode = 2
+
+[node name="P9" type="CollisionShape2D" parent="P9"]
+position = Vector2(-3, 96)
+shape = SubResource("RectangleShape2D_mgt3i")
+
+[node name="P10" type="Area2D" parent="."]
+position = Vector2(264, 136)
+disable_mode = 2
+
+[node name="P10" type="CollisionShape2D" parent="P10"]
+position = Vector2(0, 94)
+shape = SubResource("RectangleShape2D_mgt3i")
+
+[node name="P11" type="Area2D" parent="."]
+position = Vector2(195, 139)
+disable_mode = 2
+
+[node name="P11" type="CollisionShape2D" parent="P11"]
+position = Vector2(-3, 92)
+shape = SubResource("RectangleShape2D_mgt3i")
+
+[node name="P12" type="Area2D" parent="."]
+position = Vector2(197, 845)
+disable_mode = 2
+
+[node name="P12" type="CollisionShape2D" parent="P12"]
+position = Vector2(-3, -75)
+shape = SubResource("RectangleShape2D_mgt3i")
+
+[node name="P13" type="Area2D" parent="."]
+position = Vector2(267, 845)
+disable_mode = 2
+
+[node name="P13" type="CollisionShape2D" parent="P13"]
+position = Vector2(-2, -72)
+shape = SubResource("RectangleShape2D_mgt3i")
+
+[node name="P14" type="Area2D" parent="."]
+position = Vector2(335, 846)
+disable_mode = 2
+
+[node name="P14" type="CollisionShape2D" parent="P14"]
+position = Vector2(2, -73)
+shape = SubResource("RectangleShape2D_mgt3i")
+
+[node name="P15" type="Area2D" parent="."]
+position = Vector2(405, 846)
+disable_mode = 2
+
+[node name="P15" type="CollisionShape2D" parent="P15"]
+position = Vector2(4, -74)
+shape = SubResource("RectangleShape2D_mgt3i")
+
+[node name="P16" type="Area2D" parent="."]
+position = Vector2(481, 850)
+disable_mode = 2
+
+[node name="P16" type="CollisionShape2D" parent="P16"]
+position = Vector2(0, -78)
+shape = SubResource("RectangleShape2D_mgt3i")
+
+[node name="P17" type="Area2D" parent="."]
+position = Vector2(553, 850)
+disable_mode = 2
+
+[node name="P17" type="CollisionShape2D" parent="P17"]
+position = Vector2(0, -78)
+shape = SubResource("RectangleShape2D_mgt3i")
+
+[node name="P18" type="Area2D" parent="."]
+position = Vector2(737, 850)
+disable_mode = 2
+
+[node name="P18" type="CollisionShape2D" parent="P18"]
+position = Vector2(0, -78)
+shape = SubResource("RectangleShape2D_mgt3i")
+
+[node name="P19" type="Area2D" parent="."]
+position = Vector2(808, 849)
+disable_mode = 2
+
+[node name="P19" type="CollisionShape2D" parent="P19"]
+position = Vector2(2, -76)
+shape = SubResource("RectangleShape2D_mgt3i")
+
+[node name="P20" type="Area2D" parent="."]
+position = Vector2(882, 852)
+disable_mode = 2
+
+[node name="P20" type="CollisionShape2D" parent="P20"]
+position = Vector2(-1, -79)
+shape = SubResource("RectangleShape2D_mgt3i")
+
+[node name="P21" type="Area2D" parent="."]
+position = Vector2(951, 854)
+disable_mode = 2
+
+[node name="P21" type="CollisionShape2D" parent="P21"]
+position = Vector2(2, -81)
+shape = SubResource("RectangleShape2D_mgt3i")
+
+[node name="P22" type="Area2D" parent="."]
+position = Vector2(1026, 852)
+disable_mode = 2
+
+[node name="P22" type="CollisionShape2D" parent="P22"]
+position = Vector2(-1, -79)
+shape = SubResource("RectangleShape2D_mgt3i")
+
+[node name="P23" type="Area2D" parent="."]
+position = Vector2(1105, 850)
+disable_mode = 2
+
+[node name="P23" type="CollisionShape2D" parent="P23"]
+position = Vector2(-9, -78)
+shape = SubResource("RectangleShape2D_mgt3i")
+
+[node name="CheckersLayer" type="Node2D" parent="."]
+
+[node name="PointMarkers" type="Node2D" parent="."]
+
+[node name="M0" type="Marker2D" parent="PointMarkers"]
+position = Vector2(1097, 117)
+
+[node name="M1" type="Marker2D" parent="PointMarkers"]
+position = Vector2(1023, 116)
+
+[node name="M2" type="Marker2D" parent="PointMarkers"]
+position = Vector2(953, 117)
+
+[node name="M3" type="Marker2D" parent="PointMarkers"]
+position = Vector2(882, 116)
+
+[node name="M4" type="Marker2D" parent="PointMarkers"]
+position = Vector2(809, 116)
+
+[node name="M5" type="Marker2D" parent="PointMarkers"]
+position = Vector2(738, 116)
+
+[node name="M6" type="Marker2D" parent="PointMarkers"]
+position = Vector2(552, 116)
+
+[node name="M7" type="Marker2D" parent="PointMarkers"]
+position = Vector2(481, 116)
+
+[node name="M8" type="Marker2D" parent="PointMarkers"]
+position = Vector2(410, 115)
+
+[node name="M9" type="Marker2D" parent="PointMarkers"]
+position = Vector2(337, 117)
+
+[node name="M10" type="Marker2D" parent="PointMarkers"]
+position = Vector2(265, 117)
+
+[node name="M11" type="Marker2D" parent="PointMarkers"]
+position = Vector2(192, 117)
+
+[node name="M12" type="Marker2D" parent="PointMarkers"]
+position = Vector2(193.33333, 868.6666)
+
+[node name="M13" type="Marker2D" parent="PointMarkers"]
+position = Vector2(267, 876)
+
+[node name="M14" type="Marker2D" parent="PointMarkers"]
+position = Vector2(337, 872)
+
+[node name="M15" type="Marker2D" parent="PointMarkers"]
+position = Vector2(409, 872)
+
+[node name="M16" type="Marker2D" parent="PointMarkers"]
+position = Vector2(481, 873)
+
+[node name="M17" type="Marker2D" parent="PointMarkers"]
+position = Vector2(553, 873)
+
+[node name="M18" type="Marker2D" parent="PointMarkers"]
+position = Vector2(737, 883)
+
+[node name="M19" type="Marker2D" parent="PointMarkers"]
+position = Vector2(808, 883)
+
+[node name="M20" type="Marker2D" parent="PointMarkers"]
+position = Vector2(882, 881)
+
+[node name="M21" type="Marker2D" parent="PointMarkers"]
+position = Vector2(953, 881)
+
+[node name="M22" type="Marker2D" parent="PointMarkers"]
+position = Vector2(1025, 882)
+
+[node name="M23" type="Marker2D" parent="PointMarkers"]
+position = Vector2(1098, 884)
+
+[node name="BarWhiteMarker" type="Marker2D" parent="."]
+position = Vector2(644, 72)
+
+[node name="BarBlackMarker" type="Marker2D" parent="."]
+position = Vector2(642, 932)
+
+[node name="BearOffWhiteArea" type="Area2D" parent="."]
+position = Vector2(1196, 899)
+
+[node name="BOffWhite" type="CollisionShape2D" parent="BearOffWhiteArea"]
+position = Vector2(0, -2)
+shape = SubResource("CircleShape2D_mgt3i")
+debug_color = Color(0.9978686, 0, 0.16659927, 0.41960785)
+
+[node name="BearOffBlackArea" type="Area2D" parent="."]
+position = Vector2(1197, 104)
+
+[node name="BOffBlack" type="CollisionShape2D" parent="BearOffBlackArea"]
+position = Vector2(1, 2)
+shape = SubResource("CircleShape2D_besul")
+
+[node name="StaticBody2D" parent="." instance=ExtResource("7_besul")]
+position = Vector2(-86.99999, 15.999999)
+
+[node name="StaticBody2D2" parent="." instance=ExtResource("7_besul")]
+position = Vector2(-13.000015, 16)
+
+[node name="HighlightsLayer" type="Node2D" parent="."]
+script = ExtResource("8_1uk2b")
+point_markers = Array[NodePath]([NodePath("../PointMarkers/M0"), NodePath("../PointMarkers/M1"), NodePath("../PointMarkers/M2"), NodePath("../PointMarkers/M3"), NodePath("../PointMarkers/M4"), NodePath("../PointMarkers/M5"), NodePath("../PointMarkers/M6"), NodePath("../PointMarkers/M7"), NodePath("../PointMarkers/M8"), NodePath("../PointMarkers/M9"), NodePath("../PointMarkers/M10"), NodePath("../PointMarkers/M11"), NodePath("../PointMarkers/M12"), NodePath("../PointMarkers/M13"), NodePath("../PointMarkers/M14"), NodePath("../PointMarkers/M15"), NodePath("../PointMarkers/M16"), NodePath("../PointMarkers/M17"), NodePath("../PointMarkers/M18"), NodePath("../PointMarkers/M19"), NodePath("../PointMarkers/M20"), NodePath("../PointMarkers/M21"), NodePath("../PointMarkers/M22"), NodePath("../PointMarkers/M23")])
+bearoff_white_marker = NodePath("../BearOffWhiteArea")
+bearoff_black_marker = NodePath("../BearOffBlackArea")
+highlight_texture = ExtResource("9_gc0lg")
+highlight_scale = 0.2
+
+[node name="BarClickWhite" type="Area2D" parent="."]
+position = Vector2(644.6667, 70)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="BarClickWhite"]
+position = Vector2(0, -0.6666667)
+shape = SubResource("CircleShape2D_1uk2b")
+
+[node name="BarClickBlack" type="Area2D" parent="."]
+position = Vector2(646.6666, 934.6667)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="BarClickBlack"]
+position = Vector2(-0.6666263, -0.666687)
+shape = SubResource("CircleShape2D_1uk2b")

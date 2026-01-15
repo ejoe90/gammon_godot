@@ -1,0 +1,28 @@
+[gd_scene load_steps=2 format=3 uid="uid://bgxsljcr2quc2"]
+
+[ext_resource type="Script" uid="uid://b1brhngqcxlvq" path="res://Scripts/view/ui/dice_ui.gd" id="1_ossxm"]
+
+[node name="DiceUI" type="Control"]
+layout_mode = 3
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = 677.0
+offset_top = 240.0
+offset_right = 717.0
+offset_bottom = 280.0
+grow_horizontal = 2
+script = ExtResource("1_ossxm")
+
+[node name="RolledLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = -1
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="RemainingLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = 1.0
+offset_top = 34.0
+offset_right = 41.0
+offset_bottom = 57.0

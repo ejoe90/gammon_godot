@@ -1,0 +1,77 @@
+[gd_scene load_steps=2 format=3 uid="uid://bqyhhs7nso515"]
+
+[ext_resource type="Script" uid="uid://cyl5fescerjrj" path="res://Scripts/StatsHUD.gd" id="1_2w0v8"]
+
+[node name="StatsHUD" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 5.0
+offset_top = 5.0
+offset_right = 225.0
+offset_bottom = 260.0
+scale = Vector2(1.35, 1.35)
+script = ExtResource("1_2w0v8")
+
+[node name="RoundLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = -3.7037036
+offset_top = 1.4814814
+offset_right = 101.296295
+offset_bottom = 24.481482
+text = "Placeholder 1"
+
+[node name="PlayerHPLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = -4.4444447
+offset_top = 24.444443
+offset_right = 100.55556
+offset_bottom = 47.444443
+text = "Placeholder 2"
+
+[node name="EnemyHPLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = -3.7037034
+offset_top = 46.66666
+offset_right = 101.296295
+offset_bottom = 69.66666
+text = "Placeholder 3"
+
+[node name="GoldLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = -3.7037036
+offset_top = 72.59259
+offset_right = 101.296295
+offset_bottom = 95.59259
+text = "Placeholder 4"
+
+[node name="APLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = -4.4444447
+offset_top = 99.99999
+offset_right = 100.55556
+offset_bottom = 122.99999
+text = "Placeholder 5"
+
+[node name="PipsWhite" type="Label" parent="."]
+layout_mode = 0
+offset_left = -3.7037036
+offset_top = 125.92593
+offset_right = 101.296295
+offset_bottom = 148.92593
+text = "Placeholder 6"
+
+[node name="PipsBlack" type="Label" parent="."]
+layout_mode = 0
+offset_left = -2.9629629
+offset_top = 151.85185
+offset_right = 102.03704
+offset_bottom = 174.85187
+text = "Placeholder 7"
+
+[node name="PipHPLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = -3.7037036
+offset_top = 177.77777
+offset_right = 160.2963
+offset_bottom = 200.77777
+text = "Pip→HP: -"

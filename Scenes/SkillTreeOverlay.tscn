@@ -1,0 +1,75 @@
+[gd_scene load_steps=4 format=3 uid="uid://bj8g3a2jgmne8"]
+
+[ext_resource type="Script" uid="uid://b12rlgekqenwq" path="res://SkillTreeOverlay.gd" id="1_4fp0b"]
+[ext_resource type="Script" uid="uid://daccx84mlrxd8" path="res://Scenes/SkillTreeGraphView.gd" id="2_d2re0"]
+[ext_resource type="Script" uid="uid://152q11vc2wg8" path="res://Scenes/SkillTreeLines.gd" id="3_pm3pw"]
+
+[node name="SkillTreeOverlay" type="CanvasLayer"]
+script = ExtResource("1_4fp0b")
+root_gap_x = 650
+spacing_x = 125
+spacing_y = 150
+node_size = Vector2(150, 50)
+
+[node name="Dim" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.21950102, 0.21950102, 0.21950102, 0.627451)
+
+[node name="Panel" type="PanelContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Root" type="VBoxContainer" parent="Panel"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="Panel/Root"]
+layout_mode = 2
+
+[node name="Info" type="Label" parent="Panel/Root"]
+layout_mode = 2
+
+[node name="Grid" type="Control" parent="Panel/Root"]
+layout_mode = 2
+script = ExtResource("2_d2re0")
+
+[node name="Lines" type="Control" parent="Panel/Root/Grid"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("3_pm3pw")
+
+[node name="Nodes" type="Control" parent="Panel/Root/Grid"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+
+[node name="Buttons" type="HBoxContainer" parent="Panel/Root"]
+layout_mode = 2
+alignment = 1
+
+[node name="BuyPick" type="Button" parent="Panel/Root/Buttons"]
+layout_mode = 2
+text = "Buy Pick"
+
+[node name="Skip" type="Button" parent="Panel/Root/Buttons"]
+layout_mode = 2
+text = "Skip"
+
+[node name="Confirm" type="Button" parent="Panel/Root/Buttons"]
+layout_mode = 2
+text = "Confirm"

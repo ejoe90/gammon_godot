@@ -1,0 +1,44 @@
+[gd_scene load_steps=5 format=3 uid="uid://bj0xm5fo0pam"]
+
+[ext_resource type="Script" uid="uid://kj551voooe2" path="res://Scripts/CardSlotButton.gd" id="1_r7gra"]
+[ext_resource type="Shader" uid="uid://d1ocp87pbuepj" path="res://Shaders/card_invert_glow.gdshader" id="2_d81wn"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_o7x7c"]
+resource_local_to_scene = true
+shader = ExtResource("2_d81wn")
+shader_parameter/invert_amount = 0.0
+shader_parameter/glow_strength = 1.346000063935
+shader_parameter/pulse_speed = 3.70000017575
+shader_parameter/glow_color = Color(0.68502325, 0.24280238, 0.21141896, 1)
+shader_parameter/edge_width = 0.12
+shader_parameter/aura_strength = 1.02000004845
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_d81wn"]
+blend_mode = 1
+
+[node name="CardSlotButton" type="Button"]
+custom_minimum_size = Vector2(160, 220)
+offset_right = 160.0
+offset_bottom = 220.0
+size_flags_horizontal = 4
+size_flags_vertical = 4
+script = ExtResource("1_r7gra")
+
+[node name="Art" type="TextureRect" parent="."]
+material = SubResource("ShaderMaterial_o7x7c")
+custom_minimum_size = Vector2(160, 220)
+layout_mode = 1
+offset_right = 160.0
+offset_bottom = 220.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="PrimeGlow" type="ColorRect" parent="."]
+material = SubResource("CanvasItemMaterial_d81wn")
+custom_minimum_size = Vector2(160, 220)
+layout_mode = 1
+offset_right = 160.0
+offset_bottom = 220.0
+mouse_filter = 2
+color = Color(0.32798603, 0.7700499, 0.96844965, 1)

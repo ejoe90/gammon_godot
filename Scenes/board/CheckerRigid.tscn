@@ -1,0 +1,59 @@
+[gd_scene load_steps=9 format=3 uid="uid://dej0yrwosyphm"]
+
+[ext_resource type="Script" uid="uid://ht3a5a0tud25" path="res://Scripts/view/board/components/CheckerRigid.gd" id="1_dafqt"]
+[ext_resource type="Texture2D" uid="uid://ugwjwbb4s8hg" path="res://Assets/textures/checkers/gcA.png" id="2_u68ya"]
+[ext_resource type="Texture2D" uid="uid://dqkpwgplejtp7" path="res://Assets/textures/checkers/gc2.png" id="3_5olc1"]
+[ext_resource type="Texture2D" uid="uid://cu3d5rj6f0rr2" path="res://Assets/textures/checkers/gc3.png" id="4_s61vr"]
+[ext_resource type="Texture2D" uid="uid://dgq5ob01j60th" path="res://Assets/textures/checkers/gc4.png" id="5_y8mgy"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_j1yrt"]
+bounce = 0.37
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_7sp4r"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_u68ya")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_5olc1")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_s61vr")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_y8mgy")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_s61vr")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_5olc1")
+}],
+"loop": true,
+"name": &"default",
+"speed": 7.0
+}]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_o1uwy"]
+radius = 17.0
+
+[node name="CheckerRigid" type="RigidBody2D"]
+mass = 1.217
+physics_material_override = SubResource("PhysicsMaterial_j1yrt")
+gravity_scale = 2.0
+script = ExtResource("1_dafqt")
+
+[node name="Visual" type="Node2D" parent="."]
+position = Vector2(0, -1)
+rotation = 3.1415925
+scale = Vector2(0.19, 0.19)
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Visual"]
+sprite_frames = SubResource("SpriteFrames_7sp4r")
+frame_progress = 0.22660546
+speed_scale = 1.31
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+top_level = true
+shape = SubResource("CircleShape2D_o1uwy")

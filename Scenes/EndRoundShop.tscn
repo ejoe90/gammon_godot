@@ -1,0 +1,56 @@
+[gd_scene load_steps=4 format=3 uid="uid://cxgpodmyvwvsg"]
+
+[ext_resource type="Script" uid="uid://bbjke3xfgq5tx" path="res://Scripts/EndRoundShop.gd" id="1_0taah"]
+
+[sub_resource type="Theme" id="Theme_0taah"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4lqek"]
+bg_color = Color(0.9471428, 0.3946937, 0.4038724, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+shadow_color = Color(0.33331114, 3.760215e-07, 7.219613e-08, 0.6)
+shadow_size = 40
+
+[node name="EndRoundShop" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_0taah")
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 0
+offset_right = 144.0
+offset_bottom = 192.0
+scale = Vector2(1.57, 1.57)
+theme = SubResource("Theme_0taah")
+theme_override_styles/panel = SubResource("StyleBoxFlat_4lqek")
+
+[node name="VBox" type="VBoxContainer" parent="Panel"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="TitleLabel" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+text = "SHOP"
+
+[node name="HealBtn" type="Button" parent="Panel/VBox"]
+layout_mode = 2
+text = "Heal +5"
+
+[node name="GoldBtn" type="Button" parent="Panel/VBox"]
+layout_mode = 2
+text = "Gain +10 Gold"
+
+[node name="CardBtn" type="Button" parent="Panel/VBox"]
+layout_mode = 2
+text = "Add Basic Card"
+
+[node name="ContinueBtn" type="Button" parent="Panel/VBox"]
+layout_mode = 2
+text = "Continue"

@@ -1,0 +1,85 @@
+[gd_scene load_steps=2 format=3 uid="uid://cc7v5b3g1ypv8"]
+
+[ext_resource type="Script" uid="uid://boriuljm17og3" path="res://AuxCardSlot.gd" id="1_ft86o"]
+
+[node name="AuxCardSlot" type="Control"]
+custom_minimum_size = Vector2(160, 220)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 64.0
+offset_bottom = 64.0
+script = ExtResource("1_ft86o")
+
+[node name="Button" type="TextureButton" parent="."]
+custom_minimum_size = Vector2(160, 220)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 24.0
+offset_bottom = 24.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="CooldownShade" type="ColorRect" parent="."]
+custom_minimum_size = Vector2(160, 220)
+layout_mode = 0
+offset_right = 64.0
+offset_bottom = 64.0
+mouse_filter = 2
+color = Color(0, 0, 0, 0.5647059)
+
+[node name="Name" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 14
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_top = -11.5
+offset_bottom = 11.5
+grow_horizontal = 2
+grow_vertical = 2
+text = "Name"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="AP" type="Label" parent="."]
+layout_mode = 1
+offset_right = 40.0
+offset_bottom = 23.0
+text = "AP"
+
+[node name="CD" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -40.0
+offset_bottom = 23.0
+grow_horizontal = 0
+text = "CD"
+horizontal_alignment = 2
+
+[node name="Uses" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = -23.0
+offset_right = 40.0
+grow_vertical = 0
+text = "Uses"
+
+[node name="Key" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -40.0
+offset_top = -23.0
+grow_horizontal = 0
+grow_vertical = 0
+text = "Key"
+horizontal_alignment = 2
