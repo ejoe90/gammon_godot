@@ -9,6 +9,8 @@ signal hand_changed(hand: Array[CardInstance])
 
 @export var hand_size: int = 5
 var hand: Array[CardInstance] = []
+var draw_pile: Array[String] = []
+var discard_pile: Array[String] = []
 
 # --- Phase 2 targeting/card signals (Step 2.5) ---
 signal card_consumed(card_uid: int)
@@ -384,7 +386,9 @@ func start_round(rs: RunState) -> void:
 
 	# --- Phase 2 AP reset (Step 2.5) ---
 	ap_left = base_ap_per_turn
-	_build_hand_from_deck()
+	hand.clear()
+	_reset_card_piles()
+	_draw_cards_into_hand(hand_size)
 
 	# Clear any pending targeting
 	targeting_active = false
@@ -442,6 +446,7 @@ func start_turn() -> void:
 
 		# New WHITE turn: reset per-turn aux usage gates.
 		aux_used_this_turn.clear()
+		_draw_cards_into_hand(hand_size - hand.size())
 
 		# Tick down aux cooldowns (supports multi-copy arrays).
 		for k in aux_cd_left.keys():
@@ -1790,29 +1795,36 @@ func _place_ids_3_per_point(ids: Array[int], targets: Array[int]) -> void:
 func get_hand() -> Array[CardInstance]:
 	return hand.duplicate()
 
-func _build_hand_from_deck() -> void:
-	hand.clear()
+func _reset_card_piles() -> void:
+	draw_pile.clear()
+	discard_pile.clear()
 
 	if run_state == null:
-		emit_signal("hand_changed", hand)
 		return
 
-	if run_state.deck.is_empty():
-		emit_signal("hand_changed", hand)
+	draw_pile = run_state.deck.duplicate()
+	draw_pile.shuffle()
+
+func _draw_cards_into_hand(count: int) -> void:
+	if count <= 0:
 		return
 
-	var ids := run_state.deck.duplicate()
-	ids.shuffle()
+	var draws_left: int = count
+	while draws_left > 0:
+		if draw_pile.is_empty():
+			if discard_pile.is_empty():
+				break
+			draw_pile = discard_pile.duplicate()
+			draw_pile.shuffle()
+			discard_pile.clear()
 
-	var take: int = mini(hand_size, ids.size())
-
-	for i in range(take):
-		var id: String = String(ids[i])
+		var id: String = String(draw_pile.pop_back())
 		var def := CardDB.get_def(id)
 		if def == null:
 			push_warning("[RoundController] Deck id not found in CardDB: %s" % id)
 			continue
 		hand.append(CardInstance.new(def))
+		draws_left -= 1
 
 	emit_signal("hand_changed", hand)
 
@@ -1820,6 +1832,8 @@ func _on_card_consumed_internal(uid: int) -> void:
 	var removed: bool = false
 	for j in range(hand.size()):
 		if hand[j] != null and hand[j].uid == uid:
+			if hand[j].def != null:
+				discard_pile.append(String(hand[j].def.id))
 			hand.remove_at(j)
 			removed = true
 			break
