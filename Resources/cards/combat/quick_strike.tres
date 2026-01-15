@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="CardDef" load_steps=7 format=3 uid="uid://aa61lvijoy9l7"]
+
+[ext_resource type="Script" uid="uid://dxnljvcddxql4" path="res://Scripts/CardEffect.gd" id="1_vrk8r"]
+[ext_resource type="Resource" uid="uid://lhdjfqsfovrxc" path="res://Resources/reqs/req_quick_strike.tres" id="2_1vn5h"]
+[ext_resource type="Texture2D" uid="uid://bacpvyurgnkne" path="res://Assets/textures/cards/red deck fronts/1 minus red.jpg" id="3_ovpko"]
+[ext_resource type="Script" uid="uid://rk3y1ds9w2ejc" path="res://Scripts/cards/effects/EffectQuickStrike.gd" id="4_g7wmh"]
+[ext_resource type="Script" uid="uid://b1ylg81nigak7" path="res://Scripts/CardDef.gd" id="5_ut8fv"]
+
+[sub_resource type="Resource" id="Resource_63f2b"]
+script = ExtResource("4_g7wmh")
+base_attack_bonus = 2
+bonus_ap = 2
+metadata/_custom_type_script = "uid://rk3y1ds9w2ejc"
+
+[resource]
+script = ExtResource("5_ut8fv")
+id = "quick_strike"
+title = "Quick Strike"
+category = 1
+pip_value = -1
+effect = SubResource("Resource_63f2b")
+art_texture = ExtResource("3_ovpko")
+activation_req = ExtResource("2_1vn5h")
+metadata/_custom_type_script = "uid://b1ylg81nigak7"

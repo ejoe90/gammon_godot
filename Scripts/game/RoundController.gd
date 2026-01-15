@@ -72,7 +72,9 @@ signal notice(text: String)
 
 var turn_hit_victims_by_attacker: Dictionary = {}
 var turn_double_down_ready: bool = false
+var quick_strike_ready: bool = false
 var _turn_base_attack_bonus: int = 0
+var _round_base_attack_bonus: int = 0
 
 # --- Pip Boost choice prompt (Tier 1+) ---
 var _pip_choice_menu: PopupMenu = null
@@ -253,6 +255,23 @@ func add_turn_base_attack_bonus(amount: int) -> void:
 	_turn_base_attack_bonus += delta
 	run_state.base_attack_power = maxi(0, int(run_state.base_attack_power) + delta)
 
+func add_round_base_attack_bonus(amount: int) -> void:
+	if run_state == null:
+		return
+	var delta: int = maxi(0, int(amount))
+	if delta <= 0:
+		return
+	_round_base_attack_bonus += delta
+	run_state.base_attack_power = maxi(0, int(run_state.base_attack_power) + delta)
+
+func _clear_round_base_attack_bonus() -> void:
+	if run_state == null:
+		_round_base_attack_bonus = 0
+		return
+	if _round_base_attack_bonus > 0:
+		run_state.base_attack_power = maxi(0, int(run_state.base_attack_power) - _round_base_attack_bonus)
+	_round_base_attack_bonus = 0
+
 func compute_player_damage(base_damage: int, include_base_attack: bool = true) -> int:
 	if run_state == null:
 		return 0
@@ -323,6 +342,48 @@ func _record_turn_hit_if_any(move: Dictionary, player: int) -> void:
 			turn_double_down_ready = true
 
 
+func _record_quick_strike_if_any(move: Dictionary, player: int) -> void:
+	if player != BoardState.Player.WHITE:
+		return
+	if quick_strike_ready:
+		return
+	if turn_hit_victims_by_attacker.is_empty():
+		return
+	if bool(move.get("hit", false)):
+		return
+
+	var to_i: int = int(move.get("to", -999))
+	if to_i < 0 or to_i > 23:
+		return
+
+	var dst: PackedInt32Array = state.points[to_i]
+	if dst.is_empty():
+		return
+	if state.owner_of(int(dst[0])) != BoardState.Player.WHITE:
+		return
+
+	var from_i: int = int(move.get("from", -999))
+	var attacker_id: int = -1
+
+	if from_i == -1:
+		var bar: PackedInt32Array = state.bar_white
+		if bar.is_empty():
+			return
+		attacker_id = int(bar[bar.size() - 1])
+	elif from_i >= 0 and from_i <= 23:
+		var src: PackedInt32Array = state.points[from_i]
+		if src.is_empty():
+			return
+		attacker_id = int(src[src.size() - 1])
+	else:
+		return
+
+	if not turn_hit_victims_by_attacker.has(attacker_id):
+		return
+
+	quick_strike_ready = true
+
+
 func _ready() -> void:
 	randomize()
 	# Keep internal hand list in sync when cards are consumed
@@ -378,6 +439,9 @@ func _ready() -> void:
 # Called by RunController each round
 func start_round(rs: RunState) -> void:
 	run_state = rs
+
+	_clear_round_base_attack_bonus()
+	quick_strike_ready = false
 
 	if run_state != null:
 		run_state.player_attack_mult = 1
@@ -642,6 +706,7 @@ func _apply_move_no_turn_end_safe(die_used: int, move: Dictionary, player: int) 
 	else:
 		return false
 
+	_record_quick_strike_if_any(move, player)
 	_record_turn_hit_if_any(move, player)
 	Rules.apply_move(state, player, move)
 
@@ -790,6 +855,7 @@ func _black_ai_clone_state_for_sim(src: BoardState) -> BoardState:
 
 func _apply_move_no_turn_end(die_used: int, move: Dictionary, player: int) -> void:
 	# Same as _apply_move_and_continue, but NEVER ends the turn.
+	_record_quick_strike_if_any(move, player)
 	_record_turn_hit_if_any(move, player)
 
 	Rules.apply_move(state, player, move)
@@ -984,6 +1050,7 @@ func _try_move_to(dst_index: int) -> bool:
 	return false
 
 func _apply_move_and_continue(die_used: int, move: Dictionary, player: int) -> void:
+	_record_quick_strike_if_any(move, player)
 	_record_turn_hit_if_any(move, player)
 
 	Rules.apply_move(state, player, move)
