@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="ActivationReqQuickStrike" load_steps=2 format=3 uid="uid://lhdjfqsfovrxc"]
+
+[ext_resource type="Script" uid="uid://98rz6bb3s7v2n" path="res://Scripts/cards/ActivationReqQuickStrike.gd" id="1_3sbv0"]
+
+[resource]
+script = ExtResource("1_3sbv0")
+metadata/_custom_type_script = "uid://98rz6bb3s7v2n"
