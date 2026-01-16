@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="CardCatalog" load_steps=12 format=3 uid="uid://5o2fjm0okvs0"]
+[gd_resource type="Resource" script_class="CardCatalog" load_steps=18 format=3 uid="uid://5o2fjm0okvs0"]
 
 [ext_resource type="Script" uid="uid://b1ylg81nigak7" path="res://Scripts/CardDef.gd" id="1_gfijg"]
 [ext_resource type="Script" uid="uid://cxrrf2trr2miv" path="res://CardCatalog.gd" id="2_k16gf"]
@@ -11,8 +11,14 @@
 [ext_resource type="Resource" uid="uid://cd0eeyabpe8u3" path="res://Resources/cards/combat/double_down.tres" id="8_7tsok"]
 [ext_resource type="Resource" uid="uid://dlpe3ylhalhmw" path="res://Resources/cards/combat/engulf.tres" id="9_8k6m4"]
 [ext_resource type="Resource" uid="uid://7f85x1w0stkx" path="res://Resources/cards/combat/counter_measures.tres" id="10_8k6m4"]
+[ext_resource type="Resource" uid="uid://yliabal0pu79t" path="res://Resources/cards/combat/superiority.tres" id="11_7k4ve"]
+[ext_resource type="Resource" uid="uid://x1ef2ype6c8yc" path="res://Resources/cards/combat/flanked.tres" id="12_1nxdh"]
+[ext_resource type="Resource" uid="uid://aa61lvijoy9l7" path="res://Resources/cards/combat/quick_strike.tres" id="13_jud1b"]
+[ext_resource type="Resource" uid="uid://ol4tlv1smpvwz" path="res://Resources/cards/defense/bunker.tres" id="14_defense_bunker"]
+[ext_resource type="Resource" uid="uid://k6s1agvv15ter" path="res://Resources/cards/defense/tunnel.tres" id="15_defense_tunnel"]
+[ext_resource type="Resource" uid="uid://7peow9kpvxt56" path="res://Resources/cards/defense/no_mans_land.tres" id="16_defense_no_mans_land"]
 
 [resource]
 script = ExtResource("2_k16gf")
-cards = Array[ExtResource("1_gfijg")]([ExtResource("2_thl06"), ExtResource("3_ndmhq"), ExtResource("4_uwhgp"), ExtResource("5_7tsok"), ExtResource("6_ndmhq"), ExtResource("7_uwhgp"), ExtResource("8_7tsok"), ExtResource("9_8k6m4"), ExtResource("10_8k6m4")])
+cards = Array[ExtResource("1_gfijg")]([ExtResource("2_thl06"), ExtResource("3_ndmhq"), ExtResource("4_uwhgp"), ExtResource("5_7tsok"), ExtResource("6_ndmhq"), ExtResource("7_uwhgp"), ExtResource("8_7tsok"), ExtResource("9_8k6m4"), ExtResource("10_8k6m4"), ExtResource("11_7k4ve"), ExtResource("12_1nxdh"), ExtResource("13_jud1b"), ExtResource("14_defense_bunker"), ExtResource("15_defense_tunnel"), ExtResource("16_defense_no_mans_land")])
 metadata/_custom_type_script = "uid://cxrrf2trr2miv"

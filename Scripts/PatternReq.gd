@@ -54,6 +54,7 @@ enum Kind {
 @export var mix_owners: PackedInt32Array = PackedInt32Array()
 @export var mix_mins: PackedInt32Array = PackedInt32Array()
 @export var mix_maxs: PackedInt32Array = PackedInt32Array()
+@export var mix_requires_empty: PackedInt32Array = PackedInt32Array()
 @export var mix_allow_reverse: bool = false
 @export var mix_same_half_only: bool = true
 @export var mix_max_gap: int = 0

@@ -40,7 +40,10 @@ func apply(round: RoundController, card: CardInstance, ctx: PatternContext) -> v
 		sent += 1
 
 	if round.run_state != null:
-		round.run_state.player_hp -= int(self_hp_damage)
+		if round.has_method("deal_player_damage"):
+			round.call("deal_player_damage", int(self_hp_damage), false)
+		else:
+			round.run_state.player_hp -= int(self_hp_damage)
 		round.deal_enemy_damage(sent)
 
 	if round.board != null and round.board.has_method("sync_from_state_full"):

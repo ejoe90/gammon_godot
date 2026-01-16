@@ -1,7 +1,7 @@
 extends Resource
 class_name CardDef
 
-enum Category { ECONOMY, COMBAT, TEMPO }
+enum Category { ECONOMY, COMBAT, TEMPO, DEFENSE }
 
 @export var id: String = ""
 @export var title: String = ""

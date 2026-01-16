@@ -227,8 +227,13 @@ static func find_run_sequence_mixed_start(r: PatternReq, ctx: PatternContext) ->
 		return -1
 	if r.mix_max_gap != 0:
 		return -1
+	var empties := r.mix_requires_empty
+	if empties.size() != n:
+		empties = PackedInt32Array()
+		for _i in range(n):
+			empties.append(0)
 
-	var start := _find_run_mixed_start_for_arrays(ctx, r, r.mix_owners, r.mix_mins, r.mix_maxs)
+	var start := _find_run_mixed_start_for_arrays(ctx, r, r.mix_owners, r.mix_mins, r.mix_maxs, empties)
 	if start != -1:
 		return start
 
@@ -236,11 +241,13 @@ static func find_run_sequence_mixed_start(r: PatternReq, ctx: PatternContext) ->
 		var owners_rev := PackedInt32Array()
 		var mins_rev := PackedInt32Array()
 		var maxs_rev := PackedInt32Array()
+		var empties_rev := PackedInt32Array()
 		for i in range(n - 1, -1, -1):
 			owners_rev.append(int(r.mix_owners[i]))
 			mins_rev.append(int(r.mix_mins[i]))
 			maxs_rev.append(int(r.mix_maxs[i]))
-		return _find_run_mixed_start_for_arrays(ctx, r, owners_rev, mins_rev, maxs_rev)
+			empties_rev.append(int(empties[i]))
+		return _find_run_mixed_start_for_arrays(ctx, r, owners_rev, mins_rev, maxs_rev, empties_rev)
 
 	return -1
 
@@ -250,7 +257,8 @@ static func _find_run_mixed_start_for_arrays(
 	r: PatternReq,
 	owners: PackedInt32Array,
 	mins: PackedInt32Array,
-	maxs: PackedInt32Array
+	maxs: PackedInt32Array,
+	empties: PackedInt32Array
 ) -> int:
 	var n := owners.size()
 	for start_point in range(0, 24 - (n - 1)):
@@ -265,9 +273,14 @@ static func _find_run_mixed_start_for_arrays(
 		var ok := true
 		for k in range(n):
 			var p_i := start_point + k
-			if not _point_matches_range(ctx, p_i, int(owners[k]), int(mins[k]), int(maxs[k]), false):
-				ok = false
-				break
+			if int(empties[k]) != 0:
+				if ctx.state.points[p_i].size() != 0:
+					ok = false
+					break
+			else:
+				if not _point_matches_range(ctx, p_i, int(owners[k]), int(mins[k]), int(maxs[k]), false):
+					ok = false
+					break
 		if ok:
 			return start_point
 

@@ -52,26 +52,34 @@ offset_right = 100.55556
 offset_bottom = 122.99999
 text = "Placeholder 5"
 
+[node name="DefenseLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = -4.4444447
+offset_top = 123.7037
+offset_right = 100.55556
+offset_bottom = 146.7037
+text = "DEF: +0"
+
 [node name="PipsWhite" type="Label" parent="."]
 layout_mode = 0
 offset_left = -3.7037036
-offset_top = 125.92593
+offset_top = 149.62962
 offset_right = 101.296295
-offset_bottom = 148.92593
+offset_bottom = 172.62962
 text = "Placeholder 6"
 
 [node name="PipsBlack" type="Label" parent="."]
 layout_mode = 0
 offset_left = -2.9629629
-offset_top = 151.85185
+offset_top = 175.55554
 offset_right = 102.03704
-offset_bottom = 174.85187
+offset_bottom = 198.55556
 text = "Placeholder 7"
 
 [node name="PipHPLabel" type="Label" parent="."]
 layout_mode = 0
 offset_left = -3.7037036
-offset_top = 177.77777
+offset_top = 201.48146
 offset_right = 160.2963
-offset_bottom = 200.77777
+offset_bottom = 224.48148
 text = "Pip→HP: -"

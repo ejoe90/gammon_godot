@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="CardDef" load_steps=8 format=3 uid="uid://ol4tlv1smpvwz"]
+
+[ext_resource type="Texture2D" uid="uid://c4qyk3erfwi37" path="res://Assets/textures/cards/red deck fronts/6 plus red.jpg" id="1_bunker"]
+[ext_resource type="Script" uid="uid://dxnljvcddxql4" path="res://Scripts/CardEffect.gd" id="2_bunker"]
+[ext_resource type="Script" uid="uid://qs2ewe0s30w4n" path="res://Scripts/cards/effects/EffectBunker.gd" id="3_bunker"]
+[ext_resource type="Script" uid="uid://ur0p531l1ca4" path="res://Scripts/PatternReq.gd" id="4_bunker"]
+[ext_resource type="Script" uid="uid://b1ylg81nigak7" path="res://Scripts/CardDef.gd" id="5_bunker"]
+
+[sub_resource type="Resource" id="Resource_bunker_effect"]
+script = ExtResource("3_bunker")
+metadata/_custom_type_script = "uid://qs2ewe0s30w4n"
+
+[sub_resource type="Resource" id="Resource_bunker_pattern"]
+script = ExtResource("4_bunker")
+kind = 2
+seq_counts = null
+mix_owners = PackedInt32Array(0, 0, 0)
+mix_mins = PackedInt32Array(2, 2, 2)
+mix_maxs = PackedInt32Array(15, 15, 15)
+mix_requires_empty = PackedInt32Array(0, 0, 0)
+metadata/_custom_type_script = "uid://ur0p531l1ca4"
+
+[resource]
+script = ExtResource("5_bunker")
+id = "bunker"
+title = "Bunker"
+category = 3
+pip_value = 6
+pattern = Array[ExtResource("4_bunker")]([SubResource("Resource_bunker_pattern")])
+effect = SubResource("Resource_bunker_effect")
+art_texture = ExtResource("1_bunker")
+metadata/_custom_type_script = "uid://b1ylg81nigak7"
