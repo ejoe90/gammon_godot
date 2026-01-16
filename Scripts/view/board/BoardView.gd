@@ -15,8 +15,10 @@ signal bar_clicked(player: int)
 @onready var animator: BoardAnimator = $BoardAnimator
 @onready var highlights: BoardHighlights = $HighlightsLayer
 @onready var no_mans_land_layer: Node2D = get_node_or_null("NoMansLandLayer") as Node2D
+@onready var stopgap_layer: Node2D = get_node_or_null("StopgapLayer") as Node2D
 
 var _no_mans_land_labels: Dictionary = {}
+var _stopgap_labels: Dictionary = {}
 
 func show_move_targets(targets: Array[int], player: int) -> void:
 	var is_white: bool = (player == BoardState.Player.WHITE)
@@ -74,6 +76,33 @@ func set_no_mans_land_counts(counts: Dictionary) -> void:
 		label.position = pos + Vector2(-12, -10)
 		no_mans_land_layer.add_child(label)
 		_no_mans_land_labels[point] = label
+
+func set_stopgap_points(points: Array) -> void:
+	if stopgap_layer == null:
+		return
+
+	for key in _stopgap_labels.keys():
+		var label: Label = _stopgap_labels[key] as Label
+		if is_instance_valid(label):
+			label.queue_free()
+	_stopgap_labels.clear()
+
+	for entry in points:
+		var point: int = int(entry)
+		if point < 0 or point > 23:
+			continue
+
+		var label := Label.new()
+		label.text = "Stopgap"
+		label.scale = Vector2(0.7, 0.7)
+		label.z_index = 645
+
+		var pos := Vector2.ZERO
+		if pieces != null:
+			pos = stopgap_layer.to_local(pieces.point_slot_global(point, 0))
+		label.position = pos + Vector2(-18, -22)
+		stopgap_layer.add_child(label)
+		_stopgap_labels[point] = label
 
 func animate_move_persistent(state: BoardState, move: Dictionary, player: int, done: Callable) -> void:
 	input.set_enabled(false)

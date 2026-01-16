@@ -54,7 +54,10 @@ func _handle_black_stack(round: RoundController, black_pt: int, white_adjacent: 
 		Rules.send_checker_to_bar(round.state, hit_id)
 		var white_stack: PackedInt32Array = round.state.points[white_adjacent]
 		if not white_stack.is_empty():
-			Rules.apply_move(round.state, BoardState.Player.WHITE, {"from": white_adjacent, "to": black_pt, "hit": false})
+			if round.has_method("apply_move_with_zero_sum"):
+				round.call("apply_move_with_zero_sum", {"from": white_adjacent, "to": black_pt, "hit": false}, BoardState.Player.WHITE)
+			else:
+				Rules.apply_move(round.state, BoardState.Player.WHITE, {"from": white_adjacent, "to": black_pt, "hit": false})
 		return
 
 	var top_id: int = int(black_stack[black_stack.size() - 1])

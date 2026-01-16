@@ -357,6 +357,8 @@ highlight_scale = 0.2
 
 [node name="NoMansLandLayer" type="Node2D" parent="."]
 
+[node name="StopgapLayer" type="Node2D" parent="."]
+
 [node name="BarClickWhite" type="Area2D" parent="."]
 position = Vector2(644.6667, 70)
 

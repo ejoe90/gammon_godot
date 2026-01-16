@@ -16,7 +16,7 @@ func legal_moves_for_die(die: int, player: int) -> Array:
 	return Rules.legal_moves_for_die_adv(state, player, int(die), bearoff_home_fraction)
 
 func apply_move(move: Dictionary, player: int) -> void:
-	Rules.apply_move(state, player, move)
+	Rules.apply_move_with_zero_sum(state, player, move)
 
 func features() -> Dictionary:
 	var f: Dictionary = {}
