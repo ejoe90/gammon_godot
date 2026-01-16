@@ -28,6 +28,7 @@ metadata/_custom_type_script = "uid://ur0p531l1ca4"
 script = ExtResource("3_nb4f5")
 id = "mortar"
 title = "Mortar"
+tooltip_summary = "Target an enemy checker in the opposite half; send it to the bar and deal 4 damage."
 category = 1
 pip_value = 5
 pattern = Array[ExtResource("2_hpnpc")]([SubResource("Resource_eon81")])

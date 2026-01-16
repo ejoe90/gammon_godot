@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="CardDef" load_steps=8 format=3 uid="uid://acceleratorcard1"]
+
+[ext_resource type="Texture2D" uid="uid://drcmdwodd1i31" path="res://Assets/textures/cards/red deck fronts/4 minus red.jpg" id="1_accelerator"]
+[ext_resource type="Script" uid="uid://dxnljvcddxql4" path="res://Scripts/CardEffect.gd" id="2_accelerator"]
+[ext_resource type="Script" uid="uid://effectaccelerator1" path="res://Scripts/cards/effects/EffectAccelerator.gd" id="3_accelerator"]
+[ext_resource type="Script" uid="uid://ur0p531l1ca4" path="res://Scripts/PatternReq.gd" id="4_accelerator"]
+[ext_resource type="Script" uid="uid://b1ylg81nigak7" path="res://Scripts/CardDef.gd" id="5_accelerator"]
+
+[sub_resource type="Resource" id="Resource_accelerator_effect"]
+script = ExtResource("3_accelerator")
+metadata/_custom_type_script = "uid://effectaccelerator1"
+
+[sub_resource type="Resource" id="Resource_accelerator_pattern"]
+script = ExtResource("4_accelerator")
+kind = 2
+seq_counts = null
+mix_owners = PackedInt32Array(0, 0, 0, 0)
+mix_mins = PackedInt32Array(1, 1, 1, 1)
+mix_maxs = PackedInt32Array(15, 15, 15, 15)
+mix_requires_empty = PackedInt32Array(0, 0, 0, 0)
+mix_allow_reverse = false
+mix_same_half_only = false
+mix_max_gap = 0
+metadata/_custom_type_script = "uid://ur0p531l1ca4"
+
+[resource]
+script = ExtResource("5_accelerator")
+id = "accelerator"
+title = "Accelerator"
+tooltip_summary = "Gain escalating HP each white turn (+1, +2, +3... up to +10), starting immediately; can overcap."
+category = 3
+pip_value = -4
+pattern = Array[ExtResource("4_accelerator")]([SubResource("Resource_accelerator_pattern")])
+effect = SubResource("Resource_accelerator_effect")
+art_texture = ExtResource("1_accelerator")
+metadata/_custom_type_script = "uid://b1ylg81nigak7"

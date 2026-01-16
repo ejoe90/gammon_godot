@@ -219,7 +219,11 @@ func _refresh() -> void:
 	else:
 		status = "LOCKED | " + base
 
-	tooltip_text = status
+	var summary: String = ""
+	if card.def.tooltip_summary.strip_edges() != "":
+		summary = "\nEffect: %s" % card.def.tooltip_summary.strip_edges()
+
+	tooltip_text = status + summary
 	text = "" if (card.def.art_texture != null) else status
 
 	# Targeting/primed visuals:
@@ -236,7 +240,7 @@ func _refresh() -> void:
 		if primed_by_me:
 			_set_invert(1.0) # keep inverted while primed
 			_set_primed_visual(true)
-			tooltip_text = "TARGET: click an enemy stack"
+			tooltip_text = "TARGET: click an enemy stack" + summary
 			text = "" if (card.def.art_texture != null) else "TARGET"
 			return
 		else:

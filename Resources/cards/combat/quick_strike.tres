@@ -16,6 +16,7 @@ metadata/_custom_type_script = "uid://rk3y1ds9w2ejc"
 script = ExtResource("5_ut8fv")
 id = "quick_strike"
 title = "Quick Strike"
+tooltip_summary = "Gain +2 base attack this round and +2 AP."
 category = 1
 pip_value = -1
 effect = SubResource("Resource_63f2b")

@@ -26,6 +26,7 @@ metadata/_custom_type_script = "uid://ur0p531l1ca4"
 script = ExtResource("5_2f1j3")
 id = "flanked"
 title = "Flanked"
+tooltip_summary = "Hit each flanked black stack, send one to the bar, and gain +1 base attack; deal 2 damage."
 category = 1
 pip_value = -2
 pattern = Array[ExtResource("2_et3i4")]([SubResource("Resource_jrl0b")])

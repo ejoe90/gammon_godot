@@ -24,6 +24,7 @@ metadata/_custom_type_script = "uid://ur0p531l1ca4"
 script = ExtResource("3_nhu87")
 id = "depth_charge"
 title = "Depth Charge"
+tooltip_summary = "Send the top 2 checkers from each of two adjacent black stacks to the bar and deal 4 damage."
 category = 1
 pip_value = 4
 pattern = Array[ExtResource("2_dmgx5")]([SubResource("Resource_nr47k")])

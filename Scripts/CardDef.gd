@@ -6,6 +6,7 @@ enum Category { ECONOMY, COMBAT, TEMPO, DEFENSE }
 @export var id: String = ""
 @export var title: String = ""
 @export var category: Category = Category.ECONOMY
+@export var tooltip_summary: String = ""
 
 # Card pip value (used for burn-for-pips mode).
 # Should be in [-6..-1] or [1..6]. (0 is invalid.)

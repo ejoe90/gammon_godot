@@ -25,6 +25,7 @@ metadata/_custom_type_script = "uid://ur0p531l1ca4"
 script = ExtResource("3_nsob6")
 id = "subterfuge"
 title = "Subterfuge"
+tooltip_summary = "Send the top checker from both black flanks to the bar and deal 2 damage."
 category = 1
 pip_value = -1
 pattern = Array[ExtResource("2_2j4mb")]([SubResource("Resource_2j4mb")])

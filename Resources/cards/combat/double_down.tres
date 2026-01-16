@@ -15,6 +15,7 @@ metadata/_custom_type_script = "uid://y2pqqaui60qh"
 script = ExtResource("3_q5fpw")
 id = "double_down"
 title = "Double Down"
+tooltip_summary = "Set your attack multiplier to x2 for this round."
 category = 1
 pip_value = -3
 effect = SubResource("Resource_nkdh8")

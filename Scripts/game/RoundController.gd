@@ -88,6 +88,12 @@ var _stopgap_defense_bonus: int = 0
 var _respite_active: bool = false
 var _respite_points: PackedInt32Array = PackedInt32Array()
 var _respite_turn_used: bool = false
+var _distant_threat_active: bool = false
+var _distant_threat_checker_id: int = -1
+var _distant_threat_turns_left: int = 0
+var _distant_threat_clear_on_white: bool = false
+var _accelerator_active: bool = false
+var _accelerator_next_heal: int = 1
 
 # --- Pip Boost choice prompt (Tier 1+) ---
 var _pip_choice_menu: PopupMenu = null
@@ -396,6 +402,32 @@ func activate_zero_sum(points: PackedInt32Array, card: CardInstance) -> void:
 		board.call("sync_from_state_full", state)
 	emit_signal("card_consumed", card.uid)
 
+func activate_distant_threat(checker_id: int, turns: int, card: CardInstance) -> void:
+	if state == null or checker_id == -1:
+		return
+	_clear_distant_threat()
+	if not state.checkers.has(checker_id):
+		return
+	_distant_threat_active = true
+	_distant_threat_checker_id = checker_id
+	_distant_threat_turns_left = maxi(1, int(turns))
+	_distant_threat_clear_on_white = false
+	_sync_distant_threat_tag()
+	if board != null and board.has_method("sync_from_state_full"):
+		board.call("sync_from_state_full", state)
+	emit_signal("card_consumed", card.uid)
+
+func activate_accelerator(card: CardInstance) -> void:
+	if run_state == null:
+		return
+	_accelerator_active = true
+	if run_state.has_method("add_player_hp_overcap"):
+		run_state.add_player_hp_overcap(1)
+	else:
+		run_state.add_player_hp(1)
+	_accelerator_next_heal = 2
+	emit_signal("card_consumed", card.uid)
+
 func apply_move_with_zero_sum(move: Dictionary, player: int) -> int:
 	if state == null:
 		return int(move.get("to", -999))
@@ -589,6 +621,12 @@ func start_round(rs: RunState) -> void:
 	_respite_active = false
 	_respite_points = PackedInt32Array()
 	_respite_turn_used = false
+	_distant_threat_active = false
+	_distant_threat_checker_id = -1
+	_distant_threat_turns_left = 0
+	_distant_threat_clear_on_white = false
+	_accelerator_active = false
+	_accelerator_next_heal = 1
 
 	state = BoardState.new()
 	state.reset_standard()
@@ -648,6 +686,10 @@ func start_turn() -> void:
 
 	selected_from = -999
 	_clear_targets()
+	if _distant_threat_active and _distant_threat_clear_on_white and state != null and state.turn == BoardState.Player.WHITE:
+		_clear_distant_threat()
+		if board != null and board.has_method("sync_from_state_full"):
+			board.call("sync_from_state_full", state)
 
 	if dice != null and dice.has_method("roll"):
 		dice.call("roll")
@@ -690,6 +732,14 @@ func start_turn() -> void:
 			run_state.enemy_hp = maxi(0, int(run_state.enemy_hp) - drained)
 			if has_method("show_notice"):
 				show_notice("Enemy drained %d HP." % drained)
+
+		if _accelerator_active and run_state != null:
+			var amount := clampi(_accelerator_next_heal, 1, 10)
+			if run_state.has_method("add_player_hp_overcap"):
+				run_state.add_player_hp_overcap(amount)
+			else:
+				run_state.add_player_hp(amount)
+			_accelerator_next_heal = mini(10, amount + 1)
 
 	# Auto-pass if no legal moves
 	if _count_all_legal_moves() == 0:
@@ -1318,7 +1368,8 @@ func _apply_black_damage_from_move(m: Dictionary) -> void:
 
 	var dmg := 0
 	if bool(m.get("hit", false)):
-		dmg += ai.advantage.hit_damage(black_turn_index)
+		if not _distant_threat_active:
+			dmg += ai.advantage.hit_damage(black_turn_index)
 
 	# BLACK bearoff in your Rules is "to" == -2
 	if int(m.get("to", -999)) == -2:
@@ -1341,6 +1392,7 @@ func _end_round_from_black_hp_win() -> void:
 func end_turn() -> void:
 	if not round_active:
 		return
+	_tick_distant_threat_end_turn()
 
 	if run_state != null and _turn_base_attack_bonus > 0:
 		run_state.base_attack_power = maxi(0, int(run_state.base_attack_power) - _turn_base_attack_bonus)
@@ -1351,6 +1403,38 @@ func end_turn() -> void:
 
 	ap_left = base_ap_per_turn
 	call_deferred("start_turn")
+
+func _tick_distant_threat_end_turn() -> void:
+	if not _distant_threat_active:
+		return
+	if _distant_threat_turns_left > 0:
+		_distant_threat_turns_left -= 1
+		if _distant_threat_turns_left <= 0:
+			_distant_threat_turns_left = 0
+			_distant_threat_clear_on_white = true
+	_sync_distant_threat_tag()
+	if board != null and board.has_method("sync_from_state_full"):
+		board.call("sync_from_state_full", state)
+
+func _sync_distant_threat_tag() -> void:
+	if state == null or _distant_threat_checker_id == -1:
+		return
+	var info: CheckerInfo = state.checkers.get(_distant_threat_checker_id, null)
+	if info == null:
+		return
+	info.tags["distant_threat"] = true
+	info.tags["distant_threat_turns"] = maxi(1, _distant_threat_turns_left)
+
+func _clear_distant_threat() -> void:
+	if state != null and _distant_threat_checker_id != -1:
+		var info: CheckerInfo = state.checkers.get(_distant_threat_checker_id, null)
+		if info != null:
+			info.tags.erase("distant_threat")
+			info.tags.erase("distant_threat_turns")
+	_distant_threat_active = false
+	_distant_threat_checker_id = -1
+	_distant_threat_turns_left = 0
+	_distant_threat_clear_on_white = false
 
 
 func _on_point_clicked(i: int) -> void:

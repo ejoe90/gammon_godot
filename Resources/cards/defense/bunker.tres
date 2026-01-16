@@ -24,6 +24,7 @@ metadata/_custom_type_script = "uid://ur0p531l1ca4"
 script = ExtResource("5_bunker")
 id = "bunker"
 title = "Bunker"
+tooltip_summary = "Gain +2 base defense while the pattern holds."
 category = 3
 pip_value = 6
 pattern = Array[ExtResource("4_bunker")]([SubResource("Resource_bunker_pattern")])
