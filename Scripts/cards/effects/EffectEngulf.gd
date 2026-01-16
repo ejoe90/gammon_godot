@@ -34,8 +34,12 @@ func apply(round: RoundController, card: CardInstance, ctx: PatternContext) -> v
 		var mid_id: int = int(mid_stack[0])
 		hit_black = round.state.owner_of(mid_id) == BoardState.Player.BLACK
 
-	Rules.apply_move(round.state, BoardState.Player.WHITE, {"from": left_pt, "to": mid_pt, "hit": hit_black})
-	Rules.apply_move(round.state, BoardState.Player.WHITE, {"from": right_pt, "to": mid_pt, "hit": false})
+	if round.has_method("apply_move_with_zero_sum"):
+		round.call("apply_move_with_zero_sum", {"from": left_pt, "to": mid_pt, "hit": hit_black}, BoardState.Player.WHITE)
+		round.call("apply_move_with_zero_sum", {"from": right_pt, "to": mid_pt, "hit": false}, BoardState.Player.WHITE)
+	else:
+		Rules.apply_move(round.state, BoardState.Player.WHITE, {"from": left_pt, "to": mid_pt, "hit": hit_black})
+		Rules.apply_move(round.state, BoardState.Player.WHITE, {"from": right_pt, "to": mid_pt, "hit": false})
 
 	if round.run_state != null:
 		round.deal_enemy_damage(enemy_damage)

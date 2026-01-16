@@ -36,7 +36,10 @@ func apply(round: RoundController, card: CardInstance, ctx: PatternContext) -> v
 		var white_stack: PackedInt32Array = round.state.points[white_pt]
 		if white_stack.is_empty():
 			break
-		Rules.apply_move(round.state, BoardState.Player.WHITE, {"from": white_pt, "to": black_pt, "hit": false})
+		if round.has_method("apply_move_with_zero_sum"):
+			round.call("apply_move_with_zero_sum", {"from": white_pt, "to": black_pt, "hit": false}, BoardState.Player.WHITE)
+		else:
+			Rules.apply_move(round.state, BoardState.Player.WHITE, {"from": white_pt, "to": black_pt, "hit": false})
 
 	if round.run_state != null:
 		round.deal_enemy_damage(enemy_damage)

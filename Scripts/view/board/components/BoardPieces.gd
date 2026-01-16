@@ -130,6 +130,16 @@ func _ensure_node(state: BoardState, id: int) -> void:
 		piece.call("set_color", is_white)
 	elif piece.has_method("set_color_animation"):
 		piece.call("set_color_animation", is_white)
+	_apply_zero_sum_visual(state, id, piece)
+
+func _apply_zero_sum_visual(state: BoardState, id: int, piece: Node2D) -> void:
+	if not piece.has_method("set_zero_sum_state"):
+		return
+	var info: CheckerInfo = state.checkers.get(id, null)
+	var zero_sum: bool = info != null and bool(info.tags.get("zero_sum", false))
+	var is_white: bool = (state.owner_of(id) == BoardState.Player.WHITE)
+	var color: Color = Color(0.2, 0.6, 1.0, 0.55) if is_white else Color(1.0, 0.2, 0.2, 0.55)
+	piece.call("set_zero_sum_state", zero_sum, color)
 
 
 func point_stack_dir_global(i: int) -> Vector2:

@@ -12,6 +12,9 @@ signal clicked(checker_id: int)
 @onready var click_area: Area2D = get_node_or_null(click_area_path) as Area2D
 
 var checker_id: int = -1
+var _zero_sum_material: ShaderMaterial = null
+
+const ZERO_SUM_SHADER_PATH := "res://Shaders/zero_sum_overlay.gdshader"
 
 func _ready() -> void:
 	if click_area != null:
@@ -26,6 +29,27 @@ func set_color(is_white: bool) -> void:
 	if sprite == null:
 		return
 	sprite.texture = tex_white if is_white else tex_black
+
+func set_zero_sum_state(enabled: bool, overlay_color: Color) -> void:
+	if sprite == null:
+		return
+
+	if not enabled:
+		if sprite.material == _zero_sum_material:
+			sprite.material = null
+		_zero_sum_material = null
+		return
+
+	if _zero_sum_material == null:
+		var shader: Shader = load(ZERO_SUM_SHADER_PATH) as Shader
+		if shader == null:
+			push_warning("[CheckerSprite] Missing shader: %s" % ZERO_SUM_SHADER_PATH)
+			return
+		_zero_sum_material = ShaderMaterial.new()
+		_zero_sum_material.shader = shader
+
+	sprite.material = _zero_sum_material
+	_zero_sum_material.set_shader_parameter("overlay_color", overlay_color)
 
 func _on_click_area_input_event(_vp: Viewport, event: InputEvent, _shape_idx: int) -> void:
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:

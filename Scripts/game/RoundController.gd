@@ -83,6 +83,11 @@ var _tunnel_points: PackedInt32Array = PackedInt32Array()
 var _tunnel_heal_amount: int = 1
 var _tunnel_min_count: int = 2
 var _no_mans_lands: Array[Dictionary] = []
+var _stopgap_points: PackedInt32Array = PackedInt32Array()
+var _stopgap_defense_bonus: int = 0
+var _respite_active: bool = false
+var _respite_points: PackedInt32Array = PackedInt32Array()
+var _respite_turn_used: bool = false
 
 # --- Pip Boost choice prompt (Tier 1+) ---
 var _pip_choice_menu: PopupMenu = null
@@ -360,6 +365,60 @@ func activate_no_mans_land(left_pt: int, gap_pt: int, right_pt: int, left_owner:
 	_sync_no_mans_land_ui()
 	emit_signal("card_consumed", card.uid)
 
+func activate_stopgap(gap_pt: int, card: CardInstance) -> void:
+	if gap_pt < 0 or gap_pt > 23:
+		return
+	if _stopgap_points.find(gap_pt) == -1:
+		_stopgap_points.append(gap_pt)
+	_refresh_stopgap_modifiers()
+	_sync_stopgap_ui()
+	emit_signal("card_consumed", card.uid)
+
+func activate_respite(points: PackedInt32Array, card: CardInstance) -> void:
+	if points.size() != 4:
+		return
+	_respite_active = true
+	_respite_points = points
+	_respite_turn_used = false
+	emit_signal("card_consumed", card.uid)
+
+func activate_zero_sum(points: PackedInt32Array, card: CardInstance) -> void:
+	if state == null or points.size() != 2:
+		return
+	for pt in points:
+		var idx: int = int(pt)
+		if idx < 0 or idx > 23:
+			continue
+		var st: PackedInt32Array = state.points[idx]
+		for checker_id in st:
+			Rules.set_checker_zero_sum(state, int(checker_id), true)
+	if board != null and board.has_method("sync_from_state_full"):
+		board.call("sync_from_state_full", state)
+	emit_signal("card_consumed", card.uid)
+
+func apply_move_with_zero_sum(move: Dictionary, player: int) -> int:
+	if state == null:
+		return int(move.get("to", -999))
+	var result := Rules.apply_move_with_zero_sum(state, player, move)
+	_apply_zero_sum_hp(result, player)
+	return int(result.get("landing", move.get("to", -999)))
+
+func _apply_zero_sum_hp(result: Dictionary, player: int) -> void:
+	if run_state == null:
+		return
+	var res: int = int(result.get("zero_sum_result", Rules.ZeroSumResult.NONE))
+	match res:
+		Rules.ZeroSumResult.MOVING_ZERO_HITS_REGULAR:
+			if player == BoardState.Player.WHITE:
+				run_state.add_player_hp(2)
+			else:
+				run_state.add_enemy_hp(2)
+		Rules.ZeroSumResult.REGULAR_HITS_ZERO:
+			if player == BoardState.Player.WHITE:
+				run_state.player_hp = maxi(0, int(run_state.player_hp) - 2)
+			else:
+				run_state.enemy_hp = maxi(0, int(run_state.enemy_hp) - 2)
+
 func _reset_turn_combos() -> void:
 	turn_hit_victims_by_attacker.clear()
 	turn_double_down_ready = false
@@ -525,6 +584,11 @@ func start_round(rs: RunState) -> void:
 	_tunnel_points = PackedInt32Array()
 	_tunnel_heal_amount = 1
 	_no_mans_lands.clear()
+	_stopgap_points = PackedInt32Array()
+	_stopgap_defense_bonus = 0
+	_respite_active = false
+	_respite_points = PackedInt32Array()
+	_respite_turn_used = false
 
 	state = BoardState.new()
 	state.reset_standard()
@@ -563,6 +627,7 @@ func start_round(rs: RunState) -> void:
 	_clear_targets()
 	_hide_round_end()
 	_sync_no_mans_land_ui()
+	_sync_stopgap_ui()
 	
 	aux_cd_left.clear()
 	aux_uses_this_round.clear()
@@ -588,6 +653,10 @@ func start_turn() -> void:
 		dice.call("roll")
 
 	_update_dice_ui()
+	_refresh_stopgap_modifiers()
+	_apply_stopgap_turn_start_heals(state.turn)
+	if state.turn == BoardState.Player.WHITE:
+		_respite_turn_used = false
 
 	# --- BLACK AI TURN ----------------------------------------------------
 	if ai_enabled and ai != null and state != null and state.turn == BoardState.Player.BLACK:
@@ -789,7 +858,7 @@ func _apply_move_no_turn_end_safe(die_used: int, move: Dictionary, player: int) 
 
 	_record_quick_strike_if_any(move, player)
 	_record_turn_hit_if_any(move, player)
-	Rules.apply_move(state, player, move)
+	var landing: int = apply_move_with_zero_sum(move, player)
 
 	_black_ai_consume_die_safe(die_used)
 	_update_dice_ui()
@@ -797,7 +866,7 @@ func _apply_move_no_turn_end_safe(die_used: int, move: Dictionary, player: int) 
 	if board != null and board.has_method("sync_from_state_full"):
 		board.call("sync_from_state_full", state)
 
-	_apply_post_move_effects(move, player)
+	_apply_post_move_effects(move, player, landing)
 
 	selected_from = -999
 
@@ -849,7 +918,7 @@ func _black_ai_pick_next_move_maximize_usage() -> Dictionary:
 		var moves: Array[Dictionary] = _black_ai_legal_moves_for_die(state, int(d))
 		for m in moves:
 			var sim: BoardState = _black_ai_clone_state_for_sim(state)
-			Rules.apply_move(sim, BoardState.Player.BLACK, m)
+			Rules.apply_move_with_zero_sum(sim, BoardState.Player.BLACK, m)
 			# score = (how many dice remain usable after this move)
 			var remaining_after: Array[int] = dice_list.duplicate()
 			remaining_after.erase(int(d))
@@ -892,7 +961,7 @@ func _black_ai_plan_two_dice_use_both_if_possible(d1: int, d2: int) -> Array:
 			var best_local_score: int = -999999
 			for m in moves:
 				var sim2: BoardState = _black_ai_clone_state_for_sim(sim)
-				Rules.apply_move(sim2, BoardState.Player.BLACK, m)
+				Rules.apply_move_with_zero_sum(sim2, BoardState.Player.BLACK, m)
 				var future: int = _black_ai_total_legal_moves_for_dice(sim2, [int(ord[0]), int(ord[1])])
 				if bool(m.get("hit", false)):
 					future += 5
@@ -900,7 +969,7 @@ func _black_ai_plan_two_dice_use_both_if_possible(d1: int, d2: int) -> Array:
 					best_local_score = future
 					best_local = m
 			plan.append({"die": int(die_val), "move": best_local})
-			Rules.apply_move(sim, BoardState.Player.BLACK, best_local)
+			Rules.apply_move_with_zero_sum(sim, BoardState.Player.BLACK, best_local)
 		if ok and plan.size() == 2:
 			# Verify 2nd move is still legal on post-1st state (it should be, we derived it from sim).
 			return plan
@@ -941,14 +1010,14 @@ func _apply_move_no_turn_end(die_used: int, move: Dictionary, player: int) -> vo
 	_record_quick_strike_if_any(move, player)
 	_record_turn_hit_if_any(move, player)
 
-	Rules.apply_move(state, player, move)
+	var landing: int = apply_move_with_zero_sum(move, player)
 	dice.call("consume_die", die_used)
 	_update_dice_ui()
 
 	if board != null and board.has_method("sync_from_state_full"):
 		board.call("sync_from_state_full", state)
 
-	_apply_post_move_effects(move, player)
+	_apply_post_move_effects(move, player, landing)
 
 	selected_from = -999
 
@@ -970,13 +1039,16 @@ func _apply_move_no_turn_end(die_used: int, move: Dictionary, player: int) -> vo
 			_skill_tree_pending_post_move = true
 			return
 
-func _apply_post_move_effects(move: Dictionary, player: int) -> void:
+func _apply_post_move_effects(move: Dictionary, player: int, landing_override: int = -1000) -> void:
 	if state == null:
 		return
 
 	var landing: int = int(move.get("to", -999))
+	if landing_override != -1000:
+		landing = landing_override
 	if player == BoardState.Player.WHITE:
 		landing = _apply_tunnel_if_needed(landing)
+		_apply_respite_if_needed(landing)
 
 	_apply_no_mans_land_if_needed(landing)
 	_refresh_persistent_effects()
@@ -1005,7 +1077,7 @@ func _apply_tunnel_if_needed(landing: int) -> int:
 	if state.owner_of(moving_id) != BoardState.Player.WHITE:
 		return landing
 
-	Rules.apply_move(state, BoardState.Player.WHITE, {"from": from_pt, "to": to_pt, "hit": false})
+	Rules.apply_move_with_zero_sum(state, BoardState.Player.WHITE, {"from": from_pt, "to": to_pt, "hit": false})
 	if run_state != null:
 		run_state.add_player_hp(_tunnel_heal_amount)
 
@@ -1047,12 +1119,32 @@ func _apply_no_mans_land_if_needed(landing: int) -> void:
 			board.call("sync_from_state_full", state)
 		break
 
+func _apply_stopgap_turn_start_heals(player: int) -> void:
+	if run_state == null or state == null or _stopgap_points.is_empty():
+		return
+
+	for pt in _stopgap_points:
+		var idx: int = int(pt)
+		if idx < 0 or idx > 23:
+			continue
+		if state.points[idx].is_empty():
+			continue
+		var owner: int = state.stack_owner(idx)
+		if owner != player:
+			continue
+		if owner == BoardState.Player.WHITE:
+			run_state.add_player_hp(1)
+		else:
+			run_state.add_enemy_hp(1)
+
 func _refresh_persistent_effects() -> void:
 	if _bunker_active and not _bunker_intact():
 		_deactivate_bunker()
 	if _tunnel_active and not _tunnel_intact():
 		_deactivate_tunnel()
 	_refresh_no_mans_land()
+	_refresh_stopgap_modifiers()
+	_refresh_respite()
 	_sync_no_mans_land_ui()
 
 func _bunker_intact() -> bool:
@@ -1076,6 +1168,70 @@ func _tunnel_intact() -> bool:
 		if state.owner_of(int(st[0])) != BoardState.Player.WHITE:
 			return false
 	return true
+
+func _refresh_stopgap_modifiers() -> void:
+	if run_state == null or state == null:
+		_stopgap_defense_bonus = 0
+		return
+	var desired_bonus := 0
+	for pt in _stopgap_points:
+		var idx: int = int(pt)
+		if idx < 0 or idx > 23:
+			continue
+		if state.points[idx].is_empty():
+			continue
+		var owner: int = state.stack_owner(idx)
+		if owner == BoardState.Player.WHITE:
+			desired_bonus += 1
+		elif owner == BoardState.Player.BLACK:
+			desired_bonus -= 1
+
+	var delta := desired_bonus - _stopgap_defense_bonus
+	if delta == 0:
+		return
+	var before: int = int(run_state.base_defense_power)
+	var after: int = maxi(0, before + delta)
+	var actual_delta: int = after - before
+	if actual_delta != 0:
+		run_state.base_defense_power = after
+		_stopgap_defense_bonus += actual_delta
+
+func _apply_respite_if_needed(landing: int) -> void:
+	if not _respite_active or _respite_turn_used:
+		return
+	if landing < 0 or landing > 23:
+		return
+	if _respite_points.is_empty() or _respite_points.find(landing) == -1:
+		return
+	if not _respite_intact():
+		_respite_active = false
+		_respite_points = PackedInt32Array()
+		return
+	if run_state != null:
+		if run_state.has_method("add_player_hp_overcap"):
+			run_state.add_player_hp_overcap(4)
+		else:
+			run_state.add_player_hp(4)
+	_respite_turn_used = true
+
+func _respite_intact() -> bool:
+	if state == null or _respite_points.size() != 4:
+		return false
+	var a: int = int(_respite_points[0])
+	var b: int = int(_respite_points[1])
+	var c: int = int(_respite_points[2])
+	var d: int = int(_respite_points[3])
+	return _point_has_owner_min(a, BoardState.Player.WHITE, 2) \
+		and _point_has_owner_exact(b, BoardState.Player.WHITE, 1) \
+		and _point_has_owner_exact(c, BoardState.Player.WHITE, 1) \
+		and _point_has_owner_min(d, BoardState.Player.WHITE, 2)
+
+func _refresh_respite() -> void:
+	if not _respite_active:
+		return
+	if not _respite_intact():
+		_respite_active = false
+		_respite_points = PackedInt32Array()
 
 func _refresh_no_mans_land() -> void:
 	if state == null:
@@ -1111,6 +1267,16 @@ func _point_has_owner_min(point: int, owner: int, min_count: int) -> bool:
 		return false
 	return state.owner_of(int(st[0])) == owner
 
+func _point_has_owner_exact(point: int, owner: int, exact_count: int) -> bool:
+	if point < 0 or point > 23:
+		return false
+	var st: PackedInt32Array = state.points[point]
+	if st.size() != exact_count:
+		return false
+	if st.is_empty():
+		return false
+	return state.owner_of(int(st[0])) == owner
+
 func _sync_no_mans_land_ui() -> void:
 	if board == null or not board.has_method("set_no_mans_land_counts"):
 		return
@@ -1121,6 +1287,14 @@ func _sync_no_mans_land_ui() -> void:
 			continue
 		counts[int(entry.get("gap", -1))] = uses
 	board.call("set_no_mans_land_counts", counts)
+
+func _sync_stopgap_ui() -> void:
+	if board == null or not board.has_method("set_stopgap_points"):
+		return
+	var points: Array[int] = []
+	for pt in _stopgap_points:
+		points.append(int(pt))
+	board.call("set_stopgap_points", points)
 
 func _deactivate_bunker() -> void:
 	if not _bunker_active or run_state == null:
@@ -1306,14 +1480,14 @@ func _apply_move_and_continue(die_used: int, move: Dictionary, player: int) -> v
 	_record_quick_strike_if_any(move, player)
 	_record_turn_hit_if_any(move, player)
 
-	Rules.apply_move(state, player, move)
+	var landing: int = apply_move_with_zero_sum(move, player)
 	dice.call("consume_die", die_used)
 	_update_dice_ui()
 
 	if board != null and board.has_method("sync_from_state_full"):
 		board.call("sync_from_state_full", state)
 
-	_apply_post_move_effects(move, player)
+	_apply_post_move_effects(move, player, landing)
 
 	selected_from = -999
 

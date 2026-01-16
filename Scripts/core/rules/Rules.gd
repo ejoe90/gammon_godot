@@ -1,6 +1,13 @@
 extends Object
 class_name Rules
 
+enum ZeroSumResult {
+	NONE,
+	BOTH_DESTROYED,
+	MOVING_ZERO_HITS_REGULAR,
+	REGULAR_HITS_ZERO
+}
+
 static func _dir(p: int) -> int:
 	return 1 if p == BoardState.Player.WHITE else -1
 
@@ -253,6 +260,113 @@ static func apply_move(state: BoardState, p: int, m: Dictionary) -> void:
 			state.off_black = off
 			
 	print("moved id", moving_id, "from", from_i, "to", to_i)
+
+
+static func checker_is_zero_sum(state: BoardState, checker_id: int) -> bool:
+	if not state.checkers.has(checker_id):
+		return false
+	var info: CheckerInfo = state.checkers[checker_id]
+	return bool(info.tags.get("zero_sum", false))
+
+static func set_checker_zero_sum(state: BoardState, checker_id: int, enabled: bool) -> void:
+	if not state.checkers.has(checker_id):
+		return
+	var info: CheckerInfo = state.checkers[checker_id]
+	if enabled:
+		info.tags["zero_sum"] = true
+	else:
+		info.tags.erase("zero_sum")
+
+static func apply_move_with_zero_sum(state: BoardState, p: int, m: Dictionary) -> Dictionary:
+	var from_i: int = int(m.get("from", -999))
+	var to_i: int = int(m.get("to", -999))
+	var hit: bool = bool(m.get("hit", false))
+	var result := {
+		"landing": to_i,
+		"zero_sum_result": ZeroSumResult.NONE,
+		"moving_id": -1,
+		"target_id": -1
+	}
+
+	if not hit or to_i < 0 or to_i > 23:
+		apply_move(state, p, m)
+		return result
+
+	var dst: PackedInt32Array = state.points[to_i]
+	if dst.size() != 1:
+		apply_move(state, p, m)
+		return result
+
+	var moving_id: int = -1
+	if from_i == -1:
+		var bar: PackedInt32Array = state.bar_stack(p)
+		if bar.is_empty():
+			apply_move(state, p, m)
+			return result
+		moving_id = int(bar[bar.size() - 1])
+	else:
+		var src: PackedInt32Array = state.points[from_i]
+		if src.is_empty():
+			apply_move(state, p, m)
+			return result
+		moving_id = int(src[src.size() - 1])
+
+	var target_id: int = int(dst[0])
+	result["moving_id"] = moving_id
+	result["target_id"] = target_id
+
+	var moving_zero: bool = checker_is_zero_sum(state, moving_id)
+	var target_zero: bool = checker_is_zero_sum(state, target_id)
+	if not moving_zero and not target_zero:
+		apply_move(state, p, m)
+		return result
+
+	if from_i == -1:
+		var bar_stack: PackedInt32Array = state.bar_stack(p)
+		bar_stack.remove_at(bar_stack.size() - 1)
+		if p == BoardState.Player.WHITE:
+			state.bar_white = bar_stack
+		else:
+			state.bar_black = bar_stack
+	else:
+		var src_stack: PackedInt32Array = state.points[from_i]
+		src_stack.remove_at(src_stack.size() - 1)
+		state.points[from_i] = src_stack
+
+	if moving_zero and target_zero:
+		destroy_checker(state, moving_id)
+		destroy_checker(state, target_id)
+		result["landing"] = -999
+		result["zero_sum_result"] = ZeroSumResult.BOTH_DESTROYED
+		return result
+
+	if moving_zero and not target_zero:
+		send_checker_to_bar(state, target_id)
+		_push_checker_to_bar(state, moving_id, p)
+		result["landing"] = -999
+		result["zero_sum_result"] = ZeroSumResult.MOVING_ZERO_HITS_REGULAR
+		return result
+
+	if not moving_zero and target_zero:
+		set_checker_zero_sum(state, target_id, false)
+		send_checker_to_bar(state, target_id)
+		_push_checker_to_bar(state, moving_id, p)
+		result["landing"] = -999
+		result["zero_sum_result"] = ZeroSumResult.REGULAR_HITS_ZERO
+		return result
+
+	apply_move(state, p, m)
+	return result
+
+static func _push_checker_to_bar(state: BoardState, checker_id: int, owner: int) -> void:
+	if owner == BoardState.Player.WHITE:
+		var bw: PackedInt32Array = state.bar_white
+		bw.append(checker_id)
+		state.bar_white = bw
+	else:
+		var bb: PackedInt32Array = state.bar_black
+		bb.append(checker_id)
+		state.bar_black = bb
 
 
 static func find_checker_point(state: BoardState, checker_id: int) -> int:
