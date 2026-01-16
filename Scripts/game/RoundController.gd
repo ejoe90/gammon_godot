@@ -75,6 +75,14 @@ var turn_double_down_ready: bool = false
 var quick_strike_ready: bool = false
 var _turn_base_attack_bonus: int = 0
 var _round_base_attack_bonus: int = 0
+var _bunker_active: bool = false
+var _bunker_bonus: int = 0
+var _bunker_pattern: Array[PatternReq] = []
+var _tunnel_active: bool = false
+var _tunnel_points: PackedInt32Array = PackedInt32Array()
+var _tunnel_heal_amount: int = 1
+var _tunnel_min_count: int = 2
+var _no_mans_lands: Array[Dictionary] = []
 
 # --- Pip Boost choice prompt (Tier 1+) ---
 var _pip_choice_menu: PopupMenu = null
@@ -289,6 +297,69 @@ func deal_enemy_damage(base_damage: int, include_base_attack: bool = true) -> in
 	run_state.enemy_hp = maxi(0, int(run_state.enemy_hp) - dealt)
 	return dealt
 
+func compute_incoming_damage(base_damage: int) -> int:
+	if run_state == null:
+		return 0
+	var dmg: int = maxi(0, int(base_damage))
+	var defense: int = maxi(0, int(run_state.base_defense_power))
+	return maxi(0, dmg - defense)
+
+func deal_player_damage(base_damage: int, show_damage_notice: bool = true) -> int:
+	if run_state == null:
+		return 0
+	var dealt: int = compute_incoming_damage(base_damage)
+	run_state.player_hp = maxi(0, int(run_state.player_hp) - dealt)
+	if show_damage_notice and dealt > 0 and has_method("show_notice"):
+		show_notice("You take %d HP." % dealt)
+	return dealt
+
+func activate_bunker(defense_bonus: int, card: CardInstance) -> void:
+	if run_state == null or card == null or card.def == null:
+		return
+	var bonus: int = maxi(0, int(defense_bonus))
+	if not _bunker_active:
+		_bunker_active = true
+		_bunker_bonus = bonus
+		_bunker_pattern = card.def.pattern
+		run_state.base_defense_power = maxi(0, int(run_state.base_defense_power) + bonus)
+	else:
+		var delta := bonus - _bunker_bonus
+		if delta != 0:
+			run_state.base_defense_power = maxi(0, int(run_state.base_defense_power) + delta)
+		_bunker_bonus = bonus
+		_bunker_pattern = card.def.pattern
+	emit_signal("card_consumed", card.uid)
+
+func activate_tunnel(points: PackedInt32Array, heal_amount: int, card: CardInstance) -> void:
+	if points.size() != 2:
+		return
+	_tunnel_active = true
+	_tunnel_points = points
+	_tunnel_heal_amount = maxi(0, int(heal_amount))
+	emit_signal("card_consumed", card.uid)
+
+func activate_no_mans_land(left_pt: int, gap_pt: int, right_pt: int, left_owner: int, right_owner: int, uses: int, card: CardInstance) -> void:
+	if gap_pt < 0 or gap_pt > 23:
+		return
+	var entry := {
+		"left": int(left_pt),
+		"gap": int(gap_pt),
+		"right": int(right_pt),
+		"left_owner": int(left_owner),
+		"right_owner": int(right_owner),
+		"uses": maxi(0, int(uses)),
+	}
+	var replaced := false
+	for i in range(_no_mans_lands.size()):
+		if int(_no_mans_lands[i].get("gap", -1)) == gap_pt:
+			_no_mans_lands[i] = entry
+			replaced = true
+			break
+	if not replaced:
+		_no_mans_lands.append(entry)
+	_sync_no_mans_land_ui()
+	emit_signal("card_consumed", card.uid)
+
 func _reset_turn_combos() -> void:
 	turn_hit_victims_by_attacker.clear()
 	turn_double_down_ready = false
@@ -445,6 +516,15 @@ func start_round(rs: RunState) -> void:
 
 	if run_state != null:
 		run_state.player_attack_mult = 1
+		run_state.base_defense_power = 0
+
+	_bunker_active = false
+	_bunker_bonus = 0
+	_bunker_pattern.clear()
+	_tunnel_active = false
+	_tunnel_points = PackedInt32Array()
+	_tunnel_heal_amount = 1
+	_no_mans_lands.clear()
 
 	state = BoardState.new()
 	state.reset_standard()
@@ -482,6 +562,7 @@ func start_round(rs: RunState) -> void:
 
 	_clear_targets()
 	_hide_round_end()
+	_sync_no_mans_land_ui()
 	
 	aux_cd_left.clear()
 	aux_uses_this_round.clear()
@@ -716,6 +797,8 @@ func _apply_move_no_turn_end_safe(die_used: int, move: Dictionary, player: int) 
 	if board != null and board.has_method("sync_from_state_full"):
 		board.call("sync_from_state_full", state)
 
+	_apply_post_move_effects(move, player)
+
 	selected_from = -999
 
 	# Elimination/bear-off check
@@ -865,6 +948,8 @@ func _apply_move_no_turn_end(die_used: int, move: Dictionary, player: int) -> vo
 	if board != null and board.has_method("sync_from_state_full"):
 		board.call("sync_from_state_full", state)
 
+	_apply_post_move_effects(move, player)
+
 	selected_from = -999
 
 	# Elimination/bear-off check
@@ -885,6 +970,174 @@ func _apply_move_no_turn_end(die_used: int, move: Dictionary, player: int) -> vo
 			_skill_tree_pending_post_move = true
 			return
 
+func _apply_post_move_effects(move: Dictionary, player: int) -> void:
+	if state == null:
+		return
+
+	var landing: int = int(move.get("to", -999))
+	if player == BoardState.Player.WHITE:
+		landing = _apply_tunnel_if_needed(landing)
+
+	_apply_no_mans_land_if_needed(landing)
+	_refresh_persistent_effects()
+
+func _apply_tunnel_if_needed(landing: int) -> int:
+	if not _tunnel_active:
+		return landing
+	if landing < 0 or landing > 23:
+		return landing
+	if not _tunnel_intact():
+		_deactivate_tunnel()
+		return landing
+
+	if _tunnel_points.size() != 2:
+		return landing
+
+	if landing != int(_tunnel_points[0]) and landing != int(_tunnel_points[1]):
+		return landing
+
+	var from_pt: int = landing
+	var to_pt: int = int(_tunnel_points[1]) if landing == int(_tunnel_points[0]) else int(_tunnel_points[0])
+	var st: PackedInt32Array = state.points[from_pt]
+	if st.is_empty():
+		return landing
+	var moving_id: int = int(st[st.size() - 1])
+	if state.owner_of(moving_id) != BoardState.Player.WHITE:
+		return landing
+
+	Rules.apply_move(state, BoardState.Player.WHITE, {"from": from_pt, "to": to_pt, "hit": false})
+	if run_state != null:
+		run_state.add_player_hp(_tunnel_heal_amount)
+
+	if board != null and board.has_method("sync_from_state_full"):
+		board.call("sync_from_state_full", state)
+
+	return to_pt
+
+func _apply_no_mans_land_if_needed(landing: int) -> void:
+	if landing < 0 or landing > 23:
+		return
+	if _no_mans_lands.is_empty():
+		return
+
+	for i in range(_no_mans_lands.size()):
+		var entry: Dictionary = _no_mans_lands[i]
+		if int(entry.get("uses", 0)) <= 0:
+			continue
+		if int(entry.get("gap", -1)) != landing:
+			continue
+
+		var st: PackedInt32Array = state.points[landing]
+		if st.is_empty():
+			return
+		var checker_id: int = int(st[st.size() - 1])
+		var owner: int = state.owner_of(checker_id)
+		Rules.send_checker_to_bar(state, checker_id)
+
+		if run_state != null:
+			if owner == BoardState.Player.WHITE:
+				run_state.add_player_hp(2)
+			else:
+				run_state.add_enemy_hp(2)
+
+		entry["uses"] = maxi(0, int(entry.get("uses", 0)) - 1)
+		_no_mans_lands[i] = entry
+
+		if board != null and board.has_method("sync_from_state_full"):
+			board.call("sync_from_state_full", state)
+		break
+
+func _refresh_persistent_effects() -> void:
+	if _bunker_active and not _bunker_intact():
+		_deactivate_bunker()
+	if _tunnel_active and not _tunnel_intact():
+		_deactivate_tunnel()
+	_refresh_no_mans_land()
+	_sync_no_mans_land_ui()
+
+func _bunker_intact() -> bool:
+	if state == null or _bunker_pattern.is_empty():
+		return false
+	var ctx := PatternContext.new(state, BoardState.Player.WHITE)
+	return PatternMatcher.matches_all(_bunker_pattern, ctx)
+
+func _tunnel_intact() -> bool:
+	if state == null or _tunnel_points.size() != 2:
+		return false
+	for pt in _tunnel_points:
+		var idx: int = int(pt)
+		if idx < 0 or idx > 23:
+			return false
+		var st: PackedInt32Array = state.points[idx]
+		if st.size() < _tunnel_min_count:
+			return false
+		if st.is_empty():
+			return false
+		if state.owner_of(int(st[0])) != BoardState.Player.WHITE:
+			return false
+	return true
+
+func _refresh_no_mans_land() -> void:
+	if state == null:
+		_no_mans_lands.clear()
+		return
+	var kept: Array[Dictionary] = []
+	for entry in _no_mans_lands:
+		if int(entry.get("uses", 0)) <= 0:
+			continue
+		var left_pt: int = int(entry.get("left", -1))
+		var gap_pt: int = int(entry.get("gap", -1))
+		var right_pt: int = int(entry.get("right", -1))
+		if left_pt < 0 or right_pt < 0 or gap_pt < 0:
+			continue
+		if gap_pt < 0 or gap_pt > 23:
+			continue
+		if state.points[gap_pt].size() != 0:
+			continue
+		if not _point_has_owner_min(left_pt, int(entry.get("left_owner", -1)), 2):
+			continue
+		if not _point_has_owner_min(right_pt, int(entry.get("right_owner", -1)), 2):
+			continue
+		kept.append(entry)
+	_no_mans_lands = kept
+
+func _point_has_owner_min(point: int, owner: int, min_count: int) -> bool:
+	if point < 0 or point > 23:
+		return false
+	var st: PackedInt32Array = state.points[point]
+	if st.size() < min_count:
+		return false
+	if st.is_empty():
+		return false
+	return state.owner_of(int(st[0])) == owner
+
+func _sync_no_mans_land_ui() -> void:
+	if board == null or not board.has_method("set_no_mans_land_counts"):
+		return
+	var counts: Dictionary = {}
+	for entry in _no_mans_lands:
+		var uses: int = int(entry.get("uses", 0))
+		if uses <= 0:
+			continue
+		counts[int(entry.get("gap", -1))] = uses
+	board.call("set_no_mans_land_counts", counts)
+
+func _deactivate_bunker() -> void:
+	if not _bunker_active or run_state == null:
+		_bunker_active = false
+		_bunker_bonus = 0
+		_bunker_pattern.clear()
+		return
+	if _bunker_bonus > 0:
+		run_state.base_defense_power = maxi(0, int(run_state.base_defense_power) - _bunker_bonus)
+	_bunker_active = false
+	_bunker_bonus = 0
+	_bunker_pattern.clear()
+
+func _deactivate_tunnel() -> void:
+	_tunnel_active = false
+	_tunnel_points = PackedInt32Array()
+
 func _apply_black_damage_from_move(m: Dictionary) -> void:
 	if run_state == null or ai == null or ai.advantage == null:
 		return
@@ -898,9 +1151,9 @@ func _apply_black_damage_from_move(m: Dictionary) -> void:
 		dmg += ai.advantage.bearoff_total_damage(1, black_turn_index)
 
 	if dmg > 0:
-		run_state.player_hp = maxi(0, int(run_state.player_hp) - dmg)
-		if has_method("show_notice"):
-			show_notice("You take %d HP." % dmg)
+		var dealt: int = deal_player_damage(dmg, false)
+		if dealt > 0 and has_method("show_notice"):
+			show_notice("You take %d HP." % dealt)
 
 
 func _end_round_from_black_hp_win() -> void:
@@ -1059,6 +1312,8 @@ func _apply_move_and_continue(die_used: int, move: Dictionary, player: int) -> v
 
 	if board != null and board.has_method("sync_from_state_full"):
 		board.call("sync_from_state_full", state)
+
+	_apply_post_move_effects(move, player)
 
 	selected_from = -999
 

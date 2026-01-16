@@ -9,6 +9,7 @@ class_name StatsHUD
 @onready var enemy_hp_label: Label = get_node_or_null("EnemyHPLabel") as Label
 @onready var gold_label: Label = get_node_or_null("GoldLabel") as Label
 @onready var ap_label: Label = get_node_or_null("APLabel") as Label
+@onready var defense_label: Label = get_node_or_null("DefenseLabel") as Label
 
 # NEW: pip labels (must exist as children of StatsHUD scene)
 @onready var pips_white_label: Label = get_node_or_null("PipsWhite") as Label
@@ -70,11 +71,13 @@ func _refresh() -> void:
 	if ap_label != null:
 		var mult: int = 1
 		var base_atk: int = 0
+		var base_def: int = 0
 		var drain: int = 0
 		var atk_conv: bool = false
 		if _round.run_state != null:
 			mult = maxi(1, int(_round.run_state.player_attack_mult))
 			base_atk = int(_round.run_state.base_attack_power)
+			base_def = int(_round.run_state.base_defense_power)
 			drain = int(_round.run_state.enemy_drain_per_turn)
 			atk_conv = bool(_round.run_state.attack_convert_to_gold)
 
@@ -82,6 +85,9 @@ func _refresh() -> void:
 		if atk_conv:
 			extra += "  (A→G ON)"
 		ap_label.text = "AP: %d/%d  ATK x%d%s" % [_round.ap_left, _round.base_ap_per_turn, mult, extra]
+
+		if defense_label != null:
+			defense_label.text = "DEF: +%d" % base_def
 
 	# NEW: Pip Boost convert-to-HP toggle status (F6)
 	if pip_hp_label != null:

@@ -14,6 +14,9 @@ signal bar_clicked(player: int)
 @onready var pieces: BoardPieces = $BoardPieces
 @onready var animator: BoardAnimator = $BoardAnimator
 @onready var highlights: BoardHighlights = $HighlightsLayer
+@onready var no_mans_land_layer: Node2D = get_node_or_null("NoMansLandLayer") as Node2D
+
+var _no_mans_land_labels: Dictionary = {}
 
 func show_move_targets(targets: Array[int], player: int) -> void:
 	var is_white: bool = (player == BoardState.Player.WHITE)
@@ -43,6 +46,34 @@ func _ready() -> void:
 
 func sync_from_state_full(state: BoardState) -> void:
 	pieces.sync_from_state_full(state)
+
+func set_no_mans_land_counts(counts: Dictionary) -> void:
+	if no_mans_land_layer == null:
+		return
+
+	for key in _no_mans_land_labels.keys():
+		var label: Label = _no_mans_land_labels[key] as Label
+		if is_instance_valid(label):
+			label.queue_free()
+	_no_mans_land_labels.clear()
+
+	for key in counts.keys():
+		var point: int = int(key)
+		var uses: int = int(counts[key])
+		if uses <= 0:
+			continue
+
+		var label := Label.new()
+		label.text = "NML %d" % uses
+		label.scale = Vector2(0.7, 0.7)
+		label.z_index = 650
+
+		var pos := Vector2.ZERO
+		if pieces != null:
+			pos = no_mans_land_layer.to_local(pieces.point_slot_global(point, 0))
+		label.position = pos + Vector2(-12, -10)
+		no_mans_land_layer.add_child(label)
+		_no_mans_land_labels[point] = label
 
 func animate_move_persistent(state: BoardState, move: Dictionary, player: int, done: Callable) -> void:
 	input.set_enabled(false)

@@ -134,7 +134,10 @@ static func _apply_one_man_army(round: Node, card: CardInstance, eff: CardEffect
 		sent += 1
 
 	if round.run_state != null:
-		round.run_state.player_hp -= int(eff.amount)
+		if round.has_method("deal_player_damage"):
+			round.call("deal_player_damage", int(eff.amount), false)
+		else:
+			round.run_state.player_hp -= int(eff.amount)
 		if round != null and round.has_method("deal_enemy_damage"):
 			round.call("deal_enemy_damage", sent, true)
 		else:

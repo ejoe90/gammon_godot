@@ -19,6 +19,7 @@ var player_attack_mult: int = 1
 
 # Added by Attack skill tree
 var base_attack_power: int = 0
+var base_defense_power: int = 0
 var enemy_drain_per_turn: int = 0
 # Attack aux tier4-A mechanic: if true, Attack Boost converts damage into gold.
 var attack_convert_to_gold: bool = false
@@ -52,6 +53,11 @@ func add_player_hp(delta: int) -> int:
 	var before := int(player_hp)
 	player_hp = clampi(before + int(delta), 0, int(player_max_hp))
 	return int(player_hp) - before
+
+func add_enemy_hp(delta: int) -> int:
+	var before := int(enemy_hp)
+	enemy_hp = clampi(before + int(delta), 0, int(enemy_max_hp))
+	return int(enemy_hp) - before
 
 func add_player_hp_overcap(delta: int) -> int:
 	# Like add_player_hp, but allows HP to exceed player_max_hp (overcap healing).
