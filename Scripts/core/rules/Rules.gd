@@ -26,6 +26,8 @@ static func _blocked_by_opponent(state: BoardState, p: int, dst: int) -> bool:
 	if c == 1:
 		var o_single: int = state.stack_owner(dst)
 		if o_single != -1 and o_single != p:
+			if int(state.detente_turns_left) > 0:
+				return true
 			var st_single: PackedInt32Array = state.points[dst]
 			if st_single.size() == 1 and checker_is_distant_threat(state, int(st_single[0])):
 				return true
@@ -91,10 +93,13 @@ static func legal_moves_for_die(state: BoardState, p: int, die: int) -> Array[Di
 			return res
 		var dst: int = _entry_point_from_bar(p, mag)
 		if not _blocked_by_opponent(state, p, dst):
+			var hit := _is_hit(state, p, dst)
+			if _moving_checker_is_pacifism(state, p, -1) and hit:
+				return res
 			res.append({
 				"from": -1,
 				"to": dst,
-				"hit": _is_hit(state, p, dst),
+				"hit": hit,
 			})
 		return res
 
@@ -110,10 +115,13 @@ static func legal_moves_for_die(state: BoardState, p: int, die: int) -> Array[Di
 		# On-board move
 		if dst_i >= 0 and dst_i <= 23:
 			if not _blocked_by_opponent(state, p, dst_i):
+				var hit := _is_hit(state, p, dst_i)
+				if _moving_checker_is_pacifism(state, p, from_i) and hit:
+					continue
 				res.append({
 					"from": from_i,
 					"to": dst_i,
-					"hit": _is_hit(state, p, dst_i),
+					"hit": hit,
 				})
 			continue
 
@@ -167,10 +175,13 @@ static func legal_moves_for_die_adv(state: BoardState, p: int, die: int, bearoff
 			return res
 		var dst: int = _entry_point_from_bar(p, mag)
 		if not _blocked_by_opponent(state, p, dst):
+			var hit := _is_hit(state, p, dst)
+			if _moving_checker_is_pacifism(state, p, -1) and hit:
+				return res
 			res.append({
 				"from": -1,
 				"to": dst,
-				"hit": _is_hit(state, p, dst),
+				"hit": hit,
 			})
 		return res
 
@@ -186,10 +197,13 @@ static func legal_moves_for_die_adv(state: BoardState, p: int, die: int, bearoff
 		# On-board move
 		if dst_i >= 0 and dst_i <= 23:
 			if not _blocked_by_opponent(state, p, dst_i):
+				var hit := _is_hit(state, p, dst_i)
+				if _moving_checker_is_pacifism(state, p, from_i) and hit:
+					continue
 				res.append({
 					"from": from_i,
 					"to": dst_i,
-					"hit": _is_hit(state, p, dst_i),
+					"hit": hit,
 				})
 			continue
 
@@ -288,6 +302,25 @@ static func checker_is_distant_threat(state: BoardState, checker_id: int) -> boo
 	var info: CheckerInfo = state.checkers[checker_id]
 	return bool(info.tags.get("distant_threat", false))
 
+static func checker_is_pacifism(state: BoardState, checker_id: int) -> bool:
+	if not state.checkers.has(checker_id):
+		return false
+	var info: CheckerInfo = state.checkers[checker_id]
+	return bool(info.tags.get("pacifism", false))
+
+static func _moving_checker_is_pacifism(state: BoardState, p: int, from_i: int) -> bool:
+	if from_i == -1:
+		var bar: PackedInt32Array = state.bar_stack(p)
+		if bar.is_empty():
+			return false
+		return checker_is_pacifism(state, int(bar[bar.size() - 1]))
+	if from_i < 0 or from_i > 23:
+		return false
+	var st: PackedInt32Array = state.points[from_i]
+	if st.is_empty():
+		return false
+	return checker_is_pacifism(state, int(st[st.size() - 1]))
+
 static func set_checker_zero_sum(state: BoardState, checker_id: int, enabled: bool) -> void:
 	if not state.checkers.has(checker_id):
 		return
@@ -334,6 +367,32 @@ static func apply_move_with_zero_sum(state: BoardState, p: int, m: Dictionary) -
 	var target_id: int = int(dst[0])
 	result["moving_id"] = moving_id
 	result["target_id"] = target_id
+
+	var target_pacifism: bool = checker_is_pacifism(state, target_id)
+	if target_pacifism:
+		if from_i == -1:
+			var bar_stack: PackedInt32Array = state.bar_stack(p)
+			if bar_stack.is_empty():
+				apply_move(state, p, m)
+				return result
+			bar_stack.remove_at(bar_stack.size() - 1)
+			if p == BoardState.Player.WHITE:
+				state.bar_white = bar_stack
+			else:
+				state.bar_black = bar_stack
+		else:
+			var src_stack: PackedInt32Array = state.points[from_i]
+			if src_stack.is_empty():
+				apply_move(state, p, m)
+				return result
+			src_stack.remove_at(src_stack.size() - 1)
+			state.points[from_i] = src_stack
+
+		send_checker_to_bar(state, target_id)
+		_push_checker_to_bar(state, moving_id, p)
+		result["landing"] = -999
+		result["pacifism_hit"] = true
+		return result
 
 	var moving_zero: bool = checker_is_zero_sum(state, moving_id)
 	var target_zero: bool = checker_is_zero_sum(state, target_id)

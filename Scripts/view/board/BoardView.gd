@@ -16,6 +16,8 @@ signal bar_clicked(player: int)
 @onready var highlights: BoardHighlights = $HighlightsLayer
 @onready var no_mans_land_layer: Node2D = get_node_or_null("NoMansLandLayer") as Node2D
 @onready var stopgap_layer: Node2D = get_node_or_null("StopgapLayer") as Node2D
+@onready var overwatch_label: Label = get_node_or_null("OverwatchLabel") as Label
+@onready var detente_label: Label = get_node_or_null("DetenteLabel") as Label
 
 var _no_mans_land_labels: Dictionary = {}
 var _stopgap_labels: Dictionary = {}
@@ -103,6 +105,16 @@ func set_stopgap_points(points: Array) -> void:
 		label.position = pos + Vector2(-18, -22)
 		stopgap_layer.add_child(label)
 		_stopgap_labels[point] = label
+
+func set_overwatch_active(active: bool) -> void:
+	if overwatch_label == null:
+		return
+	overwatch_label.visible = active
+
+func set_detente_active(active: bool) -> void:
+	if detente_label == null:
+		return
+	detente_label.visible = active
 
 func animate_move_persistent(state: BoardState, move: Dictionary, player: int, done: Callable) -> void:
 	input.set_enabled(false)

@@ -94,6 +94,7 @@ var _distant_threat_turns_left: int = 0
 var _distant_threat_clear_on_white: bool = false
 var _accelerator_active: bool = false
 var _accelerator_next_heal: int = 1
+var _overwatch_active: bool = false
 
 # --- Pip Boost choice prompt (Tier 1+) ---
 var _pip_choice_menu: PopupMenu = null
@@ -428,11 +429,40 @@ func activate_accelerator(card: CardInstance) -> void:
 	_accelerator_next_heal = 2
 	emit_signal("card_consumed", card.uid)
 
+func activate_overwatch(card: CardInstance) -> void:
+	_overwatch_active = true
+	_sync_overwatch_ui()
+	if card != null:
+		emit_signal("card_consumed", card.uid)
+
+func activate_detente(turns: int, card: CardInstance) -> void:
+	if state == null:
+		return
+	state.detente_turns_left = maxi(0, int(turns))
+	_sync_detente_ui()
+	if card != null:
+		emit_signal("card_consumed", card.uid)
+
+func activate_pacifism(checker_ids: Array[int], card: CardInstance) -> void:
+	if state == null:
+		return
+	for checker_id in checker_ids:
+		var id: int = int(checker_id)
+		var info: CheckerInfo = state.checkers.get(id, null)
+		if info == null:
+			continue
+		info.tags["pacifism"] = true
+	if board != null and board.has_method("sync_from_state_full"):
+		board.call("sync_from_state_full", state)
+	if card != null:
+		emit_signal("card_consumed", card.uid)
+
 func apply_move_with_zero_sum(move: Dictionary, player: int) -> int:
 	if state == null:
 		return int(move.get("to", -999))
 	var result := Rules.apply_move_with_zero_sum(state, player, move)
 	_apply_zero_sum_hp(result, player)
+	_apply_pacifism_hit_hp(result, player)
 	return int(result.get("landing", move.get("to", -999)))
 
 func _apply_zero_sum_hp(result: Dictionary, player: int) -> void:
@@ -450,6 +480,16 @@ func _apply_zero_sum_hp(result: Dictionary, player: int) -> void:
 				run_state.player_hp = maxi(0, int(run_state.player_hp) - 2)
 			else:
 				run_state.enemy_hp = maxi(0, int(run_state.enemy_hp) - 2)
+
+func _apply_pacifism_hit_hp(result: Dictionary, player: int) -> void:
+	if run_state == null:
+		return
+	if not bool(result.get("pacifism_hit", false)):
+		return
+	if player == BoardState.Player.WHITE:
+		deal_player_damage(4, false)
+	else:
+		run_state.add_enemy_hp(-4)
 
 func _reset_turn_combos() -> void:
 	turn_hit_victims_by_attacker.clear()
@@ -627,6 +667,7 @@ func start_round(rs: RunState) -> void:
 	_distant_threat_clear_on_white = false
 	_accelerator_active = false
 	_accelerator_next_heal = 1
+	_overwatch_active = false
 
 	state = BoardState.new()
 	state.reset_standard()
@@ -666,6 +707,8 @@ func start_round(rs: RunState) -> void:
 	_hide_round_end()
 	_sync_no_mans_land_ui()
 	_sync_stopgap_ui()
+	_sync_overwatch_ui()
+	_sync_detente_ui()
 	
 	aux_cd_left.clear()
 	aux_uses_this_round.clear()
@@ -906,6 +949,7 @@ func _apply_move_no_turn_end_safe(die_used: int, move: Dictionary, player: int) 
 	else:
 		return false
 
+	var moving_id: int = _peek_moving_checker_id(move, player)
 	_record_quick_strike_if_any(move, player)
 	_record_turn_hit_if_any(move, player)
 	var landing: int = apply_move_with_zero_sum(move, player)
@@ -916,7 +960,7 @@ func _apply_move_no_turn_end_safe(die_used: int, move: Dictionary, player: int) 
 	if board != null and board.has_method("sync_from_state_full"):
 		board.call("sync_from_state_full", state)
 
-	_apply_post_move_effects(move, player, landing)
+	_apply_post_move_effects(move, player, landing, moving_id)
 
 	selected_from = -999
 
@@ -1053,10 +1097,12 @@ func _black_ai_clone_state_for_sim(src: BoardState) -> BoardState:
 	c.bar_black = src.bar_black.duplicate()
 	c.off_white = src.off_white.duplicate()
 	c.off_black = src.off_black.duplicate()
+	c.detente_turns_left = int(src.detente_turns_left)
 	return c
 
 func _apply_move_no_turn_end(die_used: int, move: Dictionary, player: int) -> void:
 	# Same as _apply_move_and_continue, but NEVER ends the turn.
+	var moving_id: int = _peek_moving_checker_id(move, player)
 	_record_quick_strike_if_any(move, player)
 	_record_turn_hit_if_any(move, player)
 
@@ -1067,7 +1113,7 @@ func _apply_move_no_turn_end(die_used: int, move: Dictionary, player: int) -> vo
 	if board != null and board.has_method("sync_from_state_full"):
 		board.call("sync_from_state_full", state)
 
-	_apply_post_move_effects(move, player, landing)
+	_apply_post_move_effects(move, player, landing, moving_id)
 
 	selected_from = -999
 
@@ -1089,7 +1135,7 @@ func _apply_move_no_turn_end(die_used: int, move: Dictionary, player: int) -> vo
 			_skill_tree_pending_post_move = true
 			return
 
-func _apply_post_move_effects(move: Dictionary, player: int, landing_override: int = -1000) -> void:
+func _apply_post_move_effects(move: Dictionary, player: int, landing_override: int = -1000, moving_id: int = -1) -> void:
 	if state == null:
 		return
 
@@ -1101,7 +1147,37 @@ func _apply_post_move_effects(move: Dictionary, player: int, landing_override: i
 		_apply_respite_if_needed(landing)
 
 	_apply_no_mans_land_if_needed(landing)
+	_apply_pacifism_if_needed(landing, player, moving_id)
 	_refresh_persistent_effects()
+
+func _apply_pacifism_if_needed(landing: int, player: int, moving_id: int) -> void:
+	if run_state == null or state == null:
+		return
+	if moving_id == -1:
+		return
+	if not Rules.checker_is_pacifism(state, moving_id):
+		return
+
+	if (player == BoardState.Player.WHITE and landing == 24) or (player == BoardState.Player.BLACK and landing == -2):
+		if player == BoardState.Player.WHITE:
+			run_state.add_player_hp_overcap(5)
+		else:
+			if run_state.has_method("add_enemy_hp_overcap"):
+				run_state.add_enemy_hp_overcap(5)
+			else:
+				run_state.enemy_hp = maxi(0, int(run_state.enemy_hp) + 5)
+		return
+
+	if landing < 0 or landing > 23:
+		return
+	if state.stack_owner(landing) != player:
+		return
+	if state.stack_count(landing) < 2:
+		return
+	if player == BoardState.Player.WHITE:
+		run_state.add_player_hp(2)
+	else:
+		run_state.add_enemy_hp(2)
 
 func _apply_tunnel_if_needed(landing: int) -> int:
 	if not _tunnel_active:
@@ -1346,6 +1422,19 @@ func _sync_stopgap_ui() -> void:
 		points.append(int(pt))
 	board.call("set_stopgap_points", points)
 
+func _sync_overwatch_ui() -> void:
+	if board == null or not board.has_method("set_overwatch_active"):
+		return
+	board.call("set_overwatch_active", _overwatch_active)
+
+func _sync_detente_ui() -> void:
+	if board == null or not board.has_method("set_detente_active"):
+		return
+	var active := false
+	if state != null:
+		active = int(state.detente_turns_left) > 0
+	board.call("set_detente_active", active)
+
 func _deactivate_bunker() -> void:
 	if not _bunker_active or run_state == null:
 		_bunker_active = false
@@ -1373,7 +1462,8 @@ func _apply_black_damage_from_move(m: Dictionary) -> void:
 
 	# BLACK bearoff in your Rules is "to" == -2
 	if int(m.get("to", -999)) == -2:
-		dmg += ai.advantage.bearoff_total_damage(1, black_turn_index)
+		if not _overwatch_active:
+			dmg += ai.advantage.bearoff_total_damage(1, black_turn_index)
 
 	if dmg > 0:
 		var dealt: int = deal_player_damage(dmg, false)
@@ -1393,6 +1483,7 @@ func end_turn() -> void:
 	if not round_active:
 		return
 	_tick_distant_threat_end_turn()
+	_tick_detente_end_turn()
 
 	if run_state != null and _turn_base_attack_bonus > 0:
 		run_state.base_attack_power = maxi(0, int(run_state.base_attack_power) - _turn_base_attack_bonus)
@@ -1415,6 +1506,14 @@ func _tick_distant_threat_end_turn() -> void:
 	_sync_distant_threat_tag()
 	if board != null and board.has_method("sync_from_state_full"):
 		board.call("sync_from_state_full", state)
+
+func _tick_detente_end_turn() -> void:
+	if state == null:
+		return
+	if int(state.detente_turns_left) <= 0:
+		return
+	state.detente_turns_left = maxi(0, int(state.detente_turns_left) - 1)
+	_sync_detente_ui()
 
 func _sync_distant_threat_tag() -> void:
 	if state == null or _distant_threat_checker_id == -1:
@@ -1560,7 +1659,24 @@ func _try_move_to(dst_index: int) -> bool:
 
 	return false
 
+func _peek_moving_checker_id(move: Dictionary, player: int) -> int:
+	if state == null:
+		return -1
+	var from_i: int = int(move.get("from", -999))
+	if from_i == -1:
+		var bar: PackedInt32Array = state.bar_stack(player)
+		if bar.is_empty():
+			return -1
+		return int(bar[bar.size() - 1])
+	if from_i >= 0 and from_i <= 23:
+		var st: PackedInt32Array = state.points[from_i]
+		if st.is_empty():
+			return -1
+		return int(st[st.size() - 1])
+	return -1
+
 func _apply_move_and_continue(die_used: int, move: Dictionary, player: int) -> void:
+	var moving_id: int = _peek_moving_checker_id(move, player)
 	_record_quick_strike_if_any(move, player)
 	_record_turn_hit_if_any(move, player)
 
@@ -1571,7 +1687,7 @@ func _apply_move_and_continue(die_used: int, move: Dictionary, player: int) -> v
 	if board != null and board.has_method("sync_from_state_full"):
 		board.call("sync_from_state_full", state)
 
-	_apply_post_move_effects(move, player, landing)
+	_apply_post_move_effects(move, player, landing, moving_id)
 
 	selected_from = -999
 

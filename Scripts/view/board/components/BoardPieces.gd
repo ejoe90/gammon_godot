@@ -132,6 +132,7 @@ func _ensure_node(state: BoardState, id: int) -> void:
 		piece.call("set_color_animation", is_white)
 	_apply_zero_sum_visual(state, id, piece)
 	_apply_distant_threat_visual(state, id, piece)
+	_apply_pacifism_visual(state, id, piece)
 
 func _apply_zero_sum_visual(state: BoardState, id: int, piece: Node2D) -> void:
 	if not piece.has_method("set_zero_sum_state"):
@@ -149,6 +150,13 @@ func _apply_distant_threat_visual(state: BoardState, id: int, piece: Node2D) -> 
 	var active: bool = info != null and bool(info.tags.get("distant_threat", false))
 	var turns_left: int = int(info.tags.get("distant_threat_turns", 0)) if info != null else 0
 	piece.call("set_distant_threat_state", active, turns_left)
+
+func _apply_pacifism_visual(state: BoardState, id: int, piece: Node2D) -> void:
+	if not piece.has_method("set_pacifism_state"):
+		return
+	var info: CheckerInfo = state.checkers.get(id, null)
+	var active: bool = info != null and bool(info.tags.get("pacifism", false))
+	piece.call("set_pacifism_state", active)
 
 
 func point_stack_dir_global(i: int) -> Vector2:

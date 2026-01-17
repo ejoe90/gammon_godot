@@ -15,6 +15,7 @@ var checker_id: int = -1
 var _zero_sum_material: ShaderMaterial = null
 var _distant_threat_material: ShaderMaterial = null
 var _distant_threat_label: Label = null
+var _pacifism_label: Label = null
 
 const ZERO_SUM_SHADER_PATH := "res://Shaders/zero_sum_overlay.gdshader"
 const DISTANT_THREAT_SHADER_PATH := "res://Shaders/distant_threat_glow.gdshader"
@@ -82,6 +83,11 @@ func set_distant_threat_state(enabled: bool, turns_left: int) -> void:
 		_distant_threat_label.text = str(maxi(1, turns_left))
 		_distant_threat_label.visible = true
 
+func set_pacifism_state(enabled: bool) -> void:
+	_ensure_pacifism_label()
+	if _pacifism_label != null:
+		_pacifism_label.visible = enabled
+
 func _ensure_distant_threat_label() -> void:
 	if _distant_threat_label != null:
 		return
@@ -100,6 +106,25 @@ func _ensure_distant_threat_label() -> void:
 	label.visible = false
 	add_child(label)
 	_distant_threat_label = label
+
+func _ensure_pacifism_label() -> void:
+	if _pacifism_label != null:
+		return
+	var existing: Label = get_node_or_null("PacifismLabel") as Label
+	if existing != null:
+		_pacifism_label = existing
+		return
+	var label := Label.new()
+	label.name = "PacifismLabel"
+	label.text = "P"
+	label.z_index = 2001
+	label.scale = Vector2(0.75, 0.75)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.position = Vector2(-6, -4)
+	label.visible = false
+	add_child(label)
+	_pacifism_label = label
 
 func _on_click_area_input_event(_vp: Viewport, event: InputEvent, _shape_idx: int) -> void:
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:

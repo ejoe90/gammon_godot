@@ -359,6 +359,22 @@ highlight_scale = 0.2
 
 [node name="StopgapLayer" type="Node2D" parent="."]
 
+[node name="OverwatchLabel" type="Label" parent="."]
+position = Vector2(1214, 84)
+text = "(No HP damage)"
+visible = false
+horizontal_alignment = 1
+vertical_alignment = 1
+scale = Vector2(0.7, 0.7)
+
+[node name="DetenteLabel" type="Label" parent="."]
+position = Vector2(640, 976)
+text = "Detente"
+visible = false
+horizontal_alignment = 1
+vertical_alignment = 1
+scale = Vector2(0.9, 0.9)
+
 [node name="BarClickWhite" type="Area2D" parent="."]
 position = Vector2(644.6667, 70)
 
