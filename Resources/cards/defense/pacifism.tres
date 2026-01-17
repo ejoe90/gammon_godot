@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="CardDef" load_steps=8 format=3 uid="uid://pacifismcard1"]
+
+[ext_resource type="Texture2D" uid="uid://bxm4d0v84n0a3" path="res://Assets/textures/cards/blue deck fronts/2 minus blue.jpg" id="1_pacifism"]
+[ext_resource type="Script" uid="uid://dxnljvcddxql4" path="res://Scripts/CardEffect.gd" id="2_pacifism"]
+[ext_resource type="Script" uid="uid://effectpacifism1" path="res://Scripts/cards/effects/EffectPacifism.gd" id="3_pacifism"]
+[ext_resource type="Script" uid="uid://ur0p531l1ca4" path="res://Scripts/PatternReq.gd" id="4_pacifism"]
+[ext_resource type="Script" uid="uid://b1ylg81nigak7" path="res://Scripts/CardDef.gd" id="5_pacifism"]
+
+[sub_resource type="Resource" id="Resource_pacifism_effect"]
+script = ExtResource("3_pacifism")
+metadata/_custom_type_script = "uid://effectpacifism1"
+
+[sub_resource type="Resource" id="Resource_pacifism_pattern"]
+script = ExtResource("4_pacifism")
+kind = 2
+seq_counts = null
+mix_owners = PackedInt32Array(0, 1, 0, 1)
+mix_mins = PackedInt32Array(1, 1, 1, 1)
+mix_maxs = PackedInt32Array(1, 1, 1, 1)
+mix_requires_empty = PackedInt32Array(0, 0, 0, 0)
+mix_allow_reverse = true
+mix_same_half_only = false
+mix_max_gap = 0
+metadata/_custom_type_script = "uid://ur0p531l1ca4"
+
+[resource]
+script = ExtResource("5_pacifism")
+id = "pacifism"
+title = "Pacifism"
+tooltip_summary = "Mark four alternating single checkers as pacifists; pacifists cannot hit, heal on friendly landings, punish hits, and grant +5 HP on bear-off."
+category = 3
+pip_value = -2
+pattern = Array[ExtResource("4_pacifism")]([SubResource("Resource_pacifism_pattern")])
+effect = SubResource("Resource_pacifism_effect")
+art_texture = ExtResource("1_pacifism")
+metadata/_custom_type_script = "uid://b1ylg81nigak7"

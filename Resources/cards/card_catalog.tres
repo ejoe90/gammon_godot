@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="CardCatalog" load_steps=24 format=3 uid="uid://5o2fjm0okvs0"]
+[gd_resource type="Resource" script_class="CardCatalog" load_steps=27 format=3 uid="uid://5o2fjm0okvs0"]
 
 [ext_resource type="Script" uid="uid://b1ylg81nigak7" path="res://Scripts/CardDef.gd" id="1_gfijg"]
 [ext_resource type="Script" uid="uid://cxrrf2trr2miv" path="res://CardCatalog.gd" id="2_k16gf"]
@@ -23,8 +23,11 @@
 [ext_resource type="Resource" uid="uid://c0i6wt6x0cmiw" path="res://Resources/cards/defense/counter_measures_defense.tres" id="20_defense_counter_measures"]
 [ext_resource type="Resource" uid="uid://lr6dia8qtl4g" path="res://Resources/cards/defense/distant_threat.tres" id="21_defense_distant_threat"]
 [ext_resource type="Resource" uid="uid://dr3nv2hlfpmky" path="res://Resources/cards/defense/accelerator.tres" id="22_defense_accelerator"]
+[ext_resource type="Resource" uid="uid://overwatchcard1" path="res://Resources/cards/defense/overwatch.tres" id="23_defense_overwatch"]
+[ext_resource type="Resource" uid="uid://pacifismcard1" path="res://Resources/cards/defense/pacifism.tres" id="24_defense_pacifism"]
+[ext_resource type="Resource" uid="uid://detentecard1" path="res://Resources/cards/defense/detente.tres" id="25_defense_detente"]
 
 [resource]
 script = ExtResource("2_k16gf")
-cards = Array[ExtResource("1_gfijg")]([ExtResource("2_thl06"), ExtResource("3_ndmhq"), ExtResource("4_uwhgp"), ExtResource("5_7tsok"), ExtResource("6_ndmhq"), ExtResource("7_uwhgp"), ExtResource("8_7tsok"), ExtResource("9_8k6m4"), ExtResource("10_8k6m4"), ExtResource("11_7k4ve"), ExtResource("12_1nxdh"), ExtResource("13_jud1b"), ExtResource("14_defense_bunker"), ExtResource("15_defense_tunnel"), ExtResource("16_defense_no_mans_land"), ExtResource("17_defense_stopgap"), ExtResource("18_defense_respite"), ExtResource("19_defense_zero_sum"), ExtResource("20_defense_counter_measures"), ExtResource("21_defense_distant_threat"), ExtResource("22_defense_accelerator")])
+cards = Array[ExtResource("1_gfijg")]([ExtResource("2_thl06"), ExtResource("3_ndmhq"), ExtResource("4_uwhgp"), ExtResource("5_7tsok"), ExtResource("6_ndmhq"), ExtResource("7_uwhgp"), ExtResource("8_7tsok"), ExtResource("9_8k6m4"), ExtResource("10_8k6m4"), ExtResource("11_7k4ve"), ExtResource("12_1nxdh"), ExtResource("13_jud1b"), ExtResource("14_defense_bunker"), ExtResource("15_defense_tunnel"), ExtResource("16_defense_no_mans_land"), ExtResource("17_defense_stopgap"), ExtResource("18_defense_respite"), ExtResource("19_defense_zero_sum"), ExtResource("20_defense_counter_measures"), ExtResource("21_defense_distant_threat"), ExtResource("22_defense_accelerator"), ExtResource("23_defense_overwatch"), ExtResource("24_defense_pacifism"), ExtResource("25_defense_detente")])
 metadata/_custom_type_script = "uid://cxrrf2trr2miv"
