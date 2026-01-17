@@ -23,6 +23,12 @@ static func _blocked_by_opponent(state: BoardState, p: int, dst: int) -> bool:
 	if dst < 0 or dst > 23:
 		return false
 	var c: int = state.stack_count(dst)
+	if c == 1:
+		var o_single: int = state.stack_owner(dst)
+		if o_single != -1 and o_single != p:
+			var st_single: PackedInt32Array = state.points[dst]
+			if st_single.size() == 1 and checker_is_distant_threat(state, int(st_single[0])):
+				return true
 	if c < 2:
 		return false
 	var o: int = state.stack_owner(dst)
@@ -31,7 +37,15 @@ static func _blocked_by_opponent(state: BoardState, p: int, dst: int) -> bool:
 static func _is_hit(state: BoardState, p: int, dst: int) -> bool:
 	if dst < 0 or dst > 23:
 		return false
-	return state.stack_count(dst) == 1 and state.stack_owner(dst) != -1 and state.stack_owner(dst) != p
+	if state.stack_count(dst) != 1:
+		return false
+	var owner: int = state.stack_owner(dst)
+	if owner == -1 or owner == p:
+		return false
+	var st: PackedInt32Array = state.points[dst]
+	if st.size() == 1 and checker_is_distant_threat(state, int(st[0])):
+		return false
+	return true
 
 static func all_in_home(state: BoardState, p: int) -> bool:
 	var hr: Vector2i = _home_range(p)
@@ -267,6 +281,12 @@ static func checker_is_zero_sum(state: BoardState, checker_id: int) -> bool:
 		return false
 	var info: CheckerInfo = state.checkers[checker_id]
 	return bool(info.tags.get("zero_sum", false))
+
+static func checker_is_distant_threat(state: BoardState, checker_id: int) -> bool:
+	if not state.checkers.has(checker_id):
+		return false
+	var info: CheckerInfo = state.checkers[checker_id]
+	return bool(info.tags.get("distant_threat", false))
 
 static func set_checker_zero_sum(state: BoardState, checker_id: int, enabled: bool) -> void:
 	if not state.checkers.has(checker_id):

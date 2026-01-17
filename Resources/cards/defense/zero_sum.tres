@@ -30,6 +30,7 @@ metadata/_custom_type_script = "uid://ur0p531l1ca4"
 script = ExtResource("5_zero_sum")
 id = "zero_sum"
 title = "Zero Sum"
+tooltip_summary = "Mark two adjacent stacks as zero-sum for special hit outcomes."
 category = 3
 pip_value = 1
 pattern = Array[ExtResource("4_zero_sum")]([SubResource("Resource_zero_sum_pattern")])

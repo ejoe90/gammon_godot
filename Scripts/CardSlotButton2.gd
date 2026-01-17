@@ -103,7 +103,10 @@ func _refresh() -> void:
 	if _targeting or round.targeting_active:
 		disabled = true
 		text = "TARGET"
-		tooltip_text = "TARGET: click an enemy checker"
+		var summary: String = ""
+		if card.def.tooltip_summary.strip_edges() != "":
+			summary = "\nEffect: %s" % card.def.tooltip_summary.strip_edges()
+		tooltip_text = "TARGET: click an enemy checker" + summary
 		_set_invert(0.0)
 		return
 
@@ -128,7 +131,11 @@ func _refresh() -> void:
 	else:
 		status = "LOCKED | " + base
 
-	tooltip_text = status
+	var summary: String = ""
+	if card.def.tooltip_summary.strip_edges() != "":
+		summary = "\nEffect: %s" % card.def.tooltip_summary.strip_edges()
+
+	tooltip_text = status + summary
 	# Hide big text when art exists
 	text = "" if (card.def.art_texture != null) else status
 

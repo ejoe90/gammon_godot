@@ -27,6 +27,7 @@ metadata/_custom_type_script = "uid://ur0p531l1ca4"
 script = ExtResource("3_hfhis")
 id = "ionic_crossbow"
 title = "Ionic Crossbow"
+tooltip_summary = "Target an enemy stack anywhere; send up to 2 checkers to the bar and deal 2 damage."
 category = 1
 pip_value = 2
 pattern = Array[ExtResource("2_01ki0")]([SubResource("Resource_cnff8")])

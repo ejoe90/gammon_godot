@@ -33,6 +33,7 @@ metadata/_custom_type_script = "uid://ur0p531l1ca4"
 script = ExtResource("3_wj5y7")
 id = "one_man_army"
 title = "One Man Army"
+tooltip_summary = "Destroy your lone checker to send all but one from a 4+ adjacent enemy stack to the bar; deal damage equal to those sent and take 2 HP."
 pip_value = -3
 pattern = Array[ExtResource("2_eon81")]([SubResource("Resource_eon81")])
 effect = SubResource("Resource_wj5y7")

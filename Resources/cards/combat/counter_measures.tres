@@ -31,6 +31,7 @@ metadata/_custom_type_script = "uid://ur0p531l1ca4"
 script = ExtResource("5_cmf3v")
 id = "counter_measures"
 title = "Counter Measures"
+tooltip_summary = "Send two enemy checkers from the matched across pair to the bar, deal 4 damage, gain +1 base attack, and add a bonus die."
 category = 1
 pip_value = -6
 pattern = Array[ExtResource("4_cmf3v")]([SubResource("Resource_pattern_counter_measures")])

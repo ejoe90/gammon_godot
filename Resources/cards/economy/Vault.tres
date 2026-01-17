@@ -12,6 +12,7 @@ metadata/_custom_type_script = "uid://ur0p531l1ca4"
 script = ExtResource("3_bi36m")
 id = "vault"
 title = "Vault"
+tooltip_summary = "No effect defined yet."
 pip_value = -3
 pattern = Array[ExtResource("2_8bv0u")]([SubResource("Resource_dt0ps")])
 metadata/_custom_type_script = "uid://b1ylg81nigak7"

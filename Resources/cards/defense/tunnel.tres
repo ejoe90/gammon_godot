@@ -29,6 +29,7 @@ metadata/_custom_type_script = "uid://ur0p531l1ca4"
 script = ExtResource("5_tunnel")
 id = "tunnel"
 title = "Tunnel"
+tooltip_summary = "Create a tunnel between opposite points; landing on one teleports to the other and heals 1 HP."
 category = 3
 pip_value = 5
 pattern = Array[ExtResource("4_tunnel")]([SubResource("Resource_tunnel_pattern")])

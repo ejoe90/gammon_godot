@@ -26,6 +26,7 @@ metadata/_custom_type_script = "uid://ur0p531l1ca4"
 script = ExtResource("4_n3o0x")
 id = "sniper"
 title = "Sniper"
+tooltip_summary = "Send the opposite single enemy checker to the bar and deal 3 damage."
 category = 1
 pattern = Array[ExtResource("3_qghcl")]([SubResource("Resource_j4ddw")])
 effect = SubResource("Resource_n3o0x")

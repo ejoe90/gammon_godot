@@ -26,6 +26,7 @@ metadata/_custom_type_script = "uid://ur0p531l1ca4"
 script = ExtResource("5_stopgap")
 id = "stopgap"
 title = "Stopgap"
+tooltip_summary = "Mark a gap: its occupant heals 1 HP each turn and shifts base defense (+1 white / -1 black)."
 category = 3
 pip_value = 3
 pattern = Array[ExtResource("4_stopgap")]([SubResource("Resource_stopgap_pattern")])

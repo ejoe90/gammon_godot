@@ -25,6 +25,7 @@ metadata/_custom_type_script = "uid://ur0p531l1ca4"
 script = ExtResource("5_respite")
 id = "respite"
 title = "Respite"
+tooltip_summary = "Once per white turn, landing on a marked point heals 4 HP (overcap)."
 category = 3
 pip_value = 2
 pattern = Array[ExtResource("4_respite")]([SubResource("Resource_respite_pattern")])

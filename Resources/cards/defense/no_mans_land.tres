@@ -26,6 +26,7 @@ metadata/_custom_type_script = "uid://ur0p531l1ca4"
 script = ExtResource("5_nml")
 id = "no_mans_land"
 title = "No Man's Land"
+tooltip_summary = "Create a trap gap for 5 uses: landing on it sends the checker to the bar and heals its owner 2 HP."
 category = 3
 pip_value = 4
 pattern = Array[ExtResource("4_nml")]([SubResource("Resource_nml_pattern")])

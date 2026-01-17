@@ -24,6 +24,7 @@ metadata/_custom_type_script = "uid://ur0p531l1ca4"
 script = ExtResource("5_e1g2h")
 id = "engulf"
 title = "Engulf"
+tooltip_summary = "Collapse two white stacks into the middle, hit if possible, and deal 2 damage."
 category = 1
 pip_value = 3
 pattern = Array[ExtResource("4_e1g2h")]([SubResource("Resource_pattern_engulf")])

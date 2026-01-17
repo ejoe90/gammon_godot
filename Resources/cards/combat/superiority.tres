@@ -31,6 +31,7 @@ metadata/_custom_type_script = "uid://ur0p531l1ca4"
 script = ExtResource("5_hithj")
 id = "superiority"
 title = "Superiority"
+tooltip_summary = "Send two enemy checkers to the bar, move two white checkers into their point, and deal 4 damage."
 category = 1
 pip_value = -3
 pattern = Array[ExtResource("2_g1d7s")]([SubResource("Resource_62c3r")])
