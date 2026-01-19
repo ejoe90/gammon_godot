@@ -23,8 +23,8 @@
 [ext_resource type="Resource" uid="uid://c0i6wt6x0cmiw" path="res://Resources/cards/defense/counter_measures_defense.tres" id="20_defense_counter_measures"]
 [ext_resource type="Resource" uid="uid://lr6dia8qtl4g" path="res://Resources/cards/defense/distant_threat.tres" id="21_defense_distant_threat"]
 [ext_resource type="Resource" uid="uid://dr3nv2hlfpmky" path="res://Resources/cards/defense/accelerator.tres" id="22_defense_accelerator"]
-[ext_resource type="Resource" uid="uid://overwatchcard1" path="res://Resources/cards/defense/overwatch.tres" id="23_defense_overwatch"]
-[ext_resource type="Resource" uid="uid://pacifismcard1" path="res://Resources/cards/defense/pacifism.tres" id="24_defense_pacifism"]
+[ext_resource type="Resource" uid="uid://cokirln71eqd5" path="res://Resources/cards/defense/overwatch.tres" id="23_defense_overwatch"]
+[ext_resource type="Resource" uid="uid://dn3vnc1umn43q" path="res://Resources/cards/defense/pacifism.tres" id="24_defense_pacifism"]
 [ext_resource type="Resource" uid="uid://detentecard1" path="res://Resources/cards/defense/detente.tres" id="25_defense_detente"]
 
 [resource]

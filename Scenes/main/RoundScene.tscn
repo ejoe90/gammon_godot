@@ -1165,10 +1165,10 @@ layout_mode = 3
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = 690.0
-offset_top = 300.0
-offset_right = 730.0
-offset_bottom = 340.0
+offset_left = 545.0
+offset_top = 334.0
+offset_right = 585.0
+offset_bottom = 374.0
 grow_horizontal = 2
 script = ExtResource("6_k0kue")
 
@@ -1209,9 +1209,9 @@ offset_bottom = 690.0
 scale = Vector2(1.16, 1.16)
 
 [node name="DebugMenu" parent="." instance=ExtResource("8_b8mt7")]
-offset = Vector2(1630.55, 370.9)
+offset = Vector2(1505.251, 500)
 scale = Vector2(0.97, 0.97)
-transform = Transform2D(0.97, 0, 0, 0.97, 1630.55, 370.9)
+transform = Transform2D(0.97, 0, 0, 0.97, 1505.251, 500)
 
 [node name="SkillTreeManager" type="Node" parent="."]
 script = ExtResource("12_k0kue")
