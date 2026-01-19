@@ -463,6 +463,7 @@ func apply_move_with_zero_sum(move: Dictionary, player: int) -> int:
 	var result := Rules.apply_move_with_zero_sum(state, player, move)
 	_apply_zero_sum_hp(result, player)
 	_apply_pacifism_hit_hp(result, player)
+	_apply_white_hit_damage(move, result, player)
 	return int(result.get("landing", move.get("to", -999)))
 
 func _apply_zero_sum_hp(result: Dictionary, player: int) -> void:
@@ -490,6 +491,18 @@ func _apply_pacifism_hit_hp(result: Dictionary, player: int) -> void:
 		deal_player_damage(4, false)
 	else:
 		run_state.add_enemy_hp(-4)
+
+func _apply_white_hit_damage(move: Dictionary, result: Dictionary, player: int) -> void:
+	if run_state == null:
+		return
+	if player != BoardState.Player.WHITE:
+		return
+	if not bool(move.get("hit", false)):
+		return
+	if bool(result.get("pacifism_hit", false)):
+		return
+
+	deal_enemy_damage(1, true)
 
 func _reset_turn_combos() -> void:
 	turn_hit_victims_by_attacker.clear()
@@ -588,6 +601,7 @@ func _record_quick_strike_if_any(move: Dictionary, player: int) -> void:
 
 func _ready() -> void:
 	randomize()
+	set_process_unhandled_input(true)
 	# Keep internal hand list in sync when cards are consumed
 	card_consumed.connect(_on_card_consumed_internal)
 
@@ -1266,12 +1280,35 @@ func _apply_stopgap_turn_start_heals(player: int) -> void:
 func _refresh_persistent_effects() -> void:
 	if _bunker_active and not _bunker_intact():
 		_deactivate_bunker()
+	if _accelerator_active and not _accelerator_intact():
+		_deactivate_accelerator()
 	if _tunnel_active and not _tunnel_intact():
 		_deactivate_tunnel()
 	_refresh_no_mans_land()
 	_refresh_stopgap_modifiers()
 	_refresh_respite()
 	_sync_no_mans_land_ui()
+
+func _accelerator_intact() -> bool:
+	if state == null:
+		return false
+
+	var required_run := 4
+	for start in range(0, 24 - required_run + 1):
+		var ok := true
+		for offset in range(required_run):
+			var idx := start + offset
+			var st: PackedInt32Array = state.points[idx]
+			if st.is_empty():
+				ok = false
+				break
+			if state.owner_of(int(st[0])) != BoardState.Player.WHITE:
+				ok = false
+				break
+		if ok:
+			return true
+
+	return false
 
 func _bunker_intact() -> bool:
 	if state == null or _bunker_pattern.is_empty():
@@ -1446,6 +1483,10 @@ func _deactivate_bunker() -> void:
 	_bunker_active = false
 	_bunker_bonus = 0
 	_bunker_pattern.clear()
+
+func _deactivate_accelerator() -> void:
+	_accelerator_active = false
+	_accelerator_next_heal = 1
 
 func _deactivate_tunnel() -> void:
 	_tunnel_active = false
@@ -2383,6 +2424,46 @@ func request_burn_card_for_pips(card: CardInstance) -> void:
 
 	_update_dice_ui()
 	emit_signal("card_consumed", card.uid)
+
+func request_redraw_hand() -> void:
+	if not round_active:
+		return
+	if skill_tree_blocking:
+		return
+	if targeting_active:
+		return
+	if state == null or state.turn != BoardState.Player.WHITE:
+		return
+
+	var cost := 1
+	if ap_left < cost:
+		return
+
+	ap_left -= cost
+	_ensure_hand_slots()
+
+	for i in range(hand.size()):
+		if hand[i] != null and hand[i].def != null:
+			discard_pile.append(String(hand[i].def.id))
+		hand[i] = null
+
+	for i in range(hand.size()):
+		if draw_pile.is_empty():
+			break
+		var id: String = String(draw_pile.pop_back())
+		var def := CardDB.get_def(id)
+		if def == null:
+			push_warning("[RoundController] Deck id not found in CardDB: %s" % id)
+			continue
+		hand[i] = CardInstance.new(def)
+
+	emit_signal("hand_changed", hand)
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey:
+		var key_event := event as InputEventKey
+		if key_event.pressed and not key_event.echo and key_event.keycode == KEY_R:
+			request_redraw_hand()
 
 # -----------------------
 # Debug handlers (optional)
