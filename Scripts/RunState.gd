@@ -65,6 +65,12 @@ func add_player_hp_overcap(delta: int) -> int:
 	player_hp = maxi(0, before + int(delta))
 	return int(player_hp) - before
 
+func add_enemy_hp_overcap(delta: int) -> int:
+	# Like add_enemy_hp, but allows HP to exceed enemy_max_hp (overcap healing).
+	var before := int(enemy_hp)
+	enemy_hp = maxi(0, before + int(delta))
+	return int(enemy_hp) - before
+
 func cycle_gold_convert_mode() -> int:
 	gold_convert_mode = int(gold_convert_mode) + 1
 	if gold_convert_mode > GoldConvertMode.PIPS:
