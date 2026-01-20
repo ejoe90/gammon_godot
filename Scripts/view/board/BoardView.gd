@@ -16,11 +16,13 @@ signal bar_clicked(player: int)
 @onready var highlights: BoardHighlights = $HighlightsLayer
 @onready var no_mans_land_layer: Node2D = get_node_or_null("NoMansLandLayer") as Node2D
 @onready var stopgap_layer: Node2D = get_node_or_null("StopgapLayer") as Node2D
+@onready var wormhole_layer: Node2D = get_node_or_null("WormholeLayer") as Node2D
 @onready var overwatch_label: Label = get_node_or_null("OverwatchLabel") as Label
 @onready var detente_label: Label = get_node_or_null("DetenteLabel") as Label
 
 var _no_mans_land_labels: Dictionary = {}
 var _stopgap_labels: Dictionary = {}
+var _wormhole_labels: Dictionary = {}
 
 func show_move_targets(targets: Array[int], player: int) -> void:
 	var is_white: bool = (player == BoardState.Player.WHITE)
@@ -105,6 +107,33 @@ func set_stopgap_points(points: Array) -> void:
 		label.position = pos + Vector2(-18, -22)
 		stopgap_layer.add_child(label)
 		_stopgap_labels[point] = label
+
+func set_wormhole_points(points: Array) -> void:
+	if wormhole_layer == null:
+		return
+
+	for key in _wormhole_labels.keys():
+		var label: Label = _wormhole_labels[key] as Label
+		if is_instance_valid(label):
+			label.queue_free()
+	_wormhole_labels.clear()
+
+	for entry in points:
+		var point: int = int(entry)
+		if point < 0 or point > 23:
+			continue
+
+		var label := Label.new()
+		label.text = "W"
+		label.scale = Vector2(0.8, 0.8)
+		label.z_index = 642
+
+		var pos := Vector2.ZERO
+		if pieces != null:
+			pos = wormhole_layer.to_local(pieces.point_slot_global(point, 0))
+		label.position = pos + Vector2(-6, -10)
+		wormhole_layer.add_child(label)
+		_wormhole_labels[point] = label
 
 func set_overwatch_active(active: bool) -> void:
 	if overwatch_label == null:

@@ -1,0 +1,40 @@
+[gd_resource type="Resource" script_class="CardDef" load_steps=8 format=3 uid="uid://eq8xrc9h0w3we"]
+
+[ext_resource type="Texture2D" uid="uid://d2mvn5ify0qrn" path="res://Assets/textures/cards/green deck fronts/6 plus green.jpg" id="1_wormhole"]
+[ext_resource type="Script" uid="uid://dxnljvcddxql4" path="res://Scripts/CardEffect.gd" id="2_wormhole"]
+[ext_resource type="Script" uid="uid://t5af1ibc6f0pi" path="res://Scripts/cards/effects/EffectWormhole.gd" id="3_wormhole"]
+[ext_resource type="Script" uid="uid://ur0p531l1ca4" path="res://Scripts/PatternReq.gd" id="4_wormhole"]
+[ext_resource type="Script" uid="uid://b1ylg81nigak7" path="res://Scripts/CardDef.gd" id="5_wormhole"]
+
+[sub_resource type="Resource" id="Resource_wormhole_effect"]
+script = ExtResource("3_wormhole")
+metadata/_custom_type_script = "uid://t5af1ibc6f0pi"
+
+[sub_resource type="Resource" id="Resource_wormhole_pattern"]
+script = ExtResource("4_wormhole")
+kind = 3
+owner_a = 0
+owner_b = 1
+min_count_a = 1
+max_count_a = 1
+min_count_b = 1
+max_count_b = 1
+adj_either_order = true
+seq_counts = null
+mix_owners = null
+mix_mins = null
+mix_maxs = null
+mix_requires_empty = null
+metadata/_custom_type_script = "uid://ur0p531l1ca4"
+
+[resource]
+script = ExtResource("5_wormhole")
+id = "wormhole"
+title = "Wormhole"
+category = 2
+tooltip_summary = "Destroy opposite single checkers to open a wormhole this round; landing on it teleports to the other side and hits blots on arrival."
+pip_value = 6
+pattern = Array[ExtResource("4_wormhole")]([SubResource("Resource_wormhole_pattern")])
+effect = SubResource("Resource_wormhole_effect")
+art_texture = ExtResource("1_wormhole")
+metadata/_custom_type_script = "uid://b1ylg81nigak7"

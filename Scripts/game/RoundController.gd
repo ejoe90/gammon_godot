@@ -82,6 +82,8 @@ var _tunnel_active: bool = false
 var _tunnel_points: PackedInt32Array = PackedInt32Array()
 var _tunnel_heal_amount: int = 1
 var _tunnel_min_count: int = 2
+var _wormhole_active: bool = false
+var _wormhole_points: PackedInt32Array = PackedInt32Array()
 var _no_mans_lands: Array[Dictionary] = []
 var _stopgap_points: PackedInt32Array = PackedInt32Array()
 var _stopgap_defense_bonus: int = 0
@@ -348,6 +350,26 @@ func activate_tunnel(points: PackedInt32Array, heal_amount: int, card: CardInsta
 	_tunnel_active = true
 	_tunnel_points = points
 	_tunnel_heal_amount = maxi(0, int(heal_amount))
+	emit_signal("card_consumed", card.uid)
+
+func activate_wormhole(points: PackedInt32Array, card: CardInstance) -> void:
+	if state == null or points.size() != 2:
+		return
+
+	for pt in points:
+		var idx: int = int(pt)
+		if idx < 0 or idx > 23:
+			continue
+		var ids := state.points[idx].duplicate()
+		for checker_id in ids:
+			Rules.destroy_checker(state, int(checker_id))
+
+	_wormhole_active = true
+	_wormhole_points = points
+
+	if board != null and board.has_method("sync_from_state_full"):
+		board.call("sync_from_state_full", state)
+	_sync_wormhole_ui()
 	emit_signal("card_consumed", card.uid)
 
 func activate_no_mans_land(left_pt: int, gap_pt: int, right_pt: int, left_owner: int, right_owner: int, uses: int, card: CardInstance) -> void:
@@ -669,6 +691,8 @@ func start_round(rs: RunState) -> void:
 	_tunnel_active = false
 	_tunnel_points = PackedInt32Array()
 	_tunnel_heal_amount = 1
+	_wormhole_active = false
+	_wormhole_points = PackedInt32Array()
 	_no_mans_lands.clear()
 	_stopgap_points = PackedInt32Array()
 	_stopgap_defense_bonus = 0
@@ -721,6 +745,7 @@ func start_round(rs: RunState) -> void:
 	_hide_round_end()
 	_sync_no_mans_land_ui()
 	_sync_stopgap_ui()
+	_sync_wormhole_ui()
 	_sync_overwatch_ui()
 	_sync_detente_ui()
 	
@@ -1158,6 +1183,8 @@ func _apply_post_move_effects(move: Dictionary, player: int, landing_override: i
 		landing = landing_override
 	if player == BoardState.Player.WHITE:
 		landing = _apply_tunnel_if_needed(landing)
+	landing = _apply_wormhole_if_needed(landing, player)
+	if player == BoardState.Player.WHITE:
 		_apply_respite_if_needed(landing)
 
 	_apply_no_mans_land_if_needed(landing)
@@ -1225,6 +1252,64 @@ func _apply_tunnel_if_needed(landing: int) -> int:
 		board.call("sync_from_state_full", state)
 
 	return to_pt
+
+func _apply_wormhole_if_needed(landing: int, player: int) -> int:
+	if not _wormhole_active:
+		return landing
+	if landing < 0 or landing > 23:
+		return landing
+	if _wormhole_points.size() != 2:
+		return landing
+	if landing != int(_wormhole_points[0]) and landing != int(_wormhole_points[1]):
+		return landing
+	if state == null:
+		return landing
+
+	var from_pt: int = landing
+	var to_pt: int = int(_wormhole_points[1]) if landing == int(_wormhole_points[0]) else int(_wormhole_points[0])
+	var from_stack: PackedInt32Array = state.points[from_pt]
+	if from_stack.is_empty():
+		return landing
+	if state.owner_of(int(from_stack[from_stack.size() - 1])) != player:
+		return landing
+
+	var moved: bool = false
+	if from_stack.size() > 1:
+		var moving_ids := from_stack.duplicate()
+		state.points[from_pt] = PackedInt32Array()
+		if _wormhole_place_ids(to_pt, player, moving_ids):
+			moved = true
+		else:
+			state.points[from_pt] = moving_ids
+	else:
+		var moving_id: int = int(from_stack[from_stack.size() - 1])
+		state.points[from_pt].remove_at(from_stack.size() - 1)
+		if _wormhole_place_ids(to_pt, player, PackedInt32Array([moving_id])):
+			moved = true
+		else:
+			state.points[from_pt].append(moving_id)
+
+	if moved and board != null and board.has_method("sync_from_state_full"):
+		board.call("sync_from_state_full", state)
+		return to_pt
+
+	return landing
+
+func _wormhole_place_ids(to_pt: int, player: int, moving_ids: PackedInt32Array) -> bool:
+	if to_pt < 0 or to_pt > 23 or moving_ids.is_empty():
+		return false
+
+	var to_stack: PackedInt32Array = state.points[to_pt]
+	if not to_stack.is_empty() and state.owner_of(int(to_stack[0])) != player:
+		if to_stack.size() == 1:
+			Rules.send_checker_to_bar(state, int(to_stack[0]))
+		else:
+			return false
+
+	for checker_id in moving_ids:
+		state.points[to_pt].append(int(checker_id))
+
+	return true
 
 func _apply_no_mans_land_if_needed(landing: int) -> void:
 	if landing < 0 or landing > 23:
@@ -1458,6 +1543,15 @@ func _sync_stopgap_ui() -> void:
 	for pt in _stopgap_points:
 		points.append(int(pt))
 	board.call("set_stopgap_points", points)
+
+func _sync_wormhole_ui() -> void:
+	if board == null or not board.has_method("set_wormhole_points"):
+		return
+	var points: Array[int] = []
+	if _wormhole_active:
+		for pt in _wormhole_points:
+			points.append(int(pt))
+	board.call("set_wormhole_points", points)
 
 func _sync_overwatch_ui() -> void:
 	if board == null or not board.has_method("set_overwatch_active"):
