@@ -1,8 +1,8 @@
-[gd_resource type="Resource" script_class="CardDef" load_steps=8 format=3 uid="uid://7peow9kpvxt56"]
+[gd_resource type="Resource" script_class="CardDef" load_steps=8 format=3 uid="uid://br4p7s7pect32"]
 
-[ext_resource type="Texture2D" uid="uid://n021lyd5i5kc" path="res://Assets/textures/cards/red deck fronts/4 plus red.jpg" id="1_nml"]
+[ext_resource type="Texture2D" uid="uid://c5we7hdns34md" path="res://Assets/textures/cards/blue deck fronts/4 plus blue.jpg" id="1_g57dy"]
 [ext_resource type="Script" uid="uid://dxnljvcddxql4" path="res://Scripts/CardEffect.gd" id="2_nml"]
-[ext_resource type="Script" uid="uid://09fzle3qkf6y2" path="res://Scripts/cards/effects/EffectNoMansLand.gd" id="3_nml"]
+[ext_resource type="Script" uid="uid://c2yr12k757xgh" path="res://Scripts/cards/effects/EffectNoMansLand.gd" id="3_nml"]
 [ext_resource type="Script" uid="uid://ur0p531l1ca4" path="res://Scripts/PatternReq.gd" id="4_nml"]
 [ext_resource type="Script" uid="uid://b1ylg81nigak7" path="res://Scripts/CardDef.gd" id="5_nml"]
 
@@ -26,10 +26,10 @@ metadata/_custom_type_script = "uid://ur0p531l1ca4"
 script = ExtResource("5_nml")
 id = "no_mans_land"
 title = "No Man's Land"
-tooltip_summary = "Create a trap gap for 5 uses: landing on it sends the checker to the bar and heals its owner 2 HP."
 category = 3
+tooltip_summary = "Create a trap gap for 5 uses: landing on it sends the checker to the bar and heals its owner 2 HP."
 pip_value = 4
 pattern = Array[ExtResource("4_nml")]([SubResource("Resource_nml_pattern")])
 effect = SubResource("Resource_nml_effect")
-art_texture = ExtResource("1_nml")
+art_texture = ExtResource("1_g57dy")
 metadata/_custom_type_script = "uid://b1ylg81nigak7"

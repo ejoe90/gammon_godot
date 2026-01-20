@@ -1,8 +1,8 @@
 [gd_resource type="Resource" script_class="CardDef" load_steps=8 format=3 uid="uid://dyy7rtn7v70ja"]
 
-[ext_resource type="Texture2D" uid="uid://cgyldsqwys86c" path="res://Assets/textures/cards/red deck fronts/1 plus red.jpg" id="1_zero_sum"]
+[ext_resource type="Texture2D" uid="uid://cjtba0yhlj33u" path="res://Assets/textures/cards/blue deck fronts/1 plus blue.jpg" id="1_i73vt"]
 [ext_resource type="Script" uid="uid://dxnljvcddxql4" path="res://Scripts/CardEffect.gd" id="2_zero_sum"]
-[ext_resource type="Script" uid="uid://s3yy4cl3qf1da" path="res://Scripts/cards/effects/EffectZeroSum.gd" id="3_zero_sum"]
+[ext_resource type="Script" uid="uid://dndiq3w3hmjb7" path="res://Scripts/cards/effects/EffectZeroSum.gd" id="3_zero_sum"]
 [ext_resource type="Script" uid="uid://ur0p531l1ca4" path="res://Scripts/PatternReq.gd" id="4_zero_sum"]
 [ext_resource type="Script" uid="uid://b1ylg81nigak7" path="res://Scripts/CardDef.gd" id="5_zero_sum"]
 
@@ -13,27 +13,22 @@ metadata/_custom_type_script = "uid://s3yy4cl3qf1da"
 [sub_resource type="Resource" id="Resource_zero_sum_pattern"]
 script = ExtResource("4_zero_sum")
 kind = 1
-owner_a = 0
-owner_b = 1
 min_count_a = 3
-max_count_a = 15
 min_count_b = 3
-max_count_b = 15
-adj_either_order = true
 seq_counts = null
 mix_owners = null
 mix_mins = null
 mix_maxs = null
+mix_requires_empty = null
 metadata/_custom_type_script = "uid://ur0p531l1ca4"
 
 [resource]
 script = ExtResource("5_zero_sum")
 id = "zero_sum"
 title = "Zero Sum"
-tooltip_summary = "Mark two adjacent stacks as zero-sum for special hit outcomes."
 category = 3
-pip_value = 1
+tooltip_summary = "Mark two adjacent stacks as zero-sum for special hit outcomes."
 pattern = Array[ExtResource("4_zero_sum")]([SubResource("Resource_zero_sum_pattern")])
 effect = SubResource("Resource_zero_sum_effect")
-art_texture = ExtResource("1_zero_sum")
+art_texture = ExtResource("1_i73vt")
 metadata/_custom_type_script = "uid://b1ylg81nigak7"

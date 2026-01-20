@@ -1,14 +1,13 @@
-[gd_resource type="Resource" script_class="CardDef" load_steps=8 format=3 uid="uid://distantthreatcard1"]
+[gd_resource type="Resource" script_class="CardDef" load_steps=8 format=3 uid="uid://lr6dia8qtl4g"]
 
-[ext_resource type="Texture2D" uid="uid://dcxn2rrydunyb" path="res://Assets/textures/cards/red deck fronts/5 minus red.jpg" id="1_distant_threat"]
+[ext_resource type="Texture2D" uid="uid://mr0gfly4vmts" path="res://Assets/textures/cards/blue deck fronts/5 minus blue.jpg" id="1_bsibt"]
 [ext_resource type="Script" uid="uid://dxnljvcddxql4" path="res://Scripts/CardEffect.gd" id="2_distant_threat"]
-[ext_resource type="Script" uid="uid://effectdistantthreat1" path="res://Scripts/cards/effects/EffectDistantThreat.gd" id="3_distant_threat"]
+[ext_resource type="Script" uid="uid://331b8bt11lum" path="res://Scripts/cards/effects/EffectDistantThreat.gd" id="3_distant_threat"]
 [ext_resource type="Script" uid="uid://ur0p531l1ca4" path="res://Scripts/PatternReq.gd" id="4_distant_threat"]
 [ext_resource type="Script" uid="uid://b1ylg81nigak7" path="res://Scripts/CardDef.gd" id="5_distant_threat"]
 
 [sub_resource type="Resource" id="Resource_distant_threat_effect"]
 script = ExtResource("3_distant_threat")
-turns = 3
 metadata/_custom_type_script = "uid://effectdistantthreat1"
 
 [sub_resource type="Resource" id="Resource_distant_threat_pattern"]
@@ -21,17 +20,16 @@ mix_maxs = PackedInt32Array(1, 0, 0, 0, 15)
 mix_requires_empty = PackedInt32Array(0, 1, 1, 1, 0)
 mix_allow_reverse = true
 mix_same_half_only = false
-mix_max_gap = 0
 metadata/_custom_type_script = "uid://ur0p531l1ca4"
 
 [resource]
 script = ExtResource("5_distant_threat")
 id = "distant_threat"
 title = "Distant Threat"
-tooltip_summary = "Make a lone white checker invulnerable for 3 turns and prevent hit damage to white checkers."
 category = 3
+tooltip_summary = "Make a lone white checker invulnerable for 3 turns and prevent hit damage to white checkers."
 pip_value = -5
 pattern = Array[ExtResource("4_distant_threat")]([SubResource("Resource_distant_threat_pattern")])
 effect = SubResource("Resource_distant_threat_effect")
-art_texture = ExtResource("1_distant_threat")
+art_texture = ExtResource("1_bsibt")
 metadata/_custom_type_script = "uid://b1ylg81nigak7"

@@ -1,14 +1,13 @@
 [gd_resource type="Resource" script_class="CardDef" load_steps=8 format=3 uid="uid://detentecard1"]
 
-[ext_resource type="Texture2D" uid="uid://b1dcahsjb6dqn" path="res://Assets/textures/cards/blue deck fronts/1 minus blue.jpg" id="1_detente"]
+[ext_resource type="Texture2D" uid="uid://ewt3b8om73vl" path="res://Assets/textures/cards/blue deck fronts/1 minus blue.jpg" id="1_detente"]
 [ext_resource type="Script" uid="uid://dxnljvcddxql4" path="res://Scripts/CardEffect.gd" id="2_detente"]
-[ext_resource type="Script" uid="uid://effectdetente1" path="res://Scripts/cards/effects/EffectDetente.gd" id="3_detente"]
+[ext_resource type="Script" uid="uid://d21asa2xh4c5s" path="res://Scripts/cards/effects/EffectDetente.gd" id="3_detente"]
 [ext_resource type="Script" uid="uid://ur0p531l1ca4" path="res://Scripts/PatternReq.gd" id="4_detente"]
 [ext_resource type="Script" uid="uid://b1ylg81nigak7" path="res://Scripts/CardDef.gd" id="5_detente"]
 
 [sub_resource type="Resource" id="Resource_detente_effect"]
 script = ExtResource("3_detente")
-turns = 4
 metadata/_custom_type_script = "uid://effectdetente1"
 
 [sub_resource type="Resource" id="Resource_detente_pattern"]
@@ -21,15 +20,14 @@ mix_maxs = PackedInt32Array(2, 2)
 mix_requires_empty = PackedInt32Array(0, 0)
 mix_allow_reverse = true
 mix_same_half_only = false
-mix_max_gap = 0
 metadata/_custom_type_script = "uid://ur0p531l1ca4"
 
 [resource]
 script = ExtResource("5_detente")
 id = "detente"
 title = "Detente"
-tooltip_summary = "Declare detente: no hits are legal for the next 2 full turns."
 category = 3
+tooltip_summary = "Declare detente: no hits are legal for the next 2 full turns."
 pip_value = -1
 pattern = Array[ExtResource("4_detente")]([SubResource("Resource_detente_pattern")])
 effect = SubResource("Resource_detente_effect")

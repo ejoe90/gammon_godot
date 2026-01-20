@@ -1,8 +1,8 @@
-[gd_resource type="Resource" script_class="CardDef" load_steps=8 format=3 uid="uid://pacifismcard1"]
+[gd_resource type="Resource" script_class="CardDef" load_steps=8 format=3 uid="uid://dn3vnc1umn43q"]
 
-[ext_resource type="Texture2D" uid="uid://bxm4d0v84n0a3" path="res://Assets/textures/cards/blue deck fronts/2 minus blue.jpg" id="1_pacifism"]
+[ext_resource type="Texture2D" uid="uid://wj0vg0jsgpgk" path="res://Assets/textures/cards/blue deck fronts/2 minus blue.jpg" id="1_pacifism"]
 [ext_resource type="Script" uid="uid://dxnljvcddxql4" path="res://Scripts/CardEffect.gd" id="2_pacifism"]
-[ext_resource type="Script" uid="uid://effectpacifism1" path="res://Scripts/cards/effects/EffectPacifism.gd" id="3_pacifism"]
+[ext_resource type="Script" uid="uid://ced158r512ti6" path="res://Scripts/cards/effects/EffectPacifism.gd" id="3_pacifism"]
 [ext_resource type="Script" uid="uid://ur0p531l1ca4" path="res://Scripts/PatternReq.gd" id="4_pacifism"]
 [ext_resource type="Script" uid="uid://b1ylg81nigak7" path="res://Scripts/CardDef.gd" id="5_pacifism"]
 
@@ -20,15 +20,14 @@ mix_maxs = PackedInt32Array(1, 1, 1, 1)
 mix_requires_empty = PackedInt32Array(0, 0, 0, 0)
 mix_allow_reverse = true
 mix_same_half_only = false
-mix_max_gap = 0
 metadata/_custom_type_script = "uid://ur0p531l1ca4"
 
 [resource]
 script = ExtResource("5_pacifism")
 id = "pacifism"
 title = "Pacifism"
-tooltip_summary = "Mark four alternating single checkers as pacifists; pacifists cannot hit, heal on friendly landings, punish hits, and grant +5 HP on bear-off."
 category = 3
+tooltip_summary = "Mark four alternating single checkers as pacifists; pacifists cannot hit, heal on friendly landings, punish hits, and grant +5 HP on bear-off."
 pip_value = -2
 pattern = Array[ExtResource("4_pacifism")]([SubResource("Resource_pacifism_pattern")])
 effect = SubResource("Resource_pacifism_effect")

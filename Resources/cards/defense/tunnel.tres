@@ -1,8 +1,8 @@
-[gd_resource type="Resource" script_class="CardDef" load_steps=8 format=3 uid="uid://k6s1agvv15ter"]
+[gd_resource type="Resource" script_class="CardDef" load_steps=8 format=3 uid="uid://dg0a3c2ewq2u8"]
 
-[ext_resource type="Texture2D" uid="uid://b4b820ay6cggv" path="res://Assets/textures/cards/red deck fronts/5 plus red.jpg" id="1_tunnel"]
+[ext_resource type="Texture2D" uid="uid://khmnb7cw774d" path="res://Assets/textures/cards/blue deck fronts/5 plus blue.jpg" id="1_qruuf"]
 [ext_resource type="Script" uid="uid://dxnljvcddxql4" path="res://Scripts/CardEffect.gd" id="2_tunnel"]
-[ext_resource type="Script" uid="uid://uvnv310aq42ek" path="res://Scripts/cards/effects/EffectTunnel.gd" id="3_tunnel"]
+[ext_resource type="Script" uid="uid://bkmj5re0w4olq" path="res://Scripts/cards/effects/EffectTunnel.gd" id="3_tunnel"]
 [ext_resource type="Script" uid="uid://ur0p531l1ca4" path="res://Scripts/PatternReq.gd" id="4_tunnel"]
 [ext_resource type="Script" uid="uid://b1ylg81nigak7" path="res://Scripts/CardDef.gd" id="5_tunnel"]
 
@@ -29,10 +29,10 @@ metadata/_custom_type_script = "uid://ur0p531l1ca4"
 script = ExtResource("5_tunnel")
 id = "tunnel"
 title = "Tunnel"
-tooltip_summary = "Create a tunnel between opposite points; landing on one teleports to the other and heals 1 HP."
 category = 3
+tooltip_summary = "Create a tunnel between opposite points; landing on one teleports to the other and heals 1 HP."
 pip_value = 5
 pattern = Array[ExtResource("4_tunnel")]([SubResource("Resource_tunnel_pattern")])
 effect = SubResource("Resource_tunnel_effect")
-art_texture = ExtResource("1_tunnel")
+art_texture = ExtResource("1_qruuf")
 metadata/_custom_type_script = "uid://b1ylg81nigak7"

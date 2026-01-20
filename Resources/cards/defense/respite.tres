@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="CardDef" load_steps=8 format=3 uid="uid://b1xfrb5idbbdq"]
 
-[ext_resource type="Texture2D" uid="uid://cnhhcd6r4kld6" path="res://Assets/textures/cards/red deck fronts/2 plus red.jpg" id="1_respite"]
+[ext_resource type="Texture2D" uid="uid://dtj5m7lv1an0a" path="res://Assets/textures/cards/blue deck fronts/2 plus blue.jpg" id="1_e8f0h"]
 [ext_resource type="Script" uid="uid://dxnljvcddxql4" path="res://Scripts/CardEffect.gd" id="2_respite"]
 [ext_resource type="Script" uid="uid://d4lb1e7m2x7ar" path="res://Scripts/cards/effects/EffectRespite.gd" id="3_respite"]
 [ext_resource type="Script" uid="uid://ur0p531l1ca4" path="res://Scripts/PatternReq.gd" id="4_respite"]
@@ -18,17 +18,16 @@ mix_owners = PackedInt32Array(0, 0, 0, 0)
 mix_mins = PackedInt32Array(2, 1, 1, 2)
 mix_maxs = PackedInt32Array(15, 1, 1, 15)
 mix_requires_empty = PackedInt32Array(0, 0, 0, 0)
-mix_same_half_only = true
 metadata/_custom_type_script = "uid://ur0p531l1ca4"
 
 [resource]
 script = ExtResource("5_respite")
 id = "respite"
 title = "Respite"
-tooltip_summary = "Once per white turn, landing on a marked point heals 4 HP (overcap)."
 category = 3
+tooltip_summary = "Once per white turn, landing on a marked point heals 4 HP (overcap)."
 pip_value = 2
 pattern = Array[ExtResource("4_respite")]([SubResource("Resource_respite_pattern")])
 effect = SubResource("Resource_respite_effect")
-art_texture = ExtResource("1_respite")
+art_texture = ExtResource("1_e8f0h")
 metadata/_custom_type_script = "uid://b1ylg81nigak7"

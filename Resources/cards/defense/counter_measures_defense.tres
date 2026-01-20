@@ -1,8 +1,8 @@
-[gd_resource type="Resource" script_class="CardDef" load_steps=8 format=3 uid="uid://defensecountermeasures1"]
+[gd_resource type="Resource" script_class="CardDef" load_steps=8 format=3 uid="uid://c0i6wt6x0cmiw"]
 
-[ext_resource type="Texture2D" uid="uid://caxape5rjy30r" path="res://Assets/textures/cards/red deck fronts/6 minus red.jpg" id="1_counter_def"]
+[ext_resource type="Texture2D" uid="uid://c7v4umipp02jj" path="res://Assets/textures/cards/blue deck fronts/6 minus blue.jpg" id="1_gc1wr"]
 [ext_resource type="Script" uid="uid://dxnljvcddxql4" path="res://Scripts/CardEffect.gd" id="2_counter_def"]
-[ext_resource type="Script" uid="uid://effectdefensecountermeasures1" path="res://Scripts/cards/effects/EffectDefenseCounterMeasures.gd" id="3_counter_def"]
+[ext_resource type="Script" uid="uid://1l36wihgtota" path="res://Scripts/cards/effects/EffectDefenseCounterMeasures.gd" id="3_counter_def"]
 [ext_resource type="Script" uid="uid://ur0p531l1ca4" path="res://Scripts/PatternReq.gd" id="4_counter_def"]
 [ext_resource type="Script" uid="uid://b1ylg81nigak7" path="res://Scripts/CardDef.gd" id="5_counter_def"]
 
@@ -13,13 +13,6 @@ metadata/_custom_type_script = "uid://effectdefensecountermeasures1"
 [sub_resource type="Resource" id="Resource_counter_def_pattern"]
 script = ExtResource("4_counter_def")
 kind = 4
-owner_a = 0
-owner_b = 1
-min_count_a = 1
-max_count_a = 15
-min_count_b = 1
-max_count_b = 15
-adj_either_order = true
 seq_counts = null
 mix_owners = null
 mix_mins = null
@@ -31,10 +24,10 @@ metadata/_custom_type_script = "uid://ur0p531l1ca4"
 script = ExtResource("5_counter_def")
 id = "counter_measures_defense"
 title = "Counter Measures"
-tooltip_summary = "Gain base defense equal to your formation size advantage, or heal for the enemy advantage; tie grants both +1 defense and +1 HP."
 category = 3
+tooltip_summary = "Gain base defense equal to your formation size advantage, or heal for the enemy advantage; tie grants both +1 defense and +1 HP."
 pip_value = -6
 pattern = Array[ExtResource("4_counter_def")]([SubResource("Resource_counter_def_pattern")])
 effect = SubResource("Resource_counter_def_effect")
-art_texture = ExtResource("1_counter_def")
+art_texture = ExtResource("1_gc1wr")
 metadata/_custom_type_script = "uid://b1ylg81nigak7"
