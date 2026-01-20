@@ -374,6 +374,10 @@ static func apply_move_with_zero_sum(state: BoardState, p: int, m: Dictionary) -
 
 	var target_pacifism: bool = checker_is_pacifism(state, target_id)
 	if target_pacifism:
+		if state.checkers.has(target_id):
+			var target_info: CheckerInfo = state.checkers[target_id]
+			target_info.tags.erase("stealth")
+			target_info.tags.erase("chain_reaction")
 		if from_i == -1:
 			var bar_stack: PackedInt32Array = state.bar_stack(p)
 			if bar_stack.is_empty():
@@ -417,6 +421,8 @@ static func apply_move_with_zero_sum(state: BoardState, p: int, m: Dictionary) -
 		state.points[from_i] = src_stack
 
 	if moving_zero and target_zero:
+		if state.checkers.has(target_id):
+			state.checkers[target_id].tags.erase("chain_reaction")
 		destroy_checker(state, moving_id)
 		destroy_checker(state, target_id)
 		result["landing"] = -999
@@ -424,6 +430,8 @@ static func apply_move_with_zero_sum(state: BoardState, p: int, m: Dictionary) -
 		return result
 
 	if moving_zero and not target_zero:
+		if state.checkers.has(target_id):
+			state.checkers[target_id].tags.erase("chain_reaction")
 		send_checker_to_bar(state, target_id)
 		_push_checker_to_bar(state, moving_id, p)
 		result["landing"] = -999
@@ -431,6 +439,8 @@ static func apply_move_with_zero_sum(state: BoardState, p: int, m: Dictionary) -
 		return result
 
 	if not moving_zero and target_zero:
+		if state.checkers.has(target_id):
+			state.checkers[target_id].tags.erase("chain_reaction")
 		set_checker_zero_sum(state, target_id, false)
 		send_checker_to_bar(state, target_id)
 		_push_checker_to_bar(state, moving_id, p)
