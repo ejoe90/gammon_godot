@@ -133,6 +133,8 @@ func _ensure_node(state: BoardState, id: int) -> void:
 	_apply_zero_sum_visual(state, id, piece)
 	_apply_distant_threat_visual(state, id, piece)
 	_apply_pacifism_visual(state, id, piece)
+	_apply_chain_reaction_visual(state, id, piece)
+	_apply_stealth_visual(state, id, piece)
 
 func _apply_zero_sum_visual(state: BoardState, id: int, piece: Node2D) -> void:
 	if not piece.has_method("set_zero_sum_state"):
@@ -157,6 +159,20 @@ func _apply_pacifism_visual(state: BoardState, id: int, piece: Node2D) -> void:
 	var info: CheckerInfo = state.checkers.get(id, null)
 	var active: bool = info != null and bool(info.tags.get("pacifism", false))
 	piece.call("set_pacifism_state", active)
+
+func _apply_chain_reaction_visual(state: BoardState, id: int, piece: Node2D) -> void:
+	if not piece.has_method("set_chain_reaction_state"):
+		return
+	var info: CheckerInfo = state.checkers.get(id, null)
+	var active: bool = info != null and bool(info.tags.get("chain_reaction", false))
+	piece.call("set_chain_reaction_state", active)
+
+func _apply_stealth_visual(state: BoardState, id: int, piece: Node2D) -> void:
+	if not piece.has_method("set_stealth_state"):
+		return
+	var info: CheckerInfo = state.checkers.get(id, null)
+	var active: bool = info != null and bool(info.tags.get("stealth", false))
+	piece.call("set_stealth_state", active)
 
 
 func point_stack_dir_global(i: int) -> Vector2:

@@ -261,6 +261,10 @@ static func apply_move(state: BoardState, p: int, m: Dictionary) -> void:
 		if dst.size() == 1:
 			var hit_id: int = dst[0]
 			var opp: int = state.owner_of(hit_id)
+			var hit_info: CheckerInfo = state.checkers.get(hit_id, null)
+			if hit_info != null:
+				hit_info.tags.erase("stealth")
+				hit_info.tags.erase("chain_reaction")
 			dst = PackedInt32Array() # cleared
 			state.points[to_i] = dst
 
@@ -478,6 +482,10 @@ static func all_in_home_fraction(state: BoardState, p: int, required_fraction: f
 
 static func send_checker_to_bar(state: BoardState, checker_id: int) -> void:
 	var owner: int = state.owner_of(checker_id)
+	if state.checkers.has(checker_id):
+		var info: CheckerInfo = state.checkers[checker_id]
+		info.tags.erase("stealth")
+		info.tags.erase("chain_reaction")
 
 	# Remove from a point if present
 	var pt: int = find_checker_point(state, checker_id)
@@ -506,6 +514,8 @@ static func send_checker_to_bar(state: BoardState, checker_id: int) -> void:
 static func destroy_checker(state: BoardState, checker_id: int) -> void:
 	if not state.checkers.has(checker_id):
 		return
+	state.checkers[checker_id].tags.erase("stealth")
+	state.checkers[checker_id].tags.erase("chain_reaction")
 
 	# Remove from board point
 	for i in range(24):

@@ -377,6 +377,14 @@ horizontal_alignment = 1
 vertical_alignment = 1
 scale = Vector2(0.9, 0.9)
 
+[node name="FrictionLabel" type="Label" parent="."]
+position = Vector2(640, 1006)
+text = "Friction"
+visible = false
+horizontal_alignment = 1
+vertical_alignment = 1
+scale = Vector2(0.9, 0.9)
+
 [node name="BarClickWhite" type="Area2D" parent="."]
 position = Vector2(644.6667, 70)
 
