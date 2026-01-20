@@ -273,8 +273,6 @@ static func apply_move(state: BoardState, p: int, m: Dictionary) -> void:
 				state.bar_white = opp_bar
 			else:
 				state.bar_black = opp_bar
-			if hit_info != null:
-				hit_info.tags.erase("chain_reaction")
 
 	# Push to destination
 	if to_i >= 0 and to_i <= 23:
@@ -397,8 +395,6 @@ static func apply_move_with_zero_sum(state: BoardState, p: int, m: Dictionary) -
 			state.points[from_i] = src_stack
 
 		send_checker_to_bar(state, target_id)
-		if target_info != null:
-			target_info.tags.erase("chain_reaction")
 		_push_checker_to_bar(state, moving_id, p)
 		result["landing"] = -999
 		result["pacifism_hit"] = true
@@ -426,8 +422,6 @@ static func apply_move_with_zero_sum(state: BoardState, p: int, m: Dictionary) -
 		var target_info: CheckerInfo = state.checkers.get(target_id, null)
 		destroy_checker(state, moving_id)
 		destroy_checker(state, target_id)
-		if target_info != null:
-			target_info.tags.erase("chain_reaction")
 		result["landing"] = -999
 		result["zero_sum_result"] = ZeroSumResult.BOTH_DESTROYED
 		return result
@@ -435,8 +429,6 @@ static func apply_move_with_zero_sum(state: BoardState, p: int, m: Dictionary) -
 	if moving_zero and not target_zero:
 		var target_info: CheckerInfo = state.checkers.get(target_id, null)
 		send_checker_to_bar(state, target_id)
-		if target_info != null:
-			target_info.tags.erase("chain_reaction")
 		_push_checker_to_bar(state, moving_id, p)
 		result["landing"] = -999
 		result["zero_sum_result"] = ZeroSumResult.MOVING_ZERO_HITS_REGULAR
@@ -446,8 +438,6 @@ static func apply_move_with_zero_sum(state: BoardState, p: int, m: Dictionary) -
 		var target_info: CheckerInfo = state.checkers.get(target_id, null)
 		set_checker_zero_sum(state, target_id, false)
 		send_checker_to_bar(state, target_id)
-		if target_info != null:
-			target_info.tags.erase("chain_reaction")
 		_push_checker_to_bar(state, moving_id, p)
 		result["landing"] = -999
 		result["zero_sum_result"] = ZeroSumResult.REGULAR_HITS_ZERO
