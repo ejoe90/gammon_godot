@@ -16,6 +16,8 @@ var _zero_sum_material: ShaderMaterial = null
 var _distant_threat_material: ShaderMaterial = null
 var _distant_threat_label: Label = null
 var _pacifism_label: Label = null
+var _chain_reaction_label: Label = null
+var _stealth_label: Label = null
 
 const ZERO_SUM_SHADER_PATH := "res://Shaders/zero_sum_overlay.gdshader"
 const DISTANT_THREAT_SHADER_PATH := "res://Shaders/distant_threat_glow.gdshader"
@@ -88,6 +90,16 @@ func set_pacifism_state(enabled: bool) -> void:
 	if _pacifism_label != null:
 		_pacifism_label.visible = enabled
 
+func set_chain_reaction_state(enabled: bool) -> void:
+	_ensure_chain_reaction_label()
+	if _chain_reaction_label != null:
+		_chain_reaction_label.visible = enabled
+
+func set_stealth_state(enabled: bool) -> void:
+	_ensure_stealth_label()
+	if _stealth_label != null:
+		_stealth_label.visible = enabled
+
 func _ensure_distant_threat_label() -> void:
 	if _distant_threat_label != null:
 		return
@@ -125,6 +137,44 @@ func _ensure_pacifism_label() -> void:
 	label.visible = false
 	add_child(label)
 	_pacifism_label = label
+
+func _ensure_chain_reaction_label() -> void:
+	if _chain_reaction_label != null:
+		return
+	var existing: Label = get_node_or_null("ChainReactionLabel") as Label
+	if existing != null:
+		_chain_reaction_label = existing
+		return
+	var label := Label.new()
+	label.name = "ChainReactionLabel"
+	label.text = "x"
+	label.z_index = 2002
+	label.scale = Vector2(0.75, 0.75)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.position = Vector2(6, -18)
+	label.visible = false
+	add_child(label)
+	_chain_reaction_label = label
+
+func _ensure_stealth_label() -> void:
+	if _stealth_label != null:
+		return
+	var existing: Label = get_node_or_null("StealthLabel") as Label
+	if existing != null:
+		_stealth_label = existing
+		return
+	var label := Label.new()
+	label.name = "StealthLabel"
+	label.text = "<->"
+	label.z_index = 2003
+	label.scale = Vector2(0.65, 0.65)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.position = Vector2(-14, -4)
+	label.visible = false
+	add_child(label)
+	_stealth_label = label
 
 func _on_click_area_input_event(_vp: Viewport, event: InputEvent, _shape_idx: int) -> void:
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:

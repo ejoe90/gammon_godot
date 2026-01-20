@@ -63,6 +63,12 @@ func roll() -> void:
 	var d2 := randi_range(1, 6)
 	_set_regular_roll(d1, d2)
 
+func roll_with_sides(sides: int) -> void:
+	sides = clampi(sides, 1, 6)
+	var d1 := randi_range(1, sides)
+	var d2 := randi_range(1, sides)
+	_set_regular_roll(d1, d2)
+
 func has_moves() -> bool:
 	return remaining.size() > 0
 

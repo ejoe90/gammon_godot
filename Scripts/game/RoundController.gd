@@ -465,6 +465,41 @@ func activate_detente(turns: int, card: CardInstance) -> void:
 	if card != null:
 		emit_signal("card_consumed", card.uid)
 
+func activate_friction(turns: int, card: CardInstance) -> void:
+	if state == null:
+		return
+	state.friction_turns_left = maxi(0, int(turns))
+	_sync_friction_ui()
+	if card != null:
+		emit_signal("card_consumed", card.uid)
+
+func activate_chain_reaction(checker_ids: Array[int], card: CardInstance) -> void:
+	if state == null:
+		return
+	for checker_id in checker_ids:
+		var id: int = int(checker_id)
+		var info: CheckerInfo = state.checkers.get(id, null)
+		if info == null:
+			continue
+		info.tags["chain_reaction"] = true
+	if board != null and board.has_method("sync_from_state_full"):
+		board.call("sync_from_state_full", state)
+	if card != null:
+		emit_signal("card_consumed", card.uid)
+
+func activate_stealth(checker_id: int, card: CardInstance) -> void:
+	if state == null:
+		return
+	var id: int = int(checker_id)
+	var info: CheckerInfo = state.checkers.get(id, null)
+	if info == null:
+		return
+	info.tags["stealth"] = true
+	if board != null and board.has_method("sync_from_state_full"):
+		board.call("sync_from_state_full", state)
+	if card != null:
+		emit_signal("card_consumed", card.uid)
+
 func activate_pacifism(checker_ids: Array[int], card: CardInstance) -> void:
 	if state == null:
 		return
@@ -709,6 +744,7 @@ func start_round(rs: RunState) -> void:
 
 	state = BoardState.new()
 	state.reset_standard()
+	_clear_chain_reaction_tags()
 
 	if skill_tree != null:
 		if run_state.skill_state == null:
@@ -748,6 +784,7 @@ func start_round(rs: RunState) -> void:
 	_sync_wormhole_ui()
 	_sync_overwatch_ui()
 	_sync_detente_ui()
+	_sync_friction_ui()
 	
 	aux_cd_left.clear()
 	aux_uses_this_round.clear()
@@ -773,8 +810,11 @@ func start_turn() -> void:
 		if board != null and board.has_method("sync_from_state_full"):
 			board.call("sync_from_state_full", state)
 
-	if dice != null and dice.has_method("roll"):
-		dice.call("roll")
+	if dice != null:
+		if state != null and state.turn == BoardState.Player.BLACK and int(state.friction_turns_left) > 0 and dice.has_method("roll_with_sides"):
+			dice.call("roll_with_sides", 4)
+		elif dice.has_method("roll"):
+			dice.call("roll")
 
 	_update_dice_ui()
 	_refresh_stopgap_modifiers()
@@ -989,9 +1029,12 @@ func _apply_move_no_turn_end_safe(die_used: int, move: Dictionary, player: int) 
 		return false
 
 	var moving_id: int = _peek_moving_checker_id(move, player)
+	var used_chain_double: bool = bool(move.get("chain_reaction_double", false))
 	_record_quick_strike_if_any(move, player)
 	_record_turn_hit_if_any(move, player)
 	var landing: int = apply_move_with_zero_sum(move, player)
+	if used_chain_double:
+		_consume_chain_reaction(moving_id)
 
 	_black_ai_consume_die_safe(die_used)
 	_update_dice_ui()
@@ -1137,15 +1180,19 @@ func _black_ai_clone_state_for_sim(src: BoardState) -> BoardState:
 	c.off_white = src.off_white.duplicate()
 	c.off_black = src.off_black.duplicate()
 	c.detente_turns_left = int(src.detente_turns_left)
+	c.friction_turns_left = int(src.friction_turns_left)
 	return c
 
 func _apply_move_no_turn_end(die_used: int, move: Dictionary, player: int) -> void:
 	# Same as _apply_move_and_continue, but NEVER ends the turn.
 	var moving_id: int = _peek_moving_checker_id(move, player)
+	var used_chain_double: bool = bool(move.get("chain_reaction_double", false))
 	_record_quick_strike_if_any(move, player)
 	_record_turn_hit_if_any(move, player)
 
 	var landing: int = apply_move_with_zero_sum(move, player)
+	if used_chain_double:
+		_consume_chain_reaction(moving_id)
 	dice.call("consume_die", die_used)
 	_update_dice_ui()
 
@@ -1566,6 +1613,16 @@ func _sync_detente_ui() -> void:
 		active = int(state.detente_turns_left) > 0
 	board.call("set_detente_active", active)
 
+func _sync_friction_ui() -> void:
+	if board == null or not board.has_method("set_friction_active"):
+		return
+	var active := false
+	var turns_left := 0
+	if state != null:
+		turns_left = int(state.friction_turns_left)
+		active = turns_left > 0
+	board.call("set_friction_active", active, turns_left)
+
 func _deactivate_bunker() -> void:
 	if not _bunker_active or run_state == null:
 		_bunker_active = false
@@ -1619,6 +1676,7 @@ func end_turn() -> void:
 		return
 	_tick_distant_threat_end_turn()
 	_tick_detente_end_turn()
+	_tick_friction_end_turn()
 
 	if run_state != null and _turn_base_attack_bonus > 0:
 		run_state.base_attack_power = maxi(0, int(run_state.base_attack_power) - _turn_base_attack_bonus)
@@ -1650,6 +1708,14 @@ func _tick_detente_end_turn() -> void:
 	state.detente_turns_left = maxi(0, int(state.detente_turns_left) - 1)
 	_sync_detente_ui()
 
+func _tick_friction_end_turn() -> void:
+	if state == null:
+		return
+	if int(state.friction_turns_left) <= 0:
+		return
+	state.friction_turns_left = maxi(0, int(state.friction_turns_left) - 1)
+	_sync_friction_ui()
+
 func _sync_distant_threat_tag() -> void:
 	if state == null or _distant_threat_checker_id == -1:
 		return
@@ -1669,6 +1735,24 @@ func _clear_distant_threat() -> void:
 	_distant_threat_checker_id = -1
 	_distant_threat_turns_left = 0
 	_distant_threat_clear_on_white = false
+
+func _consume_chain_reaction(checker_id: int) -> void:
+	if state == null or checker_id == -1:
+		return
+	var info: CheckerInfo = state.checkers.get(checker_id, null)
+	if info == null:
+		return
+	info.tags.erase("chain_reaction")
+
+func _clear_chain_reaction_tags() -> void:
+	if state == null:
+		return
+	for key in state.checkers.keys():
+		var id: int = int(key)
+		var info: CheckerInfo = state.checkers.get(id, null)
+		if info == null:
+			continue
+		info.tags.erase("chain_reaction")
 
 
 func _on_point_clicked(i: int) -> void:
@@ -1756,6 +1840,53 @@ func _show_targets_for_selected() -> void:
 		return
 	board.call("show_move_targets", _compute_targets_for_selected(), state.turn)
 
+func _selected_checker_id(player: int) -> int:
+	if state == null:
+		return -1
+	if selected_from == -1:
+		var bar: PackedInt32Array = state.bar_stack(player)
+		if bar.is_empty():
+			return -1
+		return int(bar[bar.size() - 1])
+	if selected_from >= 0 and selected_from <= 23:
+		var st: PackedInt32Array = state.points[selected_from]
+		if st.is_empty():
+			return -1
+		return int(st[st.size() - 1])
+	return -1
+
+func _checker_has_tag(checker_id: int, tag: String) -> bool:
+	if state == null or checker_id == -1:
+		return false
+	var info: CheckerInfo = state.checkers.get(checker_id, null)
+	if info == null:
+		return false
+	return bool(info.tags.get(tag, false))
+
+func _candidate_moves_for_selected(die: int, allow_stealth: bool, allow_chain: bool) -> Array[Dictionary]:
+	var moves_out: Array[Dictionary] = []
+	var candidates: Array[int] = [die]
+	if allow_stealth and die != 0:
+		if not candidates.has(-die):
+			candidates.append(-die)
+	if allow_chain and die != 0:
+		var doubled: int = die * 2
+		if not candidates.has(doubled):
+			candidates.append(doubled)
+		if allow_stealth:
+			var doubled_back: int = -die * 2
+			if not candidates.has(doubled_back):
+				candidates.append(doubled_back)
+
+	for candidate_die in candidates:
+		var is_chain_double: bool = allow_chain and absi(candidate_die) == absi(die) * 2
+		var moves: Array[Dictionary] = Rules.legal_moves_for_die(state, state.turn, candidate_die)
+		for m in moves:
+			m["chain_reaction_double"] = is_chain_double
+			moves_out.append(m)
+
+	return moves_out
+
 func _compute_targets_for_selected() -> Array[int]:
 	var p: int = state.turn
 	var targets: Array[int] = []
@@ -1763,8 +1894,12 @@ func _compute_targets_for_selected() -> Array[int]:
 	if selected_from == -999:
 		return targets
 
+	var selected_id: int = _selected_checker_id(p)
+	var allow_stealth: bool = _checker_has_tag(selected_id, "stealth")
+	var allow_chain: bool = _checker_has_tag(selected_id, "chain_reaction")
+
 	for d in dice.remaining:
-		var moves: Array[Dictionary] = Rules.legal_moves_for_die(state, p, d)
+		var moves: Array[Dictionary] = _candidate_moves_for_selected(int(d), allow_stealth, allow_chain)
 		for m in moves:
 			if int(m["from"]) == selected_from:
 				var to_i: int = int(m["to"])
@@ -1775,9 +1910,12 @@ func _compute_targets_for_selected() -> Array[int]:
 
 func _try_move_to(dst_index: int) -> bool:
 	var p: int = state.turn
+	var selected_id: int = _selected_checker_id(p)
+	var allow_stealth: bool = _checker_has_tag(selected_id, "stealth")
+	var allow_chain: bool = _checker_has_tag(selected_id, "chain_reaction")
 
 	for d in dice.remaining.duplicate():
-		var moves: Array[Dictionary] = Rules.legal_moves_for_die(state, p, d)
+		var moves: Array[Dictionary] = _candidate_moves_for_selected(int(d), allow_stealth, allow_chain)
 		for m in moves:
 			if int(m["from"]) == selected_from and int(m["to"]) == dst_index:
 				_clear_targets()
@@ -1812,10 +1950,13 @@ func _peek_moving_checker_id(move: Dictionary, player: int) -> int:
 
 func _apply_move_and_continue(die_used: int, move: Dictionary, player: int) -> void:
 	var moving_id: int = _peek_moving_checker_id(move, player)
+	var used_chain_double: bool = bool(move.get("chain_reaction_double", false))
 	_record_quick_strike_if_any(move, player)
 	_record_turn_hit_if_any(move, player)
 
 	var landing: int = apply_move_with_zero_sum(move, player)
+	if used_chain_double:
+		_consume_chain_reaction(moving_id)
 	dice.call("consume_die", die_used)
 	_update_dice_ui()
 
@@ -1856,8 +1997,60 @@ func _count_all_legal_moves() -> int:
 	var p: int = state.turn
 	var total: int = 0
 	for d in dice.remaining:
-		total += Rules.legal_moves_for_die(state, p, d).size()
+		total += _count_legal_moves_for_die_with_special(p, int(d))
 	return total
+
+func _count_legal_moves_for_die_with_special(player: int, die: int) -> int:
+	if state == null:
+		return 0
+	var allow_stealth: bool = _player_has_tag(player, "stealth")
+	var allow_chain: bool = _player_has_tag(player, "chain_reaction")
+	var candidates: Array[int] = [die]
+
+	if allow_stealth and die != 0:
+		if not candidates.has(-die):
+			candidates.append(-die)
+	if allow_chain and die != 0:
+		var doubled: int = die * 2
+		if not candidates.has(doubled):
+			candidates.append(doubled)
+		if allow_stealth:
+			var doubled_back: int = -die * 2
+			if not candidates.has(doubled_back):
+				candidates.append(doubled_back)
+
+	var total := 0
+	for candidate_die in candidates:
+		var moves: Array[Dictionary] = Rules.legal_moves_for_die(state, player, candidate_die)
+		for m in moves:
+			var moving_id: int = _peek_moving_checker_id(m, player)
+			if moving_id == -1:
+				continue
+			if candidate_die == die:
+				total += 1
+				continue
+			var is_chain_double: bool = absi(candidate_die) == absi(die) * 2
+			var is_backward: bool = candidate_die < 0
+			if is_chain_double and not _checker_has_tag(moving_id, "chain_reaction"):
+				continue
+			if is_backward and not _checker_has_tag(moving_id, "stealth"):
+				continue
+			total += 1
+	return total
+
+func _player_has_tag(player: int, tag: String) -> bool:
+	if state == null:
+		return false
+	for key in state.checkers.keys():
+		var id: int = int(key)
+		var info: CheckerInfo = state.checkers.get(id, null)
+		if info == null:
+			continue
+		if info.owner != player:
+			continue
+		if bool(info.tags.get(tag, false)):
+			return true
+	return false
 
 func _end_round_from_state() -> void:
 	round_active = false

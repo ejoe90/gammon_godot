@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="CardDef" load_steps=8 format=3 uid="uid://stealthcard1"]
+
+[ext_resource type="Texture2D" uid="uid://carvy8bwp0vqb" path="res://Assets/textures/cards/green deck fronts/2 plus green.jpg" id="1_stealth"]
+[ext_resource type="Script" uid="uid://dxnljvcddxql4" path="res://Scripts/CardEffect.gd" id="2_stealth"]
+[ext_resource type="Script" uid="uid://stealtheffect1" path="res://Scripts/cards/effects/EffectStealth.gd" id="3_stealth"]
+[ext_resource type="Script" uid="uid://ur0p531l1ca4" path="res://Scripts/PatternReq.gd" id="4_stealth"]
+[ext_resource type="Script" uid="uid://b1ylg81nigak7" path="res://Scripts/CardDef.gd" id="5_stealth"]
+
+[sub_resource type="Resource" id="Resource_stealth_effect"]
+script = ExtResource("3_stealth")
+metadata/_custom_type_script = "uid://stealtheffect1"
+
+[sub_resource type="Resource" id="Resource_stealth_pattern"]
+script = ExtResource("4_stealth")
+kind = 2
+seq_counts = null
+mix_owners = PackedInt32Array(1, 0, 1)
+mix_mins = PackedInt32Array(2, 1, 2)
+mix_maxs = PackedInt32Array(15, 1, 15)
+mix_same_half_only = false
+metadata/_custom_type_script = "uid://ur0p531l1ca4"
+
+[resource]
+script = ExtResource("5_stealth")
+id = "stealth"
+title = "Stealth"
+category = 2
+tooltip_summary = "The middle white checker gains <-> and can move forward or backward until hit."
+pip_value = 2
+pattern = Array[ExtResource("4_stealth")]([SubResource("Resource_stealth_pattern")])
+effect = SubResource("Resource_stealth_effect")
+art_texture = ExtResource("1_stealth")
+metadata/_custom_type_script = "uid://b1ylg81nigak7"

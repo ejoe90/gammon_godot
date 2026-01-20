@@ -261,6 +261,9 @@ static func apply_move(state: BoardState, p: int, m: Dictionary) -> void:
 		if dst.size() == 1:
 			var hit_id: int = dst[0]
 			var opp: int = state.owner_of(hit_id)
+			var hit_info: CheckerInfo = state.checkers.get(hit_id, null)
+			if hit_info != null:
+				hit_info.tags.erase("stealth")
 			dst = PackedInt32Array() # cleared
 			state.points[to_i] = dst
 
@@ -370,6 +373,9 @@ static func apply_move_with_zero_sum(state: BoardState, p: int, m: Dictionary) -
 
 	var target_pacifism: bool = checker_is_pacifism(state, target_id)
 	if target_pacifism:
+		var target_info: CheckerInfo = state.checkers.get(target_id, null)
+		if target_info != null:
+			target_info.tags.erase("stealth")
 		if from_i == -1:
 			var bar_stack: PackedInt32Array = state.bar_stack(p)
 			if bar_stack.is_empty():
@@ -413,6 +419,7 @@ static func apply_move_with_zero_sum(state: BoardState, p: int, m: Dictionary) -
 		state.points[from_i] = src_stack
 
 	if moving_zero and target_zero:
+		var target_info: CheckerInfo = state.checkers.get(target_id, null)
 		destroy_checker(state, moving_id)
 		destroy_checker(state, target_id)
 		result["landing"] = -999
@@ -420,6 +427,7 @@ static func apply_move_with_zero_sum(state: BoardState, p: int, m: Dictionary) -
 		return result
 
 	if moving_zero and not target_zero:
+		var target_info: CheckerInfo = state.checkers.get(target_id, null)
 		send_checker_to_bar(state, target_id)
 		_push_checker_to_bar(state, moving_id, p)
 		result["landing"] = -999
@@ -427,6 +435,7 @@ static func apply_move_with_zero_sum(state: BoardState, p: int, m: Dictionary) -
 		return result
 
 	if not moving_zero and target_zero:
+		var target_info: CheckerInfo = state.checkers.get(target_id, null)
 		set_checker_zero_sum(state, target_id, false)
 		send_checker_to_bar(state, target_id)
 		_push_checker_to_bar(state, moving_id, p)
@@ -478,6 +487,9 @@ static func all_in_home_fraction(state: BoardState, p: int, required_fraction: f
 
 static func send_checker_to_bar(state: BoardState, checker_id: int) -> void:
 	var owner: int = state.owner_of(checker_id)
+	if state.checkers.has(checker_id):
+		var info: CheckerInfo = state.checkers[checker_id]
+		info.tags.erase("stealth")
 
 	# Remove from a point if present
 	var pt: int = find_checker_point(state, checker_id)
@@ -506,6 +518,7 @@ static func send_checker_to_bar(state: BoardState, checker_id: int) -> void:
 static func destroy_checker(state: BoardState, checker_id: int) -> void:
 	if not state.checkers.has(checker_id):
 		return
+	state.checkers[checker_id].tags.erase("stealth")
 
 	# Remove from board point
 	for i in range(24):

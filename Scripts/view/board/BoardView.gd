@@ -19,6 +19,7 @@ signal bar_clicked(player: int)
 @onready var wormhole_layer: Node2D = get_node_or_null("WormholeLayer") as Node2D
 @onready var overwatch_label: Label = get_node_or_null("OverwatchLabel") as Label
 @onready var detente_label: Label = get_node_or_null("DetenteLabel") as Label
+@onready var friction_label: Label = get_node_or_null("FrictionLabel") as Label
 
 var _no_mans_land_labels: Dictionary = {}
 var _stopgap_labels: Dictionary = {}
@@ -144,6 +145,13 @@ func set_detente_active(active: bool) -> void:
 	if detente_label == null:
 		return
 	detente_label.visible = active
+
+func set_friction_active(active: bool, turns_left: int) -> void:
+	if friction_label == null:
+		return
+	friction_label.visible = active
+	if active:
+		friction_label.text = "Friction (%d)" % maxi(1, int(turns_left))
 
 func animate_move_persistent(state: BoardState, move: Dictionary, player: int, done: Callable) -> void:
 	input.set_enabled(false)

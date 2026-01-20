@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="CardCatalog" load_steps=28 format=3 uid="uid://5o2fjm0okvs0"]
+[gd_resource type="Resource" script_class="CardCatalog" load_steps=31 format=3 uid="uid://5o2fjm0okvs0"]
 
 [ext_resource type="Script" uid="uid://b1ylg81nigak7" path="res://Scripts/CardDef.gd" id="1_gfijg"]
 [ext_resource type="Script" uid="uid://cxrrf2trr2miv" path="res://CardCatalog.gd" id="2_k16gf"]
@@ -15,6 +15,9 @@
 [ext_resource type="Resource" uid="uid://tw7jm6vr40fq" path="res://Resources/cards/combat/flanked.tres" id="12_1nxdh"]
 [ext_resource type="Resource" uid="uid://61lvijo0al7" path="res://Resources/cards/combat/quick_strike.tres" id="13_jud1b"]
 [ext_resource type="Resource" uid="uid://eq8xrc9h0w3we" path="res://Resources/cards/tempo/wormhole.tres" id="14_tempo_wormhole"]
+[ext_resource type="Resource" uid="uid://chainreactioncard1" path="res://Resources/cards/tempo/chain_reaction.tres" id="15_tempo_chain_reaction"]
+[ext_resource type="Resource" uid="uid://frictioncard1" path="res://Resources/cards/tempo/friction.tres" id="16_tempo_friction"]
+[ext_resource type="Resource" uid="uid://stealthcard1" path="res://Resources/cards/tempo/stealth.tres" id="17_tempo_stealth"]
 [ext_resource type="Resource" uid="uid://c0v7tqa1w4anp" path="res://Resources/cards/defense/bunker.tres" id="14_defense_bunker"]
 [ext_resource type="Resource" uid="uid://dg0a3c2ewq2u8" path="res://Resources/cards/defense/tunnel.tres" id="15_defense_tunnel"]
 [ext_resource type="Resource" uid="uid://br4p7s7pect32" path="res://Resources/cards/defense/no_mans_land.tres" id="16_defense_no_mans_land"]
@@ -30,5 +33,5 @@
 
 [resource]
 script = ExtResource("2_k16gf")
-cards = Array[ExtResource("1_gfijg")]([ExtResource("2_thl06"), ExtResource("3_ndmhq"), ExtResource("4_uwhgp"), ExtResource("5_7tsok"), ExtResource("6_ndmhq"), ExtResource("7_uwhgp"), ExtResource("8_7tsok"), ExtResource("9_8k6m4"), ExtResource("10_8k6m4"), ExtResource("11_7k4ve"), ExtResource("12_1nxdh"), ExtResource("13_jud1b"), ExtResource("14_tempo_wormhole"), ExtResource("14_defense_bunker"), ExtResource("15_defense_tunnel"), ExtResource("16_defense_no_mans_land"), ExtResource("17_defense_stopgap"), ExtResource("18_defense_respite"), ExtResource("19_defense_zero_sum"), ExtResource("20_defense_counter_measures"), ExtResource("21_defense_distant_threat"), ExtResource("22_defense_accelerator"), ExtResource("23_defense_overwatch"), ExtResource("24_defense_pacifism"), ExtResource("25_defense_detente")])
+cards = Array[ExtResource("1_gfijg")]([ExtResource("2_thl06"), ExtResource("3_ndmhq"), ExtResource("4_uwhgp"), ExtResource("5_7tsok"), ExtResource("6_ndmhq"), ExtResource("7_uwhgp"), ExtResource("8_7tsok"), ExtResource("9_8k6m4"), ExtResource("10_8k6m4"), ExtResource("11_7k4ve"), ExtResource("12_1nxdh"), ExtResource("13_jud1b"), ExtResource("14_tempo_wormhole"), ExtResource("15_tempo_chain_reaction"), ExtResource("16_tempo_friction"), ExtResource("17_tempo_stealth"), ExtResource("14_defense_bunker"), ExtResource("15_defense_tunnel"), ExtResource("16_defense_no_mans_land"), ExtResource("17_defense_stopgap"), ExtResource("18_defense_respite"), ExtResource("19_defense_zero_sum"), ExtResource("20_defense_counter_measures"), ExtResource("21_defense_distant_threat"), ExtResource("22_defense_accelerator"), ExtResource("23_defense_overwatch"), ExtResource("24_defense_pacifism"), ExtResource("25_defense_detente")])
 metadata/_custom_type_script = "uid://cxrrf2trr2miv"
