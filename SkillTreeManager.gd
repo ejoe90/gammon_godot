@@ -4,7 +4,7 @@ class_name SkillTreeManager
 signal request_open(options: Array, picks_allowed: int)
 signal selection_confirmed(chosen_ids: Array, gold_spent: int)
 
-@export var thresholds: PackedFloat32Array = PackedFloat32Array([0.75, 0.50]) # remaining ratio triggers
+@export var thresholds: PackedFloat32Array = PackedFloat32Array([0.90, 0.75, 0.50]) # remaining ratio triggers
 @export var options_shown: int = 5
 
 @export var picks_base: int = 1
