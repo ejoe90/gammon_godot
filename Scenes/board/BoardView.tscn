@@ -359,6 +359,8 @@ highlight_scale = 0.2
 
 [node name="StopgapLayer" type="Node2D" parent="."]
 
+[node name="WormholeLayer" type="Node2D" parent="."]
+
 [node name="OverwatchLabel" type="Label" parent="."]
 position = Vector2(1214, 84)
 text = "(No HP damage)"
