@@ -1999,8 +1999,60 @@ func _count_all_legal_moves() -> int:
 	var p: int = state.turn
 	var total: int = 0
 	for d in dice.remaining:
-		total += Rules.legal_moves_for_die(state, p, d).size()
+		total += _count_legal_moves_for_die_with_special(p, int(d))
 	return total
+
+func _count_legal_moves_for_die_with_special(player: int, die: int) -> int:
+	if state == null:
+		return 0
+	var allow_stealth: bool = _player_has_tag(player, "stealth")
+	var allow_chain: bool = _player_has_tag(player, "chain_reaction")
+	var candidates: Array[int] = [die]
+
+	if allow_stealth and die != 0:
+		if not candidates.has(-die):
+			candidates.append(-die)
+	if allow_chain and die != 0:
+		var doubled: int = die * 2
+		if not candidates.has(doubled):
+			candidates.append(doubled)
+		if allow_stealth:
+			var doubled_back: int = -die * 2
+			if not candidates.has(doubled_back):
+				candidates.append(doubled_back)
+
+	var total := 0
+	for candidate_die in candidates:
+		var moves: Array[Dictionary] = Rules.legal_moves_for_die(state, player, candidate_die)
+		for m in moves:
+			var moving_id: int = _peek_moving_checker_id(m, player)
+			if moving_id == -1:
+				continue
+			if candidate_die == die:
+				total += 1
+				continue
+			var is_chain_double: bool = absi(candidate_die) == absi(die) * 2
+			var is_backward: bool = candidate_die < 0
+			if is_chain_double and not _checker_has_tag(moving_id, "chain_reaction"):
+				continue
+			if is_backward and not _checker_has_tag(moving_id, "stealth"):
+				continue
+			total += 1
+	return total
+
+func _player_has_tag(player: int, tag: String) -> bool:
+	if state == null:
+		return false
+	for key in state.checkers.keys():
+		var id: int = int(key)
+		var info: CheckerInfo = state.checkers.get(id, null)
+		if info == null:
+			continue
+		if info.owner != player:
+			continue
+		if bool(info.tags.get(tag, false)):
+			return true
+	return false
 
 func _end_round_from_state() -> void:
 	round_active = false
