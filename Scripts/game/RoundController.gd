@@ -744,6 +744,7 @@ func start_round(rs: RunState) -> void:
 
 	state = BoardState.new()
 	state.reset_standard()
+	_clear_chain_reaction_tags()
 
 	if skill_tree != null:
 		if run_state.skill_state == null:
@@ -1676,9 +1677,6 @@ func end_turn() -> void:
 	_tick_distant_threat_end_turn()
 	_tick_detente_end_turn()
 	_tick_friction_end_turn()
-	_clear_chain_reaction_tags()
-	if board != null and board.has_method("sync_from_state_full"):
-		board.call("sync_from_state_full", state)
 
 	if run_state != null and _turn_base_attack_bonus > 0:
 		run_state.base_attack_power = maxi(0, int(run_state.base_attack_power) - _turn_base_attack_bonus)
