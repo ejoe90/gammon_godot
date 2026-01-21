@@ -1,8 +1,6 @@
 extends CardEffect
 class_name EffectTempoCounterMeasures
 
-@export var base_ap: int = 1
-@export var base_dice: int = 1
 @export var bonus_dice_if_white_ahead: int = 2
 @export var bonus_ap_if_black_ahead: int = 2
 @export var black_bonus_dice_if_black_ahead: int = 1
@@ -46,11 +44,19 @@ func apply(round: RoundController, card: CardInstance, ctx: PatternContext) -> v
 		bonus_ap += bonus_ap_if_tied
 		bonus_dice += bonus_dice_if_tied
 
-	if round.has_method("request_counter_measures_choice"):
-		round.emit_signal("card_consumed", card.uid)
-		round.call("request_counter_measures_choice", base_ap, base_dice, bonus_ap, bonus_dice, black_bonus_dice, card.def.title)
-	else:
-		round.emit_signal("card_consumed", card.uid)
+	if bonus_ap > 0:
+		round.ap_left += bonus_ap
+
+	if bonus_dice > 0 and round.dice != null and round.dice.has_method("add_bonus_die"):
+		for _i in range(bonus_dice):
+			round.dice.call("add_bonus_die", randi_range(1, 6))
+		if round.has_method("_update_dice_ui"):
+			round.call("_update_dice_ui")
+
+	if black_bonus_dice > 0:
+		round._counter_measures_black_bonus_dice += black_bonus_dice
+
+	round.emit_signal("card_consumed", card.uid)
 
 func _sum_stack_sizes(state: BoardState, points: Array) -> int:
 	var total := 0
