@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="CardDef" load_steps=8 format=3 uid="uid://rapidretreatcard1"]
+
+[ext_resource type="Texture2D" uid="uid://c6o5votc4fc5p" path="res://Assets/textures/cards/green deck fronts/1 minus green.jpg" id="1_rapid_retreat"]
+[ext_resource type="Script" uid="uid://dxnljvcddxql4" path="res://Scripts/CardEffect.gd" id="2_rapid_retreat"]
+[ext_resource type="Script" uid="uid://rapidretreateffect1" path="res://Scripts/cards/effects/EffectRapidRetreat.gd" id="3_rapid_retreat"]
+[ext_resource type="Script" uid="uid://ur0p531l1ca4" path="res://Scripts/PatternReq.gd" id="4_rapid_retreat"]
+[ext_resource type="Script" uid="uid://b1ylg81nigak7" path="res://Scripts/CardDef.gd" id="5_rapid_retreat"]
+
+[sub_resource type="Resource" id="Resource_rapid_retreat_effect"]
+script = ExtResource("3_rapid_retreat")
+metadata/_custom_type_script = "uid://rapidretreateffect1"
+
+[sub_resource type="Resource" id="Resource_rapid_retreat_pattern"]
+script = ExtResource("4_rapid_retreat")
+kind = 2
+seq_counts = null
+mix_owners = PackedInt32Array(0, 0, 0, 0, 1)
+mix_mins = PackedInt32Array(1, 0, 0, 0, 3)
+mix_maxs = PackedInt32Array(1, 0, 0, 0, 15)
+mix_requires_empty = PackedInt32Array(0, 1, 1, 1, 0)
+mix_allow_reverse = true
+mix_same_half_only = false
+metadata/_custom_type_script = "uid://ur0p531l1ca4"
+
+[resource]
+script = ExtResource("5_rapid_retreat")
+id = "rapid_retreat"
+title = "Rapid Retreat"
+category = 2
+tooltip_summary = "Pattern: lone white checker, three empty points, then a 3+ black stack (either side or across). White checkers can spend 1 AP to retreat to the nearest friendly stack without consuming dice this round."
+pip_value = -1
+pattern = Array[ExtResource("4_rapid_retreat")]([SubResource("Resource_rapid_retreat_pattern")])
+effect = SubResource("Resource_rapid_retreat_effect")
+art_texture = ExtResource("1_rapid_retreat")
+metadata/_custom_type_script = "uid://b1ylg81nigak7"
