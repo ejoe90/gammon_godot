@@ -114,23 +114,23 @@ func _ensure_invert_material() -> void:
 	if art == null:
 		return
 
-	# Prefer the simpler invert shader if you have it; fall back to the glow shader if not.
-	var shader: Shader = load("res://Shaders/invert_card.gdshader") as Shader
-	if shader == null:
-		shader = load("res://Shaders/card_invert_glow.gdshader") as Shader
-
+	# Prefer the sepia-capable glow shader so we can oscillate the card art.
+	var shader: Shader = load("res://Shaders/card_invert_glow.gdshader") as Shader
 	if shader == null:
 		# If no shader exists, we can still function; invert just won't happen
-		push_warning("[CardSlotButton] No invert shader found (invert_card.gdshader or card_invert_glow.gdshader).")
+		push_warning("[CardSlotButton] No invert shader found (card_invert_glow.gdshader).")
 		return
 
 	var sm := art.material as ShaderMaterial
-	if sm != null and sm.shader == shader:
-		return
+	if sm == null or sm.shader != shader:
+		sm = ShaderMaterial.new()
+		sm.shader = shader
+		art.material = sm
 
-	var mat := ShaderMaterial.new()
-	mat.shader = shader
-	art.material = mat
+	if sm.has_shader_parameter("sepia_speed"):
+		sm.set_shader_parameter("sepia_speed", 1.0)
+	if sm.has_shader_parameter("sepia_max"):
+		sm.set_shader_parameter("sepia_max", 1.0)
 
 func _set_invert(amount: float) -> void:
 	if art == null:

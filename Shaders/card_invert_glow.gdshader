@@ -9,6 +9,9 @@ uniform vec4 glow_color : source_color = vec4(0.70, 0.20, 1.00, 1.0); // brighte
 uniform float edge_width : hint_range(0.0, 0.25) = 0.12;   // thicker edge band
 uniform float aura_strength : hint_range(0.0, 3.0) = 0.9;  // center aura
 
+uniform float sepia_speed : hint_range(0.0, 10.0) = 1.0;
+uniform float sepia_max : hint_range(0.0, 1.0) = 0.0;
+
 void fragment() {
 	vec4 tex = texture(TEXTURE, UV);
 	vec4 base = tex * COLOR;
@@ -32,6 +35,14 @@ void fragment() {
 
 	float mask = max(edge, aura * aura_strength);
 	col += glow_color.rgb * (glow_strength * mask * pulse);
+
+	float sepia_amount = sepia_max * (0.5 + 0.5 * sin(TIME * sepia_speed));
+	vec3 sepia = vec3(
+		dot(col, vec3(0.393, 0.769, 0.189)),
+		dot(col, vec3(0.349, 0.686, 0.168)),
+		dot(col, vec3(0.272, 0.534, 0.131))
+	);
+	col = mix(col, sepia, clamp(sepia_amount, 0.0, sepia_max));
 
 	COLOR = vec4(col, base.a);
 }
