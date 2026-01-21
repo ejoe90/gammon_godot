@@ -6,12 +6,24 @@ uniform float glow_strength : hint_range(0.0, 3.0) = 0.0;
 uniform float pulse_speed : hint_range(0.0, 10.0) = 3.0;
 uniform vec4 glow_color : source_color = vec4(0.70, 0.20, 1.00, 1.0); // brighter purple
 
+uniform float sepia_speed : hint_range(0.0, 10.0) = 1.5;
+uniform float sepia_max : hint_range(0.0, 1.0) = 0.0;
+
 uniform float edge_width : hint_range(0.0, 0.25) = 0.12;   // thicker edge band
 uniform float aura_strength : hint_range(0.0, 3.0) = 0.9;  // center aura
 
 void fragment() {
 	vec4 tex = texture(TEXTURE, UV);
 	vec4 base = tex * COLOR;
+
+	float sepia_amount = (sin(TIME * sepia_speed) * 0.5 + 0.5) * sepia_max;
+	mat3 sepia_matrix = mat3(
+		vec3(0.393, 0.769, 0.189),
+		vec3(0.349, 0.686, 0.168),
+		vec3(0.272, 0.534, 0.131)
+	);
+	vec3 sepia_color = sepia_matrix * base.rgb;
+	base.rgb = mix(base.rgb, sepia_color, sepia_amount);
 
 	// Invert
 	vec3 inv = vec3(1.0) - base.rgb;
