@@ -97,10 +97,15 @@ var _distant_threat_clear_on_white: bool = false
 var _accelerator_active: bool = false
 var _accelerator_next_heal: int = 1
 var _overwatch_active: bool = false
+var _recon_active: bool = false
+var _recon_pattern: PatternReq = null
+var _counter_measures_black_bonus_dice: int = 0
 
 # --- Pip Boost choice prompt (Tier 1+) ---
 var _pip_choice_menu: PopupMenu = null
 var _pip_choice_pending: Dictionary = {} # {options:Array, include_bonus:bool, label:String, applied:bool}
+var _counter_measures_choice_menu: PopupMenu = null
+var _counter_measures_pending: Dictionary = {} # {base_ap:int, base_dice:int, bonus_ap:int, bonus_dice:int, black_bonus_dice:int, label:String, applied:bool}
 
 
 @export var ai_enabled: bool = true
@@ -263,6 +268,97 @@ func _apply_pip_choice(bonus: int) -> void:
 	_pip_choice_pending.clear()
 	# Tier 3B1 (Pips): optional conversion of dice pips into HP, which ends the turn.
 	_maybe_pip_boost_convert_to_hp(label)
+
+func _ensure_counter_measures_menu() -> void:
+	if _counter_measures_choice_menu != null:
+		return
+	_counter_measures_choice_menu = PopupMenu.new()
+	_counter_measures_choice_menu.name = "CounterMeasuresMenu"
+	_pip_ui_parent().add_child(_counter_measures_choice_menu)
+	_counter_measures_choice_menu.id_pressed.connect(Callable(self, "_on_counter_measures_id_pressed"))
+	_counter_measures_choice_menu.popup_hide.connect(Callable(self, "_on_counter_measures_menu_hide"))
+
+func request_counter_measures_choice(
+	base_ap: int,
+	base_dice: int,
+	bonus_ap: int,
+	bonus_dice: int,
+	black_bonus_dice: int,
+	label: String = "Counter Measures"
+) -> void:
+	_ensure_counter_measures_menu()
+
+	_counter_measures_pending = {
+		"base_ap": int(base_ap),
+		"base_dice": int(base_dice),
+		"bonus_ap": int(bonus_ap),
+		"bonus_dice": int(bonus_dice),
+		"black_bonus_dice": int(black_bonus_dice),
+		"label": String(label),
+		"applied": false,
+	}
+
+	skill_tree_blocking = true
+
+	_counter_measures_choice_menu.clear()
+	_counter_measures_choice_menu.add_item("Gain +%d AP" % int(base_ap), 1)
+	_counter_measures_choice_menu.add_item("Gain +%d bonus die" % int(base_dice), 2)
+	_counter_measures_choice_menu.add_separator()
+	_counter_measures_choice_menu.add_item("Default (+%d AP)" % int(base_ap), -1)
+	_counter_measures_choice_menu.popup_centered()
+
+func _on_counter_measures_id_pressed(id: int) -> void:
+	if _counter_measures_pending.is_empty():
+		return
+	if int(id) == 2:
+		_apply_counter_measures_choice(2)
+	else:
+		_apply_counter_measures_choice(1)
+
+func _on_counter_measures_menu_hide() -> void:
+	if _counter_measures_pending.is_empty():
+		return
+	if bool(_counter_measures_pending.get("applied", false)):
+		return
+	call_deferred("_apply_counter_measures_choice_default")
+
+func _apply_counter_measures_choice_default() -> void:
+	_apply_counter_measures_choice(1)
+
+func _apply_counter_measures_choice(choice: int) -> void:
+	var base_ap := int(_counter_measures_pending.get("base_ap", 0))
+	var base_dice := int(_counter_measures_pending.get("base_dice", 0))
+	var bonus_ap := int(_counter_measures_pending.get("bonus_ap", 0))
+	var bonus_dice := int(_counter_measures_pending.get("bonus_dice", 0))
+	var black_bonus_dice := int(_counter_measures_pending.get("black_bonus_dice", 0))
+	var label := String(_counter_measures_pending.get("label", "Counter Measures"))
+
+	_counter_measures_pending["applied"] = true
+	skill_tree_blocking = false
+
+	var total_ap := bonus_ap
+	var total_dice := bonus_dice
+	if int(choice) == 2:
+		total_dice += base_dice
+	else:
+		total_ap += base_ap
+
+	if total_ap > 0:
+		ap_left += total_ap
+
+	if total_dice > 0 and dice != null and dice.has_method("add_bonus_die"):
+		for _i in range(total_dice):
+			dice.call("add_bonus_die", randi_range(1, 6))
+		if has_method("_update_dice_ui"):
+			call("_update_dice_ui")
+
+	if black_bonus_dice > 0:
+		_counter_measures_black_bonus_dice += black_bonus_dice
+
+	_counter_measures_pending.clear()
+
+	if _maybe_pip_boost_convert_to_hp(label):
+		return
 
 
 func show_notice(text: String) -> void:
@@ -454,6 +550,15 @@ func activate_accelerator(card: CardInstance) -> void:
 func activate_overwatch(card: CardInstance) -> void:
 	_overwatch_active = true
 	_sync_overwatch_ui()
+	if card != null:
+		emit_signal("card_consumed", card.uid)
+
+func activate_recon(req: PatternReq, card: CardInstance) -> void:
+	if req == null:
+		return
+	_recon_active = true
+	_recon_pattern = req
+	ap_left += 2
 	if card != null:
 		emit_signal("card_consumed", card.uid)
 
@@ -741,6 +846,10 @@ func start_round(rs: RunState) -> void:
 	_accelerator_active = false
 	_accelerator_next_heal = 1
 	_overwatch_active = false
+	_recon_active = false
+	_recon_pattern = null
+	_counter_measures_black_bonus_dice = 0
+	_counter_measures_pending.clear()
 
 	state = BoardState.new()
 	state.reset_standard()
@@ -815,11 +924,16 @@ func start_turn() -> void:
 			dice.call("roll_with_sides", 4)
 		elif dice.has_method("roll"):
 			dice.call("roll")
+		if state != null and state.turn == BoardState.Player.BLACK and _counter_measures_black_bonus_dice > 0 and dice.has_method("add_bonus_die"):
+			for _i in range(_counter_measures_black_bonus_dice):
+				dice.call("add_bonus_die", randi_range(1, 6))
+			_counter_measures_black_bonus_dice = 0
 
 	_update_dice_ui()
 	_refresh_stopgap_modifiers()
 	_apply_stopgap_turn_start_heals(state.turn)
 	if state.turn == BoardState.Player.WHITE:
+		_apply_recon_turn_start()
 		_respite_turn_used = false
 
 	# --- BLACK AI TURN ----------------------------------------------------
@@ -1409,6 +1523,33 @@ func _apply_stopgap_turn_start_heals(player: int) -> void:
 		else:
 			run_state.add_enemy_hp(1)
 
+func _apply_recon_turn_start() -> void:
+	if not _recon_active or _recon_pattern == null or state == null:
+		return
+
+	var ctx := PatternContext.new(state, BoardState.Player.WHITE)
+	var start_point := PatternMatcher.find_run_sequence_mixed_start(_recon_pattern, ctx)
+	if start_point == -1:
+		_recon_active = false
+		_recon_pattern = null
+		return
+
+	var total := 0
+	var steps := _recon_pattern.mix_mins.size()
+	for offset in range(steps):
+		var idx := start_point + offset
+		if idx < 0 or idx > 23:
+			continue
+		total += state.points[idx].size()
+
+	var min_total := 0
+	for req_min in _recon_pattern.mix_mins:
+		min_total += int(req_min)
+
+	var extra := maxi(0, total - min_total)
+	var bonus := 2 + int(extra / 2)
+	ap_left += bonus
+
 func _refresh_persistent_effects() -> void:
 	if _bunker_active and not _bunker_intact():
 		_deactivate_bunker()
@@ -1416,6 +1557,9 @@ func _refresh_persistent_effects() -> void:
 		_deactivate_accelerator()
 	if _tunnel_active and not _tunnel_intact():
 		_deactivate_tunnel()
+	if _recon_active and not _recon_intact():
+		_recon_active = false
+		_recon_pattern = null
 	_refresh_no_mans_land()
 	_refresh_stopgap_modifiers()
 	_refresh_respite()
@@ -1447,6 +1591,12 @@ func _bunker_intact() -> bool:
 		return false
 	var ctx := PatternContext.new(state, BoardState.Player.WHITE)
 	return PatternMatcher.matches_all(_bunker_pattern, ctx)
+
+func _recon_intact() -> bool:
+	if state == null or _recon_pattern == null:
+		return false
+	var ctx := PatternContext.new(state, BoardState.Player.WHITE)
+	return PatternMatcher.find_run_sequence_mixed_start(_recon_pattern, ctx) != -1
 
 func _tunnel_intact() -> bool:
 	if state == null or _tunnel_points.size() != 2:
