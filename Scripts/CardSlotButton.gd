@@ -127,10 +127,16 @@ func _ensure_invert_material() -> void:
 		sm.shader = shader
 		art.material = sm
 
-	if sm.has_shader_parameter("sepia_speed"):
+	if _shader_has_param(shader, "sepia_speed"):
 		sm.set_shader_parameter("sepia_speed", 1.0)
-	if sm.has_shader_parameter("sepia_max"):
+	if _shader_has_param(shader, "sepia_max"):
 		sm.set_shader_parameter("sepia_max", 1.0)
+
+func _shader_has_param(shader: Shader, param: String) -> bool:
+	for entry in shader.get_shader_parameter_list():
+		if entry.name == param:
+			return true
+	return false
 
 func _set_invert(amount: float) -> void:
 	if art == null:
