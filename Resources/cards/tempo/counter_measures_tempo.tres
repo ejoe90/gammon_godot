@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="CardDef" load_steps=8 format=3 uid="uid://countermeasurestempocard1"]
+
+[ext_resource type="Texture2D" uid="uid://dhgclafcff5re" path="res://Assets/textures/cards/green deck fronts/3 plus green.jpg" id="1_counter_measures_tempo"]
+[ext_resource type="Script" uid="uid://dxnljvcddxql4" path="res://Scripts/CardEffect.gd" id="2_counter_measures_tempo"]
+[ext_resource type="Script" uid="uid://effecttempocountermeasures1" path="res://Scripts/cards/effects/EffectTempoCounterMeasures.gd" id="3_counter_measures_tempo"]
+[ext_resource type="Script" uid="uid://ur0p531l1ca4" path="res://Scripts/PatternReq.gd" id="4_counter_measures_tempo"]
+[ext_resource type="Script" uid="uid://b1ylg81nigak7" path="res://Scripts/CardDef.gd" id="5_counter_measures_tempo"]
+
+[sub_resource type="Resource" id="Resource_counter_measures_tempo_effect"]
+script = ExtResource("3_counter_measures_tempo")
+metadata/_custom_type_script = "uid://effecttempocountermeasures1"
+
+[sub_resource type="Resource" id="Resource_counter_measures_tempo_pattern"]
+script = ExtResource("4_counter_measures_tempo")
+kind = 4
+seq_counts = null
+mix_owners = null
+mix_mins = null
+mix_maxs = null
+mix_requires_empty = null
+metadata/_custom_type_script = "uid://ur0p531l1ca4"
+
+[resource]
+script = ExtResource("5_counter_measures_tempo")
+id = "counter_measures_tempo"
+title = "Counter Measures"
+category = 2
+tooltip_summary = "Choose +1 AP or +1 bonus die. If white has more checkers in the formation, gain +2 bonus dice; if black has more, gain +2 AP and black gains +1 bonus die next turn; if tied, gain +1 AP and +1 bonus die."
+pip_value = 3
+pattern = Array[ExtResource("4_counter_measures_tempo")]([SubResource("Resource_counter_measures_tempo_pattern")])
+effect = SubResource("Resource_counter_measures_tempo_effect")
+art_texture = ExtResource("1_counter_measures_tempo")
+metadata/_custom_type_script = "uid://b1ylg81nigak7"
