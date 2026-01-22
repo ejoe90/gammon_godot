@@ -86,6 +86,7 @@ signal request_point_clear(point_index: int)
 signal request_force_dice(d1: int, d2: int)
 signal request_roll_random()
 signal request_setup_home_boards()
+signal request_ai_enabled(enabled: bool)
 
 
 @export var toggle_action: StringName = &"debug_toggle" # optional; fallback uses F1 in _unhandled_input
@@ -101,7 +102,10 @@ signal request_setup_home_boards()
 @onready var die2_spin: SpinBox = $PanelContainer/MarginContainer/VBoxContainer/HBoxContainer4/Die2Spin
 @onready var force_btn: Button = $PanelContainer/MarginContainer/VBoxContainer/HBoxContainer4/ForceDiceBtn
 @onready var roll_btn: Button = $PanelContainer/MarginContainer/VBoxContainer/HBoxContainer5/RollBtn
+@onready var ai_toggle_btn: Button = $PanelContainer/MarginContainer/VBoxContainer/HBoxContainer5/AIToggleBtn
 @onready var home_setup_btn: Button = $PanelContainer/MarginContainer/VBoxContainer/HBoxContainer6/HomeSetupBtn
+
+var _ai_toggle_syncing: bool = false
 
 
 func _ready() -> void:
@@ -125,6 +129,10 @@ func _ready() -> void:
 	roll_btn.pressed.connect(func() -> void:
 		emit_signal("request_roll_random")
 	)
+	if ai_toggle_btn != null:
+		ai_toggle_btn.toggle_mode = true
+		ai_toggle_btn.toggled.connect(_on_ai_toggle_toggled)
+		_sync_ai_toggle_label(ai_toggle_btn.button_pressed)
 	
 	home_setup_btn.pressed.connect(func() -> void:
 		emit_signal("request_setup_home_boards")
@@ -167,3 +175,22 @@ func _on_clear_pressed() -> void:
 
 func _on_force_dice_pressed() -> void:
 	emit_signal("request_force_dice", int(die1_spin.value), int(die2_spin.value))
+
+func _on_ai_toggle_toggled(enabled: bool) -> void:
+	if _ai_toggle_syncing:
+		return
+	_sync_ai_toggle_label(enabled)
+	emit_signal("request_ai_enabled", bool(enabled))
+
+func set_ai_enabled(enabled: bool) -> void:
+	if ai_toggle_btn == null:
+		return
+	_ai_toggle_syncing = true
+	ai_toggle_btn.button_pressed = bool(enabled)
+	_sync_ai_toggle_label(bool(enabled))
+	_ai_toggle_syncing = false
+
+func _sync_ai_toggle_label(enabled: bool) -> void:
+	if ai_toggle_btn == null:
+		return
+	ai_toggle_btn.text = "AI: On" if enabled else "AI: Off"
