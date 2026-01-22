@@ -99,6 +99,10 @@ var _accelerator_next_heal: int = 1
 var _overwatch_active: bool = false
 var _recon_active: bool = false
 var _recon_pattern: PatternReq = null
+var _rapid_retreat_active: bool = false
+var _momentum_active: bool = false
+var _momentum_primary_pips: int = 0
+var _momentum_secondary_pips: int = 0
 var _counter_measures_black_bonus_dice: int = 0
 
 # --- Pip Boost choice prompt (Tier 1+) ---
@@ -562,6 +566,21 @@ func activate_recon(req: PatternReq, card: CardInstance) -> void:
 	if card != null:
 		emit_signal("card_consumed", card.uid)
 
+func activate_rapid_retreat(card: CardInstance) -> void:
+	_rapid_retreat_active = true
+	if card != null:
+		emit_signal("card_consumed", card.uid)
+
+func activate_momentum(card: CardInstance) -> void:
+	_momentum_active = true
+	_momentum_primary_pips = 1
+	_momentum_secondary_pips = 0
+	if dice != null and dice.has_method("add_bonus_die"):
+		dice.call("add_bonus_die", 1)
+		_update_dice_ui()
+	if card != null:
+		emit_signal("card_consumed", card.uid)
+
 func activate_detente(turns: int, card: CardInstance) -> void:
 	if state == null:
 		return
@@ -848,6 +867,10 @@ func start_round(rs: RunState) -> void:
 	_overwatch_active = false
 	_recon_active = false
 	_recon_pattern = null
+	_rapid_retreat_active = false
+	_momentum_active = false
+	_momentum_primary_pips = 0
+	_momentum_secondary_pips = 0
 	_counter_measures_black_bonus_dice = 0
 	_counter_measures_pending.clear()
 
@@ -930,6 +953,8 @@ func start_turn() -> void:
 			_counter_measures_black_bonus_dice = 0
 
 	_update_dice_ui()
+	if state != null and state.turn == BoardState.Player.WHITE:
+		_apply_momentum_turn_start()
 	_refresh_stopgap_modifiers()
 	_apply_stopgap_turn_start_heals(state.turn)
 	if state.turn == BoardState.Player.WHITE:
@@ -1550,6 +1575,35 @@ func _apply_recon_turn_start() -> void:
 	var bonus := 2 + int(extra / 2)
 	ap_left += bonus
 
+func _apply_momentum_turn_start() -> void:
+	if not _momentum_active or state == null:
+		return
+	if state.turn != BoardState.Player.WHITE:
+		return
+
+	if _momentum_secondary_pips <= 0:
+		if _momentum_primary_pips <= 0:
+			_momentum_primary_pips = 1
+		if _momentum_primary_pips < 6:
+			_momentum_primary_pips = mini(6, _momentum_primary_pips + 1)
+			if dice != null and dice.has_method("add_bonus_die"):
+				dice.call("add_bonus_die", _momentum_primary_pips)
+				_update_dice_ui()
+			return
+
+		_momentum_secondary_pips = 1
+		if dice != null and dice.has_method("add_bonus_die"):
+			dice.call("add_bonus_die", 6)
+			dice.call("add_bonus_die", 1)
+			_update_dice_ui()
+		return
+
+	_momentum_secondary_pips = mini(6, _momentum_secondary_pips + 1)
+	if dice != null and dice.has_method("add_bonus_die"):
+		dice.call("add_bonus_die", 6)
+		dice.call("add_bonus_die", _momentum_secondary_pips)
+		_update_dice_ui()
+
 func _refresh_persistent_effects() -> void:
 	if _bunker_active and not _bunker_intact():
 		_deactivate_bunker()
@@ -2013,6 +2067,18 @@ func _checker_has_tag(checker_id: int, tag: String) -> bool:
 		return false
 	return bool(info.tags.get(tag, false))
 
+func _rapid_retreat_target(from_i: int) -> int:
+	if state == null:
+		return -999
+	if from_i < 0 or from_i > 23:
+		return -999
+	for idx in range(from_i - 1, -1, -1):
+		if state.stack_count(idx) == 0:
+			continue
+		if state.stack_owner(idx) == BoardState.Player.WHITE:
+			return idx
+	return -999
+
 func _candidate_moves_for_selected(die: int, allow_stealth: bool, allow_chain: bool) -> Array[Dictionary]:
 	var moves_out: Array[Dictionary] = []
 	var candidates: Array[int] = [die]
@@ -2056,6 +2122,11 @@ func _compute_targets_for_selected() -> Array[int]:
 				if not targets.has(to_i):
 					targets.append(to_i)
 
+	if _rapid_retreat_active and state.turn == BoardState.Player.WHITE and ap_left > 0 and selected_from >= 0:
+		var retreat_target := _rapid_retreat_target(selected_from)
+		if retreat_target != -999 and not targets.has(retreat_target):
+			targets.append(retreat_target)
+
 	return targets
 
 func _try_move_to(dst_index: int) -> bool:
@@ -2079,6 +2150,24 @@ func _try_move_to(dst_index: int) -> bool:
 					_apply_move_and_continue(d, m, p)
 
 				return true
+
+	if _rapid_retreat_active and state.turn == BoardState.Player.WHITE and ap_left > 0 and selected_from >= 0:
+		var retreat_target := _rapid_retreat_target(selected_from)
+		if retreat_target == dst_index:
+			var move := {
+				"from": selected_from,
+				"to": retreat_target,
+				"hit": false,
+				"rapid_retreat": true,
+			}
+			_clear_targets()
+			if board != null and board.has_method("animate_move_persistent"):
+				board.call("animate_move_persistent", state, move, p, func() -> void:
+					_apply_rapid_retreat_move(move, p)
+				)
+			else:
+				_apply_rapid_retreat_move(move, p)
+			return true
 
 	return false
 
@@ -2137,17 +2226,69 @@ func _apply_move_and_continue(die_used: int, move: Dictionary, player: int) -> v
 			return
 
 	# Turn progression
-	if not dice.call("has_moves"):
-		end_turn()
-	elif _count_all_legal_moves() == 0:
+	if _count_all_legal_moves() == 0:
 		end_turn()
 
+func _apply_rapid_retreat_move(move: Dictionary, player: int) -> void:
+	if ap_left < 1:
+		return
+
+	var moving_id: int = _peek_moving_checker_id(move, player)
+	_record_quick_strike_if_any(move, player)
+	_record_turn_hit_if_any(move, player)
+
+	ap_left -= 1
+	var landing: int = apply_move_with_zero_sum(move, player)
+
+	if board != null and board.has_method("sync_from_state_full"):
+		board.call("sync_from_state_full", state)
+
+	_apply_post_move_effects(move, player, landing, moving_id)
+
+	selected_from = -999
+
+	if state.count_in_play(BoardState.Player.WHITE) == 0 or state.count_in_play(BoardState.Player.BLACK) == 0:
+		_end_round_from_state()
+		return
+
+	for wc in win_conditions:
+		if wc != null and wc.check(state):
+			_end_round_from_state()
+			return
+
+	if skill_tree != null and player == BoardState.Player.WHITE:
+		skill_tree.on_pips_updated(get_pips_remaining(BoardState.Player.WHITE))
+		if skill_tree_blocking:
+			_skill_tree_pending_post_move = true
+			return
+
+	if _count_all_legal_moves() == 0:
+		end_turn()
 
 func _count_all_legal_moves() -> int:
 	var p: int = state.turn
 	var total: int = 0
 	for d in dice.remaining:
 		total += _count_legal_moves_for_die_with_special(p, int(d))
+	total += _count_rapid_retreat_moves()
+	return total
+
+func _count_rapid_retreat_moves() -> int:
+	if not _rapid_retreat_active or state == null:
+		return 0
+	if state.turn != BoardState.Player.WHITE:
+		return 0
+	if ap_left < 1:
+		return 0
+
+	var total := 0
+	for from_i in range(24):
+		if state.stack_count(from_i) == 0:
+			continue
+		if state.stack_owner(from_i) != BoardState.Player.WHITE:
+			continue
+		if _rapid_retreat_target(from_i) != -999:
+			total += 1
 	return total
 
 func _count_legal_moves_for_die_with_special(player: int, die: int) -> int:
