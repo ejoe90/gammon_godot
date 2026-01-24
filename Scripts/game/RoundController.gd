@@ -46,6 +46,7 @@ var aux_used_this_turn: Dictionary = {}  # aux_id -> bool (per WHITE turn)
 @onready var dice: Node = $Dice
 @onready var dice_ui: Node = get_node_or_null("HUD/DiceUI")
 @onready var round_end: Node = get_node_or_null("HUD/RoundEndOverlay")
+@onready var end_turn_button: Button = get_node_or_null("HUD/EndTurnButton") as Button
 @onready var debug_menu: DebugMenu = get_node_or_null("DebugMenu") as DebugMenu
 
 # --- Skill tree wiring (MVP) ---
@@ -810,6 +811,11 @@ func _ready() -> void:
 		if round_end.has_signal("next_pressed"):
 			round_end.connect("next_pressed", Callable(self, "_on_round_end_next"))
 
+	if end_turn_button != null:
+		end_turn_button.pressed.connect(_on_end_turn_pressed)
+		end_turn_button.disabled = true
+		end_turn_button.visible = false
+
 	# Debug menu hooks (optional)
 	if debug_menu != null:
 		if debug_menu.has_signal("request_point_delta"):
@@ -822,6 +828,10 @@ func _ready() -> void:
 			debug_menu.connect("request_roll_random", Callable(self, "_on_debug_roll_random"))
 		if debug_menu.has_signal("request_setup_home_boards"):
 			debug_menu.connect("request_setup_home_boards", Callable(self, "_on_debug_setup_home_boards"))
+		if debug_menu.has_signal("request_ai_enabled"):
+			debug_menu.connect("request_ai_enabled", Callable(self, "_on_debug_ai_enabled"))
+		if debug_menu.has_method("set_ai_enabled"):
+			debug_menu.call("set_ai_enabled", ai_enabled)
 
 	# --- Skill tree wiring (MVP) ---
 	if skill_tree != null:
@@ -953,6 +963,7 @@ func start_turn() -> void:
 			_counter_measures_black_bonus_dice = 0
 
 	_update_dice_ui()
+	_update_end_turn_button()
 	if state != null and state.turn == BoardState.Player.WHITE:
 		_apply_momentum_turn_start()
 	_refresh_stopgap_modifiers()
@@ -1002,9 +1013,16 @@ func start_turn() -> void:
 				run_state.add_player_hp(amount)
 			_accelerator_next_heal = mini(10, amount + 1)
 
+	# --- BLACK MANUAL TURN SETUP -----------------------------------------
+	if state != null and state.turn == BoardState.Player.BLACK and not ai_enabled:
+		_set_input_enabled(true)
+
 	# Auto-pass if no legal moves
 	if _count_all_legal_moves() == 0:
-		end_turn()
+		if _is_manual_turn():
+			_update_end_turn_button()
+		else:
+			end_turn()
 		return
 
 
@@ -2226,7 +2244,9 @@ func _apply_move_and_continue(die_used: int, move: Dictionary, player: int) -> v
 			return
 
 	# Turn progression
-	if _count_all_legal_moves() == 0:
+	if _is_manual_turn():
+		_update_end_turn_button()
+	elif _count_all_legal_moves() == 0:
 		end_turn()
 
 func _apply_rapid_retreat_move(move: Dictionary, player: int) -> void:
@@ -2263,7 +2283,10 @@ func _apply_rapid_retreat_move(move: Dictionary, player: int) -> void:
 			return
 
 	if _count_all_legal_moves() == 0:
-		end_turn()
+		if _is_manual_turn():
+			_update_end_turn_button()
+		else:
+			end_turn()
 
 func _count_all_legal_moves() -> int:
 	var p: int = state.turn
@@ -2399,6 +2422,44 @@ func _update_dice_ui() -> void:
 			rolled_bonus = dice.dice_is_bonus
 			remaining_bonus = dice.remaining_is_bonus
 		dice_ui.call("set_dice", dice.dice, dice.remaining, rolled_bonus, remaining_bonus)
+	_update_end_turn_button()
+
+func _is_manual_turn() -> bool:
+	if state == null:
+		return false
+	if state.turn == BoardState.Player.WHITE:
+		return true
+	return not ai_enabled
+
+func _count_dice_only_legal_moves() -> int:
+	if state == null or dice == null:
+		return 0
+	var total: int = 0
+	for d in dice.remaining:
+		total += _count_legal_moves_for_die_with_special(state.turn, int(d))
+	return total
+
+func _can_end_turn_now() -> bool:
+	if not round_active or state == null or dice == null:
+		return false
+	return _count_dice_only_legal_moves() == 0
+
+func _update_end_turn_button() -> void:
+	if end_turn_button == null:
+		return
+	var manual: bool = round_active and _is_manual_turn()
+	end_turn_button.visible = manual
+	if not manual:
+		end_turn_button.disabled = true
+		return
+	end_turn_button.disabled = not _can_end_turn_now()
+
+func _on_end_turn_pressed() -> void:
+	if not _is_manual_turn():
+		return
+	if not _can_end_turn_now():
+		return
+	end_turn()
 
 
 func _clear_targets() -> void:
@@ -2599,7 +2660,9 @@ func _resume_after_skill_tree_post_move() -> void:
 		return
 
 	# Re-run progression logic that was paused
-	if dice != null and dice.call("has_moves") == false:
+	if _is_manual_turn():
+		_update_end_turn_button()
+	elif dice != null and dice.call("has_moves") == false:
 		end_turn()
 	elif _count_all_legal_moves() == 0:
 		end_turn()
@@ -3060,6 +3123,18 @@ func _on_debug_roll_random() -> void:
 	_update_dice_ui()
 	selected_from = -999
 	_clear_targets()
+
+func _on_debug_ai_enabled(enabled: bool) -> void:
+	ai_enabled = bool(enabled)
+	_ai_running = false
+	if state != null and state.turn == BoardState.Player.BLACK and ai_enabled:
+		_set_input_enabled(false)
+		_start_black_ai_turn()
+	else:
+		_set_input_enabled(true)
+	_update_end_turn_button()
+	if debug_menu != null and debug_menu.has_method("set_ai_enabled"):
+		debug_menu.call("set_ai_enabled", ai_enabled)
 
 func _on_debug_point_delta(point_index: int, is_white: bool, delta: int) -> void:
 	if state == null:
