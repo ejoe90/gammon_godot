@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="CardDef" load_steps=8 format=3 uid="uid://quantacard1"]
+
+[ext_resource type="Texture2D" uid="uid://dsdhcb02ogsw7" path="res://Assets/textures/cards/green deck fronts/4 minus green.jpg" id="1_quanta"]
+[ext_resource type="Script" uid="uid://dxnljvcddxql4" path="res://Scripts/CardEffect.gd" id="2_quanta"]
+[ext_resource type="Script" uid="uid://quantaeffectscript1" path="res://Scripts/cards/effects/EffectQuanta.gd" id="3_quanta"]
+[ext_resource type="Script" uid="uid://ur0p531l1ca4" path="res://Scripts/PatternReq.gd" id="4_quanta"]
+[ext_resource type="Script" uid="uid://b1ylg81nigak7" path="res://Scripts/CardDef.gd" id="5_quanta"]
+
+[sub_resource type="Resource" id="Resource_quanta_effect"]
+script = ExtResource("3_quanta")
+metadata/_custom_type_script = "uid://effectquanta1"
+
+[sub_resource type="Resource" id="Resource_quanta_pattern"]
+script = ExtResource("4_quanta")
+kind = 3
+owner_b = 0
+min_count_a = 2
+max_count_a = 2
+min_count_b = 2
+max_count_b = 2
+seq_counts = null
+mix_owners = null
+mix_mins = null
+mix_maxs = null
+mix_requires_empty = null
+metadata/_custom_type_script = "uid://ur0p531l1ca4"
+
+[resource]
+script = ExtResource("5_quanta")
+id = "quanta"
+title = "Quanta"
+category = 2
+tooltip_summary = "Maintain opposing 2x2 stacks to gain escalating +1 AP each white turn (up to +5), ending when the formation breaks."
+pip_value = -4
+pattern = Array[ExtResource("4_quanta")]([SubResource("Resource_quanta_pattern")])
+effect = SubResource("Resource_quanta_effect")
+art_texture = ExtResource("1_quanta")
+metadata/_custom_type_script = "uid://b1ylg81nigak7"
