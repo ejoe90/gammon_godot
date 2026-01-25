@@ -3379,9 +3379,36 @@ func _on_debug_ai_enabled(enabled: bool) -> void:
 func _on_debug_point_delta(point_index: int, is_white: bool, delta: int) -> void:
 	if state == null:
 		return
-	if point_index < 0 or point_index > 23:
-		return
 	if delta == 0:
+		return
+
+	if point_index == -1 or point_index == -2:
+		var bar_owner: int = BoardState.Player.WHITE if point_index == -1 else BoardState.Player.BLACK
+		var bar_stack: PackedInt32Array = state.bar_white if bar_owner == BoardState.Player.WHITE else state.bar_black
+		if delta > 0:
+			for _i in range(delta):
+				var id := state.create_checker(bar_owner)
+				bar_stack.append(id)
+		else:
+			var remove_count := -delta
+			for _i in range(remove_count):
+				if bar_stack.is_empty():
+					break
+				var top_i := bar_stack.size() - 1
+				var id2 := bar_stack[top_i]
+				bar_stack.remove_at(top_i)
+				state.checkers.erase(id2)
+		if bar_owner == BoardState.Player.WHITE:
+			state.bar_white = bar_stack
+		else:
+			state.bar_black = bar_stack
+		if board != null and board.has_method("sync_from_state_full"):
+			board.call("sync_from_state_full", state)
+		selected_from = -999
+		_clear_targets()
+		return
+
+	if point_index < 0 or point_index > 23:
 		return
 
 	var owner: int = BoardState.Player.WHITE if is_white else BoardState.Player.BLACK
