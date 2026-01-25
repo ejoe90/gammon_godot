@@ -581,6 +581,13 @@ func activate_rapid_retreat(card: CardInstance) -> void:
 	if card != null:
 		emit_signal("card_consumed", card.uid)
 
+func activate_jailbreak(card: CardInstance) -> void:
+	if state == null:
+		return
+	state.jailbreak_white_active = true
+	if card != null:
+		emit_signal("card_consumed", card.uid)
+
 func activate_momentum(card: CardInstance) -> void:
 	_momentum_active = true
 	_momentum_primary_pips = 1
@@ -1389,6 +1396,7 @@ func _black_ai_clone_state_for_sim(src: BoardState) -> BoardState:
 	c.off_black = src.off_black.duplicate()
 	c.detente_turns_left = int(src.detente_turns_left)
 	c.friction_turns_left = int(src.friction_turns_left)
+	c.jailbreak_white_active = bool(src.jailbreak_white_active)
 	return c
 
 func _apply_move_no_turn_end(die_used: int, move: Dictionary, player: int) -> void:
