@@ -1184,6 +1184,20 @@ offset_right = -20.0
 offset_bottom = -60.0
 text = "End Turn"
 
+[node name="AcceleratorToggle" type="Button" parent="HUD"]
+layout_mode = 1
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -220.0
+offset_top = -175.0
+offset_right = -20.0
+offset_bottom = -135.0
+text = "Accelerator: Off"
+toggle_mode = true
+visible = false
+
 [node name="RolledLabel" type="Label" parent="HUD/DiceUI"]
 layout_mode = 1
 anchors_preset = -1

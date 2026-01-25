@@ -47,6 +47,7 @@ var aux_used_this_turn: Dictionary = {}  # aux_id -> bool (per WHITE turn)
 @onready var dice_ui: Node = get_node_or_null("HUD/DiceUI")
 @onready var round_end: Node = get_node_or_null("HUD/RoundEndOverlay")
 @onready var end_turn_button: Button = get_node_or_null("HUD/EndTurnButton") as Button
+@onready var tempo_accelerator_toggle: Button = get_node_or_null("HUD/AcceleratorToggle") as Button
 @onready var debug_menu: DebugMenu = get_node_or_null("DebugMenu") as DebugMenu
 
 # --- Skill tree wiring (MVP) ---
@@ -105,6 +106,14 @@ var _momentum_active: bool = false
 var _momentum_primary_pips: int = 0
 var _momentum_secondary_pips: int = 0
 var _counter_measures_black_bonus_dice: int = 0
+var _tempo_accelerator_active: bool = false
+var _tempo_accelerator_toggle_on: bool = false
+var _quanta_active: bool = false
+var _quanta_bonus_ap: int = 0
+var _quanta_points: PackedInt32Array = PackedInt32Array()
+var _entanglement_active: bool = false
+var _entanglement_turns_left: int = 0
+var _last_black_dice: Array[int] = []
 
 # --- Pip Boost choice prompt (Tier 1+) ---
 var _pip_choice_menu: PopupMenu = null
@@ -582,6 +591,31 @@ func activate_momentum(card: CardInstance) -> void:
 	if card != null:
 		emit_signal("card_consumed", card.uid)
 
+func activate_tempo_accelerator(card: CardInstance) -> void:
+	_tempo_accelerator_active = true
+	_tempo_accelerator_toggle_on = false
+	_sync_tempo_accelerator_toggle()
+	if card != null:
+		emit_signal("card_consumed", card.uid)
+
+func activate_quanta(points: PackedInt32Array, card: CardInstance) -> void:
+	if points.size() != 2:
+		return
+	_quanta_active = true
+	_quanta_bonus_ap = 1
+	_quanta_points = points
+	ap_left += 1
+	if card != null:
+		emit_signal("card_consumed", card.uid)
+
+func activate_entanglement(card: CardInstance) -> void:
+	_entanglement_active = true
+	_entanglement_turns_left = 3
+	_apply_entanglement_bonus()
+	_update_dice_ui()
+	if card != null:
+		emit_signal("card_consumed", card.uid)
+
 func activate_detente(turns: int, card: CardInstance) -> void:
 	if state == null:
 		return
@@ -815,6 +849,10 @@ func _ready() -> void:
 		end_turn_button.pressed.connect(_on_end_turn_pressed)
 		end_turn_button.disabled = true
 		end_turn_button.visible = false
+	if tempo_accelerator_toggle != null:
+		tempo_accelerator_toggle.toggle_mode = true
+		tempo_accelerator_toggle.toggled.connect(_on_tempo_accelerator_toggle)
+		_sync_tempo_accelerator_toggle()
 
 	# Debug menu hooks (optional)
 	if debug_menu != null:
@@ -883,6 +921,14 @@ func start_round(rs: RunState) -> void:
 	_momentum_secondary_pips = 0
 	_counter_measures_black_bonus_dice = 0
 	_counter_measures_pending.clear()
+	_tempo_accelerator_active = false
+	_tempo_accelerator_toggle_on = false
+	_quanta_active = false
+	_quanta_bonus_ap = 0
+	_quanta_points = PackedInt32Array()
+	_entanglement_active = false
+	_entanglement_turns_left = 0
+	_last_black_dice.clear()
 
 	state = BoardState.new()
 	state.reset_standard()
@@ -927,6 +973,7 @@ func start_round(rs: RunState) -> void:
 	_sync_overwatch_ui()
 	_sync_detente_ui()
 	_sync_friction_ui()
+	_sync_tempo_accelerator_toggle()
 	
 	aux_cd_left.clear()
 	aux_uses_this_round.clear()
@@ -963,9 +1010,13 @@ func start_turn() -> void:
 			_counter_measures_black_bonus_dice = 0
 
 	_update_dice_ui()
+	if state != null and state.turn == BoardState.Player.WHITE:
+		_apply_entanglement_turn_start()
+		_update_dice_ui()
 	_update_end_turn_button()
 	if state != null and state.turn == BoardState.Player.WHITE:
 		_apply_momentum_turn_start()
+		_apply_quanta_turn_start()
 	_refresh_stopgap_modifiers()
 	_apply_stopgap_turn_start_heals(state.turn)
 	if state.turn == BoardState.Player.WHITE:
@@ -1622,11 +1673,45 @@ func _apply_momentum_turn_start() -> void:
 		dice.call("add_bonus_die", _momentum_secondary_pips)
 		_update_dice_ui()
 
+func _apply_quanta_turn_start() -> void:
+	if not _quanta_active or state == null:
+		return
+	if state.turn != BoardState.Player.WHITE:
+		return
+	if not _quanta_intact():
+		_deactivate_quanta()
+		return
+	_quanta_bonus_ap = mini(5, _quanta_bonus_ap + 1)
+	ap_left += _quanta_bonus_ap
+
+func _apply_entanglement_turn_start() -> void:
+	if not _entanglement_active:
+		return
+	if state == null or state.turn != BoardState.Player.WHITE:
+		return
+	_apply_entanglement_bonus()
+
+func _apply_entanglement_bonus() -> void:
+	if not _entanglement_active:
+		return
+	if _entanglement_turns_left <= 0:
+		_entanglement_active = false
+		return
+	if dice == null or not dice.has_method("add_bonus_die"):
+		return
+	for value in _last_black_dice:
+		dice.call("add_bonus_die", int(value))
+	_entanglement_turns_left -= 1
+	if _entanglement_turns_left <= 0:
+		_entanglement_active = false
+
 func _refresh_persistent_effects() -> void:
 	if _bunker_active and not _bunker_intact():
 		_deactivate_bunker()
 	if _accelerator_active and not _accelerator_intact():
 		_deactivate_accelerator()
+	if _quanta_active and not _quanta_intact():
+		_deactivate_quanta()
 	if _tunnel_active and not _tunnel_intact():
 		_deactivate_tunnel()
 	if _recon_active and not _recon_intact():
@@ -1657,6 +1742,20 @@ func _accelerator_intact() -> bool:
 			return true
 
 	return false
+
+func _quanta_intact() -> bool:
+	if state == null or _quanta_points.size() != 2:
+		return false
+	for pt in _quanta_points:
+		var idx: int = int(pt)
+		if idx < 0 or idx > 23:
+			return false
+		var st: PackedInt32Array = state.points[idx]
+		if st.size() < 2:
+			return false
+		if state.owner_of(int(st[0])) != BoardState.Player.WHITE:
+			return false
+	return true
 
 func _bunker_intact() -> bool:
 	if state == null or _bunker_pattern.is_empty():
@@ -1861,6 +1960,11 @@ func _deactivate_accelerator() -> void:
 	_accelerator_active = false
 	_accelerator_next_heal = 1
 
+func _deactivate_quanta() -> void:
+	_quanta_active = false
+	_quanta_bonus_ap = 0
+	_quanta_points = PackedInt32Array()
+
 func _deactivate_tunnel() -> void:
 	_tunnel_active = false
 	_tunnel_points = PackedInt32Array()
@@ -1896,6 +2000,11 @@ func _end_round_from_black_hp_win() -> void:
 func end_turn() -> void:
 	if not round_active:
 		return
+	if state != null and state.turn == BoardState.Player.BLACK:
+		if dice != null:
+			_last_black_dice = dice.dice.duplicate()
+		else:
+			_last_black_dice.clear()
 	_tick_distant_threat_end_turn()
 	_tick_detente_end_turn()
 	_tick_friction_end_turn()
@@ -1989,6 +2098,9 @@ func _on_point_clicked(i: int) -> void:
 
 	var p: int = state.turn
 
+	if _try_tempo_accelerator_bearoff(i):
+		return
+
 	# Force from bar if needed
 	# If you have checkers on the bar, you must explicitly click the bar to select it.
 	var bar: PackedInt32Array = state.bar_white if p == BoardState.Player.WHITE else state.bar_black
@@ -2056,6 +2168,27 @@ func _on_bearoff_clicked(dest: int) -> void:
 	if selected_from == -999:
 		return
 	_try_move_to(dest)
+
+func _try_tempo_accelerator_bearoff(point_i: int) -> bool:
+	if not _tempo_accelerator_active or not _tempo_accelerator_toggle_on:
+		return false
+	if state == null or state.turn != BoardState.Player.WHITE:
+		return false
+	if selected_from != -999:
+		return false
+	if ap_left < 2:
+		return false
+	if point_i < 18 or point_i > 23:
+		return false
+	if not Rules.all_in_home(state, BoardState.Player.WHITE):
+		return false
+	if state.stack_count(point_i) <= 0:
+		return false
+	if state.stack_owner(point_i) != BoardState.Player.WHITE:
+		return false
+
+	_apply_tempo_accelerator_bearoff_stack(point_i)
+	return true
 
 func _show_targets_for_selected() -> void:
 	if board == null or not board.has_method("show_move_targets"):
@@ -2288,12 +2421,82 @@ func _apply_rapid_retreat_move(move: Dictionary, player: int) -> void:
 		else:
 			end_turn()
 
+func _apply_tempo_accelerator_bearoff_stack(from_i: int) -> void:
+	if state == null or from_i < 0 or from_i > 23:
+		return
+	if ap_left < 2:
+		return
+	if state.turn != BoardState.Player.WHITE:
+		return
+	if state.stack_owner(from_i) != BoardState.Player.WHITE:
+		return
+	if state.stack_count(from_i) <= 0:
+		return
+
+	ap_left -= 2
+	_clear_targets()
+
+	while state.stack_count(from_i) > 0:
+		var move := {
+			"from": from_i,
+			"to": 24,
+			"hit": false,
+			"tempo_accelerator": true,
+		}
+		var moving_id: int = _peek_moving_checker_id(move, BoardState.Player.WHITE)
+		apply_move_with_zero_sum(move, BoardState.Player.WHITE)
+		_apply_post_move_effects(move, BoardState.Player.WHITE, 24, moving_id)
+
+	selected_from = -999
+
+	if board != null and board.has_method("sync_from_state_full"):
+		board.call("sync_from_state_full", state)
+
+	if state.count_in_play(BoardState.Player.WHITE) == 0 or state.count_in_play(BoardState.Player.BLACK) == 0:
+		_end_round_from_state()
+		return
+
+	for wc in win_conditions:
+		if wc != null and wc.check(state):
+			_end_round_from_state()
+			return
+
+	if skill_tree != null:
+		skill_tree.on_pips_updated(get_pips_remaining(BoardState.Player.WHITE))
+		if skill_tree_blocking:
+			_skill_tree_pending_post_move = true
+			return
+
+	if _is_manual_turn():
+		_update_end_turn_button()
+	elif _count_all_legal_moves() == 0:
+		end_turn()
+
 func _count_all_legal_moves() -> int:
 	var p: int = state.turn
 	var total: int = 0
 	for d in dice.remaining:
 		total += _count_legal_moves_for_die_with_special(p, int(d))
 	total += _count_rapid_retreat_moves()
+	total += _count_tempo_accelerator_moves()
+	return total
+
+func _count_tempo_accelerator_moves() -> int:
+	if not _tempo_accelerator_active or not _tempo_accelerator_toggle_on:
+		return 0
+	if state == null or state.turn != BoardState.Player.WHITE:
+		return 0
+	if ap_left < 2:
+		return 0
+	if not Rules.all_in_home(state, BoardState.Player.WHITE):
+		return 0
+	var total := 0
+	for idx in range(18, 24):
+		if state.stack_count(idx) == 0:
+			continue
+		if state.stack_owner(idx) != BoardState.Player.WHITE:
+			continue
+		total += 1
 	return total
 
 func _count_rapid_retreat_moves() -> int:
@@ -2451,8 +2654,10 @@ func _update_end_turn_button() -> void:
 	end_turn_button.visible = manual
 	if not manual:
 		end_turn_button.disabled = true
+		_sync_tempo_accelerator_toggle()
 		return
 	end_turn_button.disabled = not _can_end_turn_now()
+	_sync_tempo_accelerator_toggle()
 
 func _on_end_turn_pressed() -> void:
 	if not _is_manual_turn():
@@ -2460,6 +2665,33 @@ func _on_end_turn_pressed() -> void:
 	if not _can_end_turn_now():
 		return
 	end_turn()
+
+func _sync_tempo_accelerator_toggle() -> void:
+	if tempo_accelerator_toggle == null:
+		return
+	if not _tempo_accelerator_active:
+		_tempo_accelerator_toggle_on = false
+		tempo_accelerator_toggle.visible = false
+		tempo_accelerator_toggle.disabled = true
+		tempo_accelerator_toggle.button_pressed = false
+		tempo_accelerator_toggle.text = "Accelerator: Off"
+		return
+	var should_show := _should_show_tempo_accelerator_toggle()
+	tempo_accelerator_toggle.visible = should_show
+	tempo_accelerator_toggle.disabled = not should_show
+	tempo_accelerator_toggle.button_pressed = _tempo_accelerator_toggle_on
+	tempo_accelerator_toggle.text = "Accelerator: On" if _tempo_accelerator_toggle_on else "Accelerator: Off"
+
+func _should_show_tempo_accelerator_toggle() -> bool:
+	if not _tempo_accelerator_active or state == null:
+		return false
+	if state.turn != BoardState.Player.WHITE:
+		return false
+	return Rules.all_in_home(state, BoardState.Player.WHITE)
+
+func _on_tempo_accelerator_toggle(enabled: bool) -> void:
+	_tempo_accelerator_toggle_on = bool(enabled)
+	_sync_tempo_accelerator_toggle()
 
 
 func _clear_targets() -> void:
