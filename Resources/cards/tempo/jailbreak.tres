@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="CardDef" load_steps=7 format=3 uid="uid://jailbreakcard1"]
+
+[ext_resource type="Texture2D" uid="uid://c8ylwqtmjae8n" path="res://Assets/textures/cards/green deck fronts/6 minus green.jpg" id="1_jailbreak"]
+[ext_resource type="Script" uid="uid://dxnljvcddxql4" path="res://Scripts/CardEffect.gd" id="2_jailbreak"]
+[ext_resource type="Script" uid="uid://jailbreakeffect1" path="res://Scripts/cards/effects/EffectJailbreak.gd" id="3_jailbreak"]
+[ext_resource type="Resource" uid="uid://reqwhitebar3card1" path="res://Resources/reqs/req_white_bar_3.tres" id="4_jailbreak"]
+[ext_resource type="Script" uid="uid://b1ylg81nigak7" path="res://Scripts/CardDef.gd" id="5_jailbreak"]
+
+[sub_resource type="Resource" id="Resource_jailbreak_effect"]
+script = ExtResource("3_jailbreak")
+metadata/_custom_type_script = "uid://jailbreakeffect1"
+
+[resource]
+script = ExtResource("5_jailbreak")
+id = "jailbreak"
+title = "Jailbreak"
+category = 2
+tooltip_summary = "Pattern: 3+ white checkers on the bar. For the rest of the round, white may re-enter from the bar into points 18-23 (1=23, 2=22, etc.) as well as points 0-5."
+pip_value = -6
+effect = SubResource("Resource_jailbreak_effect")
+art_texture = ExtResource("1_jailbreak")
+activation_req = ExtResource("4_jailbreak")
+metadata/_custom_type_script = "uid://b1ylg81nigak7"

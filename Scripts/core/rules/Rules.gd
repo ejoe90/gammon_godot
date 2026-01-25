@@ -19,6 +19,14 @@ static func _entry_point_from_bar(p: int, die: int) -> int:
 	# WHITE enters at 0..5 via die-1; BLACK enters at 23..18 via 24-die
 	return (die - 1) if p == BoardState.Player.WHITE else (24 - die)
 
+static func _entry_points_from_bar(state: BoardState, p: int, die: int) -> Array[int]:
+	var points: Array[int] = [_entry_point_from_bar(p, die)]
+	if p == BoardState.Player.WHITE and bool(state.jailbreak_white_active):
+		var jailbreak_point: int = 24 - die
+		if not points.has(jailbreak_point):
+			points.append(jailbreak_point)
+	return points
+
 static func _blocked_by_opponent(state: BoardState, p: int, dst: int) -> bool:
 	if dst < 0 or dst > 23:
 		return false
@@ -91,14 +99,15 @@ static func legal_moves_for_die(state: BoardState, p: int, die: int) -> Array[Di
 	if bar.size() > 0:
 		if not forward:
 			return res
-		var dst: int = _entry_point_from_bar(p, mag)
-		if not _blocked_by_opponent(state, p, dst):
-			var hit := _is_hit(state, p, dst)
+		for dst in _entry_points_from_bar(state, p, mag):
+			if _blocked_by_opponent(state, p, int(dst)):
+				continue
+			var hit := _is_hit(state, p, int(dst))
 			if _moving_checker_is_pacifism(state, p, -1) and hit:
 				return res
 			res.append({
 				"from": -1,
-				"to": dst,
+				"to": int(dst),
 				"hit": hit,
 			})
 		return res
@@ -173,14 +182,15 @@ static func legal_moves_for_die_adv(state: BoardState, p: int, die: int, bearoff
 	if bar.size() > 0:
 		if not forward:
 			return res
-		var dst: int = _entry_point_from_bar(p, mag)
-		if not _blocked_by_opponent(state, p, dst):
-			var hit := _is_hit(state, p, dst)
+		for dst in _entry_points_from_bar(state, p, mag):
+			if _blocked_by_opponent(state, p, int(dst)):
+				continue
+			var hit := _is_hit(state, p, int(dst))
 			if _moving_checker_is_pacifism(state, p, -1) and hit:
 				return res
 			res.append({
 				"from": -1,
-				"to": dst,
+				"to": int(dst),
 				"hit": hit,
 			})
 		return res

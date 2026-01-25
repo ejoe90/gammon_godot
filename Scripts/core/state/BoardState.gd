@@ -15,6 +15,7 @@ var off_black: PackedInt32Array = PackedInt32Array()
 var turn: int = Player.WHITE
 var detente_turns_left: int = 0
 var friction_turns_left: int = 0
+var jailbreak_white_active: bool = false
 
 # ID registry
 var next_id: int = 1
@@ -66,6 +67,7 @@ func reset_standard() -> void:
 	turn = Player.WHITE
 	detente_turns_left = 0
 	friction_turns_left = 0
+	jailbreak_white_active = false
 
 	_spawn_stack(0, Player.WHITE, 2)
 	_spawn_stack(11, Player.WHITE, 5)
