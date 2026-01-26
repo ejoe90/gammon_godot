@@ -29,6 +29,8 @@ var pip_convert_to_hp: bool = false
 
 # Gold aux tier4-B mechanic: multiplier value (starts at 1).
 var gold_mult: int = 1
+# Round-only gold multiplier from card effects (starts at 1).
+var round_gold_mult: int = 1
 # Gold aux tier4-A mechanic: conversion target when using Gold Boost.
 var gold_convert_mode: int = GoldConvertMode.GOLD
 
@@ -46,6 +48,8 @@ func add_gold(amount: int, apply_multiplier: bool = true) -> int:
 		return 0
 	if apply_multiplier and _gold_mult_active():
 		v *= maxi(1, int(gold_mult))
+	if apply_multiplier and int(round_gold_mult) > 1:
+		v *= maxi(1, int(round_gold_mult))
 	gold += v
 	return v
 

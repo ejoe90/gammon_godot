@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="CardDef" load_steps=8 format=3 uid="uid://economyacceleratorcard1"]
+
+[ext_resource type="Texture2D" uid="uid://bw0d27gjbpdr6" path="res://Assets/textures/cards/yellow deck fronts/3 plus yellow.jpg" id="1_economy_accelerator"]
+[ext_resource type="Script" uid="uid://dxnljvcddxql4" path="res://Scripts/CardEffect.gd" id="2_economy_accelerator"]
+[ext_resource type="Script" uid="uid://effecteconomyaccelerator1" path="res://Scripts/cards/effects/EffectEconomyAccelerator.gd" id="3_economy_accelerator"]
+[ext_resource type="Script" uid="uid://ur0p531l1ca4" path="res://Scripts/PatternReq.gd" id="4_economy_accelerator"]
+[ext_resource type="Script" uid="uid://b1ylg81nigak7" path="res://Scripts/CardDef.gd" id="5_economy_accelerator"]
+
+[sub_resource type="Resource" id="Resource_economy_accelerator_effect"]
+script = ExtResource("3_economy_accelerator")
+metadata/_custom_type_script = "uid://effecteconomyaccelerator1"
+
+[sub_resource type="Resource" id="Resource_economy_accelerator_pattern"]
+script = ExtResource("4_economy_accelerator")
+kind = 2
+seq_counts = null
+mix_owners = PackedInt32Array(0, 0, 0, 0)
+mix_mins = PackedInt32Array(1, 1, 1, 1)
+mix_maxs = PackedInt32Array(15, 15, 15, 15)
+mix_requires_empty = PackedInt32Array(0, 0, 0, 0)
+mix_same_half_only = false
+metadata/_custom_type_script = "uid://ur0p531l1ca4"
+
+[resource]
+script = ExtResource("5_economy_accelerator")
+id = "economy_accelerator"
+title = "Accelerator"
+category = 0
+tooltip_summary = "Once activated, gain +2 gold at the start of each white turn this round; the gain increases by +2 each subsequent white turn."
+pip_value = 3
+pattern = Array[ExtResource("4_economy_accelerator")]([SubResource("Resource_economy_accelerator_pattern")])
+effect = SubResource("Resource_economy_accelerator_effect")
+art_texture = ExtResource("1_economy_accelerator")
+metadata/_custom_type_script = "uid://b1ylg81nigak7"

@@ -19,6 +19,7 @@ var _pacifism_label: Label = null
 var _chain_reaction_label: Label = null
 var _stealth_label: Label = null
 var _stockpile_label: Label = null
+var _supply_line_label: Label = null
 
 const ZERO_SUM_SHADER_PATH := "res://Shaders/zero_sum_overlay.gdshader"
 const DISTANT_THREAT_SHADER_PATH := "res://Shaders/distant_threat_glow.gdshader"
@@ -105,6 +106,11 @@ func set_stockpile_state(enabled: bool) -> void:
 	_ensure_stockpile_label()
 	if _stockpile_label != null:
 		_stockpile_label.visible = enabled
+
+func set_supply_line_state(enabled: bool) -> void:
+	_ensure_supply_line_label()
+	if _supply_line_label != null:
+		_supply_line_label.visible = enabled
 
 func _ensure_distant_threat_label() -> void:
 	if _distant_threat_label != null:
@@ -200,6 +206,25 @@ func _ensure_stockpile_label() -> void:
 	label.visible = false
 	add_child(label)
 	_stockpile_label = label
+
+func _ensure_supply_line_label() -> void:
+	if _supply_line_label != null:
+		return
+	var existing: Label = get_node_or_null("SupplyLineLabel") as Label
+	if existing != null:
+		_supply_line_label = existing
+		return
+	var label := Label.new()
+	label.name = "SupplyLineLabel"
+	label.text = "$"
+	label.z_index = 2005
+	label.scale = Vector2(0.75, 0.75)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.position = Vector2(0, -4)
+	label.visible = false
+	add_child(label)
+	_supply_line_label = label
 
 func _on_click_area_input_event(_vp: Viewport, event: InputEvent, _shape_idx: int) -> void:
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
