@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://ce32q778uma70" path="res://Scripts/RunController.gd" id="1_kjqwk"]
 [ext_resource type="PackedScene" uid="uid://bpvpieuxq84fg" path="res://Scenes/main/RoundScene.tscn" id="2_67yny"]
 [ext_resource type="PackedScene" uid="uid://cxgpodmyvwvsg" path="res://Scenes/EndRoundShop.tscn" id="3_67yny"]
+[ext_resource type="PackedScene" uid="uid://ck0thl0l0w1x8" path="res://Scenes/StartDeckSelection.tscn" id="4_d3hhx"]
 [ext_resource type="Texture2D" uid="uid://fw31hthjppvy" path="res://Assets/textures/star_sparkle_16x16.png" id="4_xvxb3"]
 
 [sub_resource type="Gradient" id="Gradient_xvxb3"]
@@ -35,6 +36,8 @@ offset_left = 544.0
 offset_top = 96.0
 offset_right = -1136.0
 offset_bottom = -664.0
+
+[node name="StartDeckSelection" parent="HUD" instance=ExtResource("4_d3hhx")]
 
 [node name="StarBG" type="CanvasLayer" parent="."]
 layer = -139
