@@ -45,7 +45,10 @@ func _build_offer() -> void:
 	var family_ids := _collect_family_ids()
 	var chosen: Array[String] = []
 	for family in FAMILY_ORDER:
-		var pool: Array[String] = family_ids.get(family, []).duplicate()
+		var pool := family_ids.get(family, []) as Array[String]
+		if pool == null:
+			pool = []
+		pool = pool.duplicate()
 		pool.shuffle()
 		for i in range(mini(MIN_PER_FAMILY_OFFER, pool.size())):
 			chosen.append(pool[i])
