@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="CardDef" load_steps=8 format=3 uid="uid://blackmarketcard1"]
+
+[ext_resource type="Texture2D" uid="uid://b5cp8xu6w5r7k" path="res://Assets/textures/cards/yellow deck fronts/3 minus yellow.jpg" id="1_black_market"]
+[ext_resource type="Script" uid="uid://dxnljvcddxql4" path="res://Scripts/CardEffect.gd" id="2_black_market"]
+[ext_resource type="Script" uid="uid://effectblackmarket1" path="res://Scripts/cards/effects/EffectBlackMarket.gd" id="3_black_market"]
+[ext_resource type="Script" uid="uid://ur0p531l1ca4" path="res://Scripts/PatternReq.gd" id="4_black_market"]
+[ext_resource type="Script" uid="uid://b1ylg81nigak7" path="res://Scripts/CardDef.gd" id="5_black_market"]
+
+[sub_resource type="Resource" id="Resource_black_market_effect"]
+script = ExtResource("3_black_market")
+metadata/_custom_type_script = "uid://effectblackmarket1"
+
+[sub_resource type="Resource" id="Resource_black_market_pattern"]
+script = ExtResource("4_black_market")
+kind = 2
+seq_counts = null
+mix_owners = PackedInt32Array(0, 1, 0, 1)
+mix_mins = PackedInt32Array(1, 1, 1, 1)
+mix_maxs = PackedInt32Array(1, 1, 1, 1)
+mix_requires_empty = PackedInt32Array(0, 0, 0, 0)
+mix_allow_reverse = true
+mix_same_half_only = false
+metadata/_custom_type_script = "uid://ur0p531l1ca4"
+
+[resource]
+script = ExtResource("5_black_market")
+id = "black_market"
+title = "Black Market"
+category = 0
+tooltip_summary = "Opens the Black Market shop overlay with discounted special items. Close it after purchase to return to the game."
+pip_value = -3
+pattern = Array[ExtResource("4_black_market")]([SubResource("Resource_black_market_pattern")])
+effect = SubResource("Resource_black_market_effect")
+art_texture = ExtResource("1_black_market")
+metadata/_custom_type_script = "uid://b1ylg81nigak7"

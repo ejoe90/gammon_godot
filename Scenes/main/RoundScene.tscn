@@ -1,4 +1,4 @@
-[gd_scene load_steps=29 format=4 uid="uid://bpvpieuxq84fg"]
+[gd_scene load_steps=30 format=4 uid="uid://bpvpieuxq84fg"]
 
 [ext_resource type="Script" uid="uid://bg3o2686wcgq0" path="res://Scripts/game/RoundController.gd" id="1_137o6"]
 [ext_resource type="PackedScene" uid="uid://oscrpsfbqu6w" path="res://Scenes/debug_card_menu.tscn" id="2_xdnbs"]
@@ -11,6 +11,7 @@
 [ext_resource type="Script" uid="uid://c15tpcny0qra6" path="res://Scripts/HandHUD.gd" id="8_xdnbs"]
 [ext_resource type="PackedScene" uid="uid://bj8g3a2jgmne8" path="res://Scenes/SkillTreeOverlay.tscn" id="10_3ljpy"]
 [ext_resource type="PackedScene" uid="uid://bqyhhs7nso515" path="res://Scenes/StatsHUD.tscn" id="10_e87vp"]
+[ext_resource type="PackedScene" uid="uid://cxgpodmyvwvsg" path="res://Scenes/EndRoundShop.tscn" id="11_black_market"]
 [ext_resource type="PackedScene" uid="uid://c5ou1koxgc3o1" path="res://Scenes/AuxCardsHUD.tscn" id="11_k0kue"]
 [ext_resource type="Script" uid="uid://umoarpkqrdyf" path="res://SkillTreeManager.gd" id="12_k0kue"]
 [ext_resource type="Script" uid="uid://bnoikb2cewgg" path="res://Scripts/ai/AIController.gd" id="14_vwgvb"]
@@ -1226,6 +1227,8 @@ offset_right = 1671.7406
 offset_bottom = 202.44444
 
 [node name="SkillTreeOverlay" parent="HUD" instance=ExtResource("10_3ljpy")]
+
+[node name="BlackMarketOverlay" parent="HUD" instance=ExtResource("11_black_market")]
 
 [node name="AuxCardsHUD" parent="HUD" instance=ExtResource("11_k0kue")]
 offset_left = 1500.0

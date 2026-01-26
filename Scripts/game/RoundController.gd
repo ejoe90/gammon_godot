@@ -89,6 +89,8 @@ var _wormhole_points: PackedInt32Array = PackedInt32Array()
 var _no_mans_lands: Array[Dictionary] = []
 var _stopgap_points: PackedInt32Array = PackedInt32Array()
 var _stopgap_defense_bonus: int = 0
+var _stopgap_economy_points: PackedInt32Array = PackedInt32Array()
+var _stopgap_economy_base_mult: int = 1
 var _respite_active: bool = false
 var _respite_points: PackedInt32Array = PackedInt32Array()
 var _respite_turn_used: bool = false
@@ -132,6 +134,7 @@ var _profiteering_active: bool = false
 var _profiteering_pattern: Array[PatternReq] = []
 var _profiteering_points: PackedInt32Array = PackedInt32Array()
 var _profiteering_min_counts: PackedInt32Array = PackedInt32Array()
+var _war_chest_active: bool = false
 
 # --- Pip Boost choice prompt (Tier 1+) ---
 var _pip_choice_menu: PopupMenu = null
@@ -530,6 +533,30 @@ func activate_stopgap(gap_pt: int, card: CardInstance) -> void:
 	_refresh_stopgap_modifiers()
 	_sync_stopgap_ui()
 	emit_signal("card_consumed", card.uid)
+
+func activate_stopgap_economy(gap_pt: int, card: CardInstance) -> void:
+	if gap_pt < 0 or gap_pt > 23:
+		return
+	if _stopgap_economy_points.find(gap_pt) == -1:
+		_stopgap_economy_points.append(gap_pt)
+	_sync_stopgap_economy_ui()
+	emit_signal("card_consumed", card.uid)
+
+func activate_war_chest(card: CardInstance) -> void:
+	_war_chest_active = true
+	if has_method("show_notice"):
+		show_notice("War Chest ready.")
+	if card != null:
+		emit_signal("card_consumed", card.uid)
+
+func activate_black_market(card: CardInstance) -> void:
+	var overlay: Node = get_node_or_null("HUD/BlackMarketOverlay")
+	if overlay != null and overlay.has_method("open"):
+		overlay.call("open", run_state)
+	elif has_method("show_notice"):
+		show_notice("Black Market is open.")
+	if card != null:
+		emit_signal("card_consumed", card.uid)
 
 func activate_respite(points: PackedInt32Array, card: CardInstance) -> void:
 	if points.size() != 4:
@@ -1036,6 +1063,8 @@ func start_round(rs: RunState) -> void:
 	_no_mans_lands.clear()
 	_stopgap_points = PackedInt32Array()
 	_stopgap_defense_bonus = 0
+	_stopgap_economy_points = PackedInt32Array()
+	_stopgap_economy_base_mult = 1
 	_respite_active = false
 	_respite_points = PackedInt32Array()
 	_respite_turn_used = false
@@ -1079,6 +1108,7 @@ func start_round(rs: RunState) -> void:
 	_profiteering_pattern.clear()
 	_profiteering_points = PackedInt32Array()
 	_profiteering_min_counts = PackedInt32Array()
+	_war_chest_active = false
 
 	state = BoardState.new()
 	state.reset_standard()
@@ -1119,6 +1149,7 @@ func start_round(rs: RunState) -> void:
 	_hide_round_end()
 	_sync_no_mans_land_ui()
 	_sync_stopgap_ui()
+	_sync_stopgap_economy_ui()
 	_sync_wormhole_ui()
 	_sync_plunder_ui()
 	_sync_overwatch_ui()
@@ -1145,6 +1176,10 @@ func start_turn() -> void:
 
 	selected_from = -999
 	_clear_targets()
+	if state != null and state.turn == BoardState.Player.BLACK:
+		_reset_stopgap_economy_mult()
+	if state != null and state.turn == BoardState.Player.WHITE:
+		_capture_stopgap_economy_base()
 	if _distant_threat_active and _distant_threat_clear_on_white and state != null and state.turn == BoardState.Player.WHITE:
 		_clear_distant_threat()
 		if board != null and board.has_method("sync_from_state_full"):
@@ -1619,6 +1654,8 @@ func _apply_post_move_effects(
 	_apply_supply_line_post_move(player, moving_id, bool(move.get("hit", false)), hit_victim_id, landed_on_friendly_stack)
 	_apply_convoy_post_move(hit_victim_id, player)
 	_apply_plunder_post_move(landing, player)
+	_apply_stopgap_economy_landing(landing, player)
+	_apply_war_chest_post_move(bool(move.get("hit", false)), player)
 	_refresh_persistent_effects()
 
 func _apply_pacifism_if_needed(landing: int, player: int, moving_id: int) -> void:
@@ -1701,6 +1738,19 @@ func _apply_plunder_post_move(landing: int, player: int) -> void:
 	if landing != _plunder_point:
 		return
 	_gain_gold(10)
+
+func _apply_war_chest_post_move(did_hit: bool, player: int) -> void:
+	if run_state == null:
+		return
+	if not _war_chest_active:
+		return
+	if not did_hit:
+		return
+
+	if player == BoardState.Player.WHITE:
+		_gain_gold(10)
+	elif player == BoardState.Player.BLACK:
+		_set_gold(_get_gold() - 5)
 
 func _remove_supply_line_tag(checker_id: int) -> void:
 	if state == null:
@@ -1894,6 +1944,31 @@ func _apply_stopgap_turn_start_heals(player: int) -> void:
 			run_state.add_player_hp(1)
 		else:
 			run_state.add_enemy_hp(1)
+
+func _capture_stopgap_economy_base() -> void:
+	if run_state == null or _stopgap_economy_points.is_empty():
+		return
+	_stopgap_economy_base_mult = maxi(1, int(run_state.round_gold_mult))
+
+func _reset_stopgap_economy_mult() -> void:
+	if run_state == null or _stopgap_economy_points.is_empty():
+		return
+	run_state.round_gold_mult = maxi(1, int(_stopgap_economy_base_mult))
+
+func _apply_stopgap_economy_landing(landing: int, player: int) -> void:
+	if run_state == null or _stopgap_economy_points.is_empty():
+		return
+	if landing < 0 or landing > 23:
+		return
+	if _stopgap_economy_points.find(landing) == -1:
+		return
+
+	if player == BoardState.Player.WHITE:
+		run_state.round_gold_mult = maxi(1, int(run_state.round_gold_mult) * 2)
+		if has_method("show_notice"):
+			show_notice("Stopgap E! Gold x%d this turn." % int(run_state.round_gold_mult))
+	elif player == BoardState.Player.BLACK:
+		_set_gold(_get_gold() - 10)
 
 func _apply_recon_turn_start() -> void:
 	if not _recon_active or _recon_pattern == null or state == null:
@@ -2299,6 +2374,14 @@ func _sync_stopgap_ui() -> void:
 	for pt in _stopgap_points:
 		points.append(int(pt))
 	board.call("set_stopgap_points", points)
+
+func _sync_stopgap_economy_ui() -> void:
+	if board == null or not board.has_method("set_stopgap_economy_points"):
+		return
+	var points: Array[int] = []
+	for pt in _stopgap_economy_points:
+		points.append(int(pt))
+	board.call("set_stopgap_economy_points", points)
 
 func _sync_wormhole_ui() -> void:
 	if board == null or not board.has_method("set_wormhole_points"):
