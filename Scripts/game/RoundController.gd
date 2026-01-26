@@ -111,6 +111,12 @@ var _tempo_accelerator_toggle_on: bool = false
 var _quanta_active: bool = false
 var _quanta_bonus_ap: int = 0
 var _quanta_points: PackedInt32Array = PackedInt32Array()
+var _stockpile_active: bool = false
+var _stockpile_points: PackedInt32Array = PackedInt32Array()
+var _stockpile_tagged_ids: Array[int] = []
+var _stockpile_min_count: int = 2
+var _inflation_turns_left: int = 0
+var _inflation_last_black_gold: int = 0
 var _entanglement_active: bool = false
 var _entanglement_turns_left: int = 0
 var _last_black_dice: Array[int] = []
@@ -615,6 +621,26 @@ func activate_quanta(points: PackedInt32Array, card: CardInstance) -> void:
 	if card != null:
 		emit_signal("card_consumed", card.uid)
 
+func activate_stockpile(points: PackedInt32Array, card: CardInstance) -> void:
+	if run_state == null or state == null:
+		return
+	if points.size() != 2:
+		return
+	_stockpile_active = true
+	_stockpile_points = points
+	if run_state.has_method("add_gold"):
+		run_state.add_gold(10, true)
+	else:
+		run_state.gold += 10
+	_sync_stockpile_tags()
+	if card != null:
+		emit_signal("card_consumed", card.uid)
+
+func activate_inflation(card: CardInstance, turns: int = 3) -> void:
+	_inflation_turns_left = maxi(0, int(turns))
+	if card != null:
+		emit_signal("card_consumed", card.uid)
+
 func activate_entanglement(card: CardInstance) -> void:
 	_entanglement_active = true
 	_entanglement_turns_left = 3
@@ -933,6 +959,11 @@ func start_round(rs: RunState) -> void:
 	_quanta_active = false
 	_quanta_bonus_ap = 0
 	_quanta_points = PackedInt32Array()
+	_stockpile_active = false
+	_stockpile_points = PackedInt32Array()
+	_stockpile_tagged_ids.clear()
+	_inflation_turns_left = 0
+	_inflation_last_black_gold = 0
 	_entanglement_active = false
 	_entanglement_turns_left = 0
 	_last_black_dice.clear()
@@ -1024,6 +1055,7 @@ func start_turn() -> void:
 	if state != null and state.turn == BoardState.Player.WHITE:
 		_apply_momentum_turn_start()
 		_apply_quanta_turn_start()
+		_apply_inflation_turn_start()
 	_refresh_stopgap_modifiers()
 	_apply_stopgap_turn_start_heals(state.turn)
 	if state.turn == BoardState.Player.WHITE:
@@ -1692,6 +1724,22 @@ func _apply_quanta_turn_start() -> void:
 	_quanta_bonus_ap = mini(5, _quanta_bonus_ap + 1)
 	ap_left += _quanta_bonus_ap
 
+func _apply_inflation_turn_start() -> void:
+	if run_state == null or state == null:
+		return
+	if state.turn != BoardState.Player.WHITE:
+		return
+	if _inflation_turns_left <= 0:
+		return
+	var base_gold: int = maxi(0, int(_inflation_last_black_gold))
+	var gain: int = int(floor(float(base_gold) * 0.5))
+	if gain > 0:
+		if run_state.has_method("add_gold"):
+			run_state.add_gold(gain, true)
+		else:
+			run_state.gold += gain
+	_inflation_turns_left = maxi(0, _inflation_turns_left - 1)
+
 func _apply_entanglement_turn_start() -> void:
 	if not _entanglement_active:
 		return
@@ -1725,6 +1773,7 @@ func _refresh_persistent_effects() -> void:
 	if _recon_active and not _recon_intact():
 		_recon_active = false
 		_recon_pattern = null
+	_refresh_stockpile()
 	_refresh_no_mans_land()
 	_refresh_stopgap_modifiers()
 	_refresh_respite()
@@ -1762,6 +1811,15 @@ func _quanta_intact() -> bool:
 		if st.size() < 2:
 			return false
 		if state.owner_of(int(st[0])) != BoardState.Player.WHITE:
+			return false
+	return true
+
+func _stockpile_intact() -> bool:
+	if state == null or _stockpile_points.size() != 2:
+		return false
+	for pt in _stockpile_points:
+		var idx: int = int(pt)
+		if not _point_has_owner_min(idx, BoardState.Player.WHITE, _stockpile_min_count):
 			return false
 	return true
 
@@ -1856,6 +1914,69 @@ func _refresh_respite() -> void:
 	if not _respite_intact():
 		_respite_active = false
 		_respite_points = PackedInt32Array()
+
+func _refresh_stockpile() -> void:
+	if not _stockpile_active:
+		return
+	if not _stockpile_intact():
+		_deactivate_stockpile()
+		return
+	_sync_stockpile_tags()
+
+func _sync_stockpile_tags() -> void:
+	if state == null:
+		return
+	var changed := false
+	for checker_id in _stockpile_tagged_ids:
+		var info: CheckerInfo = state.checkers.get(int(checker_id), null)
+		if info != null and info.tags.has("stockpile"):
+			info.tags.erase("stockpile")
+			changed = true
+	_stockpile_tagged_ids.clear()
+
+	if not _stockpile_active or not _stockpile_intact():
+		if changed and board != null and board.has_method("sync_from_state_full"):
+			board.call("sync_from_state_full", state)
+		return
+
+	for pt in _stockpile_points:
+		var idx: int = int(pt)
+		if idx < 0 or idx > 23:
+			continue
+		var st: PackedInt32Array = state.points[idx]
+		if st.size() < _stockpile_min_count:
+			continue
+		for i in range(_stockpile_min_count):
+			var checker_id: int = int(st[i])
+			var info: CheckerInfo = state.checkers.get(checker_id, null)
+			if info == null:
+				continue
+			if not info.tags.has("stockpile"):
+				info.tags["stockpile"] = true
+				changed = true
+			_stockpile_tagged_ids.append(checker_id)
+
+	if changed and board != null and board.has_method("sync_from_state_full"):
+		board.call("sync_from_state_full", state)
+
+func _deactivate_stockpile() -> void:
+	_clear_stockpile_tags()
+	_stockpile_active = false
+	_stockpile_points = PackedInt32Array()
+
+func _clear_stockpile_tags() -> void:
+	if state == null:
+		_stockpile_tagged_ids.clear()
+		return
+	var changed := false
+	for checker_id in _stockpile_tagged_ids:
+		var info: CheckerInfo = state.checkers.get(int(checker_id), null)
+		if info != null and info.tags.has("stockpile"):
+			info.tags.erase("stockpile")
+			changed = true
+	_stockpile_tagged_ids.clear()
+	if changed and board != null and board.has_method("sync_from_state_full"):
+		board.call("sync_from_state_full", state)
 
 func _refresh_no_mans_land() -> void:
 	if state == null:
@@ -2008,11 +2129,14 @@ func _end_round_from_black_hp_win() -> void:
 func end_turn() -> void:
 	if not round_active:
 		return
+	if state != null and state.turn == BoardState.Player.WHITE:
+		_apply_stockpile_end_turn()
 	if state != null and state.turn == BoardState.Player.BLACK:
 		if dice != null:
 			_last_black_dice = dice.dice.duplicate()
 		else:
 			_last_black_dice.clear()
+		_capture_inflation_black_gold()
 	_tick_distant_threat_end_turn()
 	_tick_detente_end_turn()
 	_tick_friction_end_turn()
@@ -2054,6 +2178,38 @@ func _tick_friction_end_turn() -> void:
 		return
 	state.friction_turns_left = maxi(0, int(state.friction_turns_left) - 1)
 	_sync_friction_ui()
+
+func _capture_inflation_black_gold() -> void:
+	if run_state == null:
+		return
+	if _inflation_turns_left <= 0:
+		return
+	_inflation_last_black_gold = maxi(0, int(run_state.gold))
+
+func _apply_stockpile_end_turn() -> void:
+	if run_state == null or state == null:
+		return
+	if not _stockpile_active:
+		return
+	if not _stockpile_intact():
+		_deactivate_stockpile()
+		return
+
+	var base_bonus := 10
+	var extra := 0
+	for pt in _stockpile_points:
+		var idx: int = int(pt)
+		if idx < 0 or idx > 23:
+			continue
+		var st: PackedInt32Array = state.points[idx]
+		extra += maxi(0, st.size() - _stockpile_min_count)
+
+	var total := base_bonus + (extra * 5)
+	if total > 0:
+		if run_state.has_method("add_gold"):
+			run_state.add_gold(total, true)
+		else:
+			run_state.gold += total
 
 func _sync_distant_threat_tag() -> void:
 	if state == null or _distant_threat_checker_id == -1:
