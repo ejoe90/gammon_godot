@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="CardDef" load_steps=8 format=3 uid="uid://profiteeringcard1"]
+
+[ext_resource type="Texture2D" uid="uid://b1657syeqo0nq" path="res://Assets/textures/cards/yellow deck fronts/4 minus yellow.jpg" id="1_profiteering"]
+[ext_resource type="Script" uid="uid://dxnljvcddxql4" path="res://Scripts/CardEffect.gd" id="2_profiteering"]
+[ext_resource type="Script" uid="uid://effectprofiteering1" path="res://Scripts/cards/effects/EffectProfiteering.gd" id="3_profiteering"]
+[ext_resource type="Script" uid="uid://ur0p531l1ca4" path="res://Scripts/PatternReq.gd" id="4_profiteering"]
+[ext_resource type="Script" uid="uid://b1ylg81nigak7" path="res://Scripts/CardDef.gd" id="5_profiteering"]
+
+[sub_resource type="Resource" id="Resource_profiteering_effect"]
+script = ExtResource("3_profiteering")
+metadata/_custom_type_script = "uid://effectprofiteering1"
+
+[sub_resource type="Resource" id="Resource_profiteering_pattern"]
+script = ExtResource("4_profiteering")
+seq_counts = PackedInt32Array(1, 2, 1)
+metadata/_custom_type_script = "uid://ur0p531l1ca4"
+
+[resource]
+script = ExtResource("5_profiteering")
+id = "profiteering"
+title = "Profiteering"
+category = 0
+tooltip_summary = "Pattern: 1-2-1 white run on the same side. While the formation holds, gain gold equal to the pips of each die used (absolute value) on both players' turns; effect ends if the formation breaks."
+pip_value = -4
+pattern = Array[ExtResource("4_profiteering")]([SubResource("Resource_profiteering_pattern")])
+effect = SubResource("Resource_profiteering_effect")
+art_texture = ExtResource("1_profiteering")
+metadata/_custom_type_script = "uid://b1ylg81nigak7"
