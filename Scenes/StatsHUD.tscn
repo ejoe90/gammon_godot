@@ -8,7 +8,7 @@ anchors_preset = 0
 offset_left = 5.0
 offset_top = 5.0
 offset_right = 225.0
-offset_bottom = 260.0
+offset_bottom = 286.0
 scale = Vector2(1.35, 1.35)
 script = ExtResource("1_2w0v8")
 
@@ -60,26 +60,34 @@ offset_right = 100.55556
 offset_bottom = 146.7037
 text = "DEF: +0"
 
+[node name="GoldMultLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = -4.4444447
+offset_top = 146.7037
+offset_right = 100.55556
+offset_bottom = 169.7037
+text = "Gold x1"
+
 [node name="PipsWhite" type="Label" parent="."]
 layout_mode = 0
 offset_left = -3.7037036
-offset_top = 149.62962
+offset_top = 171.62962
 offset_right = 101.296295
-offset_bottom = 172.62962
+offset_bottom = 194.62962
 text = "Placeholder 6"
 
 [node name="PipsBlack" type="Label" parent="."]
 layout_mode = 0
 offset_left = -2.9629629
-offset_top = 175.55554
+offset_top = 197.55554
 offset_right = 102.03704
-offset_bottom = 198.55556
+offset_bottom = 220.55556
 text = "Placeholder 7"
 
 [node name="PipHPLabel" type="Label" parent="."]
 layout_mode = 0
 offset_left = -3.7037036
-offset_top = 201.48146
+offset_top = 223.48146
 offset_right = 160.2963
-offset_bottom = 224.48148
+offset_bottom = 246.48148
 text = "Pip→HP: -"

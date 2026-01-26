@@ -10,6 +10,7 @@ class_name StatsHUD
 @onready var gold_label: Label = get_node_or_null("GoldLabel") as Label
 @onready var ap_label: Label = get_node_or_null("APLabel") as Label
 @onready var defense_label: Label = get_node_or_null("DefenseLabel") as Label
+@onready var gold_mult_label: Label = get_node_or_null("GoldMultLabel") as Label
 
 # NEW: pip labels (must exist as children of StatsHUD scene)
 @onready var pips_white_label: Label = get_node_or_null("PipsWhite") as Label
@@ -58,6 +59,8 @@ func _refresh() -> void:
 			enemy_hp_label.text = "Enemy HP: %d/%d  ATK x%d" % [rs.enemy_hp, rs.enemy_max_hp, black_mult]
 		if gold_label != null:
 			gold_label.text = "Gold: %d" % rs.gold
+		if gold_mult_label != null:
+			gold_mult_label.text = "Gold x%d" % maxi(1, int(rs.round_gold_mult))
 	else:
 		if round_label != null:
 			round_label.text = "Round: -"
@@ -67,6 +70,8 @@ func _refresh() -> void:
 			enemy_hp_label.text = "Enemy HP: -"
 		if gold_label != null:
 			gold_label.text = "Gold: -"
+		if gold_mult_label != null:
+			gold_mult_label.text = "Gold x-"
 
 	if ap_label != null:
 		var mult: int = 1

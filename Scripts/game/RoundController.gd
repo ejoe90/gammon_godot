@@ -98,6 +98,8 @@ var _distant_threat_turns_left: int = 0
 var _distant_threat_clear_on_white: bool = false
 var _accelerator_active: bool = false
 var _accelerator_next_heal: int = 1
+var _economy_accelerator_active: bool = false
+var _economy_accelerator_next_gold: int = 2
 var _overwatch_active: bool = false
 var _recon_active: bool = false
 var _recon_pattern: PatternReq = null
@@ -115,6 +117,8 @@ var _stockpile_active: bool = false
 var _stockpile_points: PackedInt32Array = PackedInt32Array()
 var _stockpile_tagged_ids: Array[int] = []
 var _stockpile_min_count: int = 2
+var _supply_line_active: bool = false
+var _supply_line_checker_ids: Array[int] = []
 var _inflation_turns_left: int = 0
 var _inflation_last_black_gold: int = 0
 var _entanglement_active: bool = false
@@ -567,6 +571,41 @@ func activate_accelerator(card: CardInstance) -> void:
 	_accelerator_next_heal = 2
 	emit_signal("card_consumed", card.uid)
 
+func activate_economy_accelerator(card: CardInstance) -> void:
+	if run_state == null:
+		return
+	_economy_accelerator_active = true
+	_economy_accelerator_next_gold = maxi(2, int(_economy_accelerator_next_gold))
+	emit_signal("card_consumed", card.uid)
+
+func activate_supply_line(checker_ids: Array[int], card: CardInstance) -> void:
+	if state == null:
+		return
+	_supply_line_active = true
+	_supply_line_checker_ids.clear()
+	var changed := false
+	for checker_id in checker_ids:
+		var id: int = int(checker_id)
+		var info: CheckerInfo = state.checkers.get(id, null)
+		if info == null:
+			continue
+		info.tags["supply_line"] = true
+		_supply_line_checker_ids.append(id)
+		changed = true
+	if changed and board != null and board.has_method("sync_from_state_full"):
+		board.call("sync_from_state_full", state)
+	if card != null:
+		emit_signal("card_consumed", card.uid)
+
+func activate_gold_double_down(multiplier: int, card: CardInstance) -> void:
+	if run_state == null:
+		return
+	run_state.round_gold_mult = maxi(1, int(multiplier))
+	if has_method("show_notice"):
+		show_notice("DOUBLE DOWN! Gold x%d for this round." % int(run_state.round_gold_mult))
+	if card != null:
+		emit_signal("card_consumed", card.uid)
+
 func activate_overwatch(card: CardInstance) -> void:
 	_overwatch_active = true
 	_sync_overwatch_ui()
@@ -924,6 +963,7 @@ func start_round(rs: RunState) -> void:
 	if run_state != null:
 		run_state.player_attack_mult = 1
 		run_state.base_defense_power = 0
+		run_state.round_gold_mult = 1
 
 	_bunker_active = false
 	_bunker_bonus = 0
@@ -945,6 +985,8 @@ func start_round(rs: RunState) -> void:
 	_distant_threat_clear_on_white = false
 	_accelerator_active = false
 	_accelerator_next_heal = 1
+	_economy_accelerator_active = false
+	_economy_accelerator_next_gold = 2
 	_overwatch_active = false
 	_recon_active = false
 	_recon_pattern = null
@@ -962,6 +1004,8 @@ func start_round(rs: RunState) -> void:
 	_stockpile_active = false
 	_stockpile_points = PackedInt32Array()
 	_stockpile_tagged_ids.clear()
+	_supply_line_active = false
+	_supply_line_checker_ids.clear()
 	_inflation_turns_left = 0
 	_inflation_last_black_gold = 0
 	_entanglement_active = false
@@ -1102,6 +1146,11 @@ func start_turn() -> void:
 			else:
 				run_state.add_player_hp(amount)
 			_accelerator_next_heal = mini(10, amount + 1)
+		if _economy_accelerator_active and run_state != null:
+			var gold_gain := maxi(0, int(_economy_accelerator_next_gold))
+			if gold_gain > 0:
+				_gain_gold(gold_gain)
+			_economy_accelerator_next_gold += 2
 
 	# --- BLACK MANUAL TURN SETUP -----------------------------------------
 	if state != null and state.turn == BoardState.Player.BLACK and not ai_enabled:
@@ -1276,6 +1325,8 @@ func _apply_move_no_turn_end_safe(die_used: int, move: Dictionary, player: int) 
 		return false
 
 	var moving_id: int = _peek_moving_checker_id(move, player)
+	var hit_victim_id: int = _peek_hit_checker_id(move, player)
+	var landed_on_friendly_stack: bool = _peek_landing_on_friendly_stack(move, player)
 	var used_chain_double: bool = bool(move.get("chain_reaction_double", false))
 	_record_quick_strike_if_any(move, player)
 	_record_turn_hit_if_any(move, player)
@@ -1289,7 +1340,7 @@ func _apply_move_no_turn_end_safe(die_used: int, move: Dictionary, player: int) 
 	if board != null and board.has_method("sync_from_state_full"):
 		board.call("sync_from_state_full", state)
 
-	_apply_post_move_effects(move, player, landing, moving_id)
+	_apply_post_move_effects(move, player, landing, moving_id, hit_victim_id, landed_on_friendly_stack)
 
 	selected_from = -999
 
@@ -1434,6 +1485,8 @@ func _black_ai_clone_state_for_sim(src: BoardState) -> BoardState:
 func _apply_move_no_turn_end(die_used: int, move: Dictionary, player: int) -> void:
 	# Same as _apply_move_and_continue, but NEVER ends the turn.
 	var moving_id: int = _peek_moving_checker_id(move, player)
+	var hit_victim_id: int = _peek_hit_checker_id(move, player)
+	var landed_on_friendly_stack: bool = _peek_landing_on_friendly_stack(move, player)
 	var used_chain_double: bool = bool(move.get("chain_reaction_double", false))
 	_record_quick_strike_if_any(move, player)
 	_record_turn_hit_if_any(move, player)
@@ -1447,7 +1500,7 @@ func _apply_move_no_turn_end(die_used: int, move: Dictionary, player: int) -> vo
 	if board != null and board.has_method("sync_from_state_full"):
 		board.call("sync_from_state_full", state)
 
-	_apply_post_move_effects(move, player, landing, moving_id)
+	_apply_post_move_effects(move, player, landing, moving_id, hit_victim_id, landed_on_friendly_stack)
 
 	selected_from = -999
 
@@ -1469,7 +1522,14 @@ func _apply_move_no_turn_end(die_used: int, move: Dictionary, player: int) -> vo
 			_skill_tree_pending_post_move = true
 			return
 
-func _apply_post_move_effects(move: Dictionary, player: int, landing_override: int = -1000, moving_id: int = -1) -> void:
+func _apply_post_move_effects(
+	move: Dictionary,
+	player: int,
+	landing_override: int = -1000,
+	moving_id: int = -1,
+	hit_victim_id: int = -1,
+	landed_on_friendly_stack: bool = false
+) -> void:
 	if state == null:
 		return
 
@@ -1484,6 +1544,7 @@ func _apply_post_move_effects(move: Dictionary, player: int, landing_override: i
 
 	_apply_no_mans_land_if_needed(landing)
 	_apply_pacifism_if_needed(landing, player, moving_id)
+	_apply_supply_line_post_move(player, moving_id, bool(move.get("hit", false)), hit_victim_id, landed_on_friendly_stack)
 	_refresh_persistent_effects()
 
 func _apply_pacifism_if_needed(landing: int, player: int, moving_id: int) -> void:
@@ -1514,6 +1575,52 @@ func _apply_pacifism_if_needed(landing: int, player: int, moving_id: int) -> voi
 		run_state.add_player_hp(2)
 	else:
 		run_state.add_enemy_hp(2)
+
+func _apply_supply_line_post_move(
+	player: int,
+	moving_id: int,
+	did_hit: bool,
+	hit_victim_id: int,
+	landed_on_friendly_stack: bool
+) -> void:
+	if run_state == null or state == null:
+		return
+	if not _supply_line_active:
+		return
+
+	if hit_victim_id != -1 and _checker_has_tag(hit_victim_id, "supply_line"):
+		_remove_supply_line_tag(hit_victim_id)
+
+	if moving_id == -1:
+		return
+	if not _checker_has_tag(moving_id, "supply_line"):
+		return
+	if player != BoardState.Player.WHITE:
+		return
+
+	if did_hit:
+		_gain_gold(30)
+	elif landed_on_friendly_stack:
+		_gain_gold(15)
+
+func _remove_supply_line_tag(checker_id: int) -> void:
+	if state == null:
+		return
+	var info: CheckerInfo = state.checkers.get(checker_id, null)
+	if info == null or not info.tags.has("supply_line"):
+		return
+	info.tags.erase("supply_line")
+	_supply_line_checker_ids.erase(checker_id)
+	if board != null and board.has_method("sync_from_state_full"):
+		board.call("sync_from_state_full", state)
+
+func _gain_gold(amount: int) -> void:
+	if run_state == null:
+		return
+	if run_state.has_method("add_gold"):
+		run_state.add_gold(amount, true)
+	else:
+		run_state.gold += int(amount)
 
 func _apply_tunnel_if_needed(landing: int) -> int:
 	if not _tunnel_active:
@@ -2502,8 +2609,37 @@ func _peek_moving_checker_id(move: Dictionary, player: int) -> int:
 		return int(st[st.size() - 1])
 	return -1
 
+func _peek_hit_checker_id(move: Dictionary, player: int) -> int:
+	if state == null:
+		return -1
+	if not bool(move.get("hit", false)):
+		return -1
+	var to_i: int = int(move.get("to", -999))
+	if to_i < 0 or to_i > 23:
+		return -1
+	var st: PackedInt32Array = state.points[to_i]
+	if st.size() != 1:
+		return -1
+	var victim_id: int = int(st[0])
+	if state.owner_of(victim_id) == player:
+		return -1
+	return victim_id
+
+func _peek_landing_on_friendly_stack(move: Dictionary, player: int) -> bool:
+	if state == null:
+		return false
+	var to_i: int = int(move.get("to", -999))
+	if to_i < 0 or to_i > 23:
+		return false
+	var st: PackedInt32Array = state.points[to_i]
+	if st.is_empty():
+		return false
+	return state.owner_of(int(st[0])) == player
+
 func _apply_move_and_continue(die_used: int, move: Dictionary, player: int) -> void:
 	var moving_id: int = _peek_moving_checker_id(move, player)
+	var hit_victim_id: int = _peek_hit_checker_id(move, player)
+	var landed_on_friendly_stack: bool = _peek_landing_on_friendly_stack(move, player)
 	var used_chain_double: bool = bool(move.get("chain_reaction_double", false))
 	_record_quick_strike_if_any(move, player)
 	_record_turn_hit_if_any(move, player)
@@ -2517,7 +2653,7 @@ func _apply_move_and_continue(die_used: int, move: Dictionary, player: int) -> v
 	if board != null and board.has_method("sync_from_state_full"):
 		board.call("sync_from_state_full", state)
 
-	_apply_post_move_effects(move, player, landing, moving_id)
+	_apply_post_move_effects(move, player, landing, moving_id, hit_victim_id, landed_on_friendly_stack)
 
 	selected_from = -999
 
@@ -2551,6 +2687,8 @@ func _apply_rapid_retreat_move(move: Dictionary, player: int) -> void:
 		return
 
 	var moving_id: int = _peek_moving_checker_id(move, player)
+	var hit_victim_id: int = _peek_hit_checker_id(move, player)
+	var landed_on_friendly_stack: bool = _peek_landing_on_friendly_stack(move, player)
 	_record_quick_strike_if_any(move, player)
 	_record_turn_hit_if_any(move, player)
 
@@ -2560,7 +2698,7 @@ func _apply_rapid_retreat_move(move: Dictionary, player: int) -> void:
 	if board != null and board.has_method("sync_from_state_full"):
 		board.call("sync_from_state_full", state)
 
-	_apply_post_move_effects(move, player, landing, moving_id)
+	_apply_post_move_effects(move, player, landing, moving_id, hit_victim_id, landed_on_friendly_stack)
 
 	selected_from = -999
 
@@ -2608,8 +2746,10 @@ func _apply_tempo_accelerator_bearoff_stack(from_i: int) -> void:
 			"tempo_accelerator": true,
 		}
 		var moving_id: int = _peek_moving_checker_id(move, BoardState.Player.WHITE)
+		var hit_victim_id: int = _peek_hit_checker_id(move, BoardState.Player.WHITE)
+		var landed_on_friendly_stack: bool = _peek_landing_on_friendly_stack(move, BoardState.Player.WHITE)
 		apply_move_with_zero_sum(move, BoardState.Player.WHITE)
-		_apply_post_move_effects(move, BoardState.Player.WHITE, 24, moving_id)
+		_apply_post_move_effects(move, BoardState.Player.WHITE, 24, moving_id, hit_victim_id, landed_on_friendly_stack)
 
 	selected_from = -999
 
