@@ -45,9 +45,9 @@ func _build_offer() -> void:
 	var family_ids := _collect_family_ids()
 	var chosen: Array[String] = []
 	for family in FAMILY_ORDER:
-		var pool := family_ids.get(family, []) as Array[String]
-		if pool == null:
-			pool = []
+	var remaining_pool: Array[String] = _to_string_array(CardDB.all_ids())
+	_offer_ids = _to_string_array(chosen)
+	_offer_ids = _to_string_array(_offer_ids.slice(0, OFFER_COUNT))
 		pool = pool.duplicate()
 		pool.shuffle()
 		for i in range(mini(MIN_PER_FAMILY_OFFER, pool.size())):
@@ -189,6 +189,12 @@ func _family_name(category: int) -> String:
 			return "Attack"
 		_:
 			return "Unknown"
+
+func _to_string_array(source: Array) -> Array[String]:
+	var output: Array[String] = []
+	for item in source:
+		output.append(item as String)
+	return output
 
 func _on_confirm_pressed() -> void:
 	if _selected_ids.size() != SELECT_COUNT:
