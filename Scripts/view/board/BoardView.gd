@@ -24,6 +24,7 @@ signal bar_clicked(player: int)
 
 var _no_mans_land_labels: Dictionary = {}
 var _stopgap_labels: Dictionary = {}
+var _stopgap_economy_labels: Dictionary = {}
 var _wormhole_labels: Dictionary = {}
 var _plunder_label: Label = null
 
@@ -110,6 +111,33 @@ func set_stopgap_points(points: Array) -> void:
 		label.position = pos + Vector2(-18, -22)
 		stopgap_layer.add_child(label)
 		_stopgap_labels[point] = label
+
+func set_stopgap_economy_points(points: Array) -> void:
+	if stopgap_layer == null:
+		return
+
+	for key in _stopgap_economy_labels.keys():
+		var label: Label = _stopgap_economy_labels[key] as Label
+		if is_instance_valid(label):
+			label.queue_free()
+	_stopgap_economy_labels.clear()
+
+	for entry in points:
+		var point: int = int(entry)
+		if point < 0 or point > 23:
+			continue
+
+		var label := Label.new()
+		label.text = "Stopgap E"
+		label.scale = Vector2(0.7, 0.7)
+		label.z_index = 644
+
+		var pos := Vector2.ZERO
+		if pieces != null:
+			pos = stopgap_layer.to_local(pieces.point_slot_global(point, 0))
+		label.position = pos + Vector2(-24, -6)
+		stopgap_layer.add_child(label)
+		_stopgap_economy_labels[point] = label
 
 func set_wormhole_points(points: Array) -> void:
 	if wormhole_layer == null:

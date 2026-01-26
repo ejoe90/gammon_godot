@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="CardDef" load_steps=8 format=3 uid="uid://warchestcard1"]
+
+[ext_resource type="Texture2D" uid="uid://b6cekdtkcl7ha" path="res://Assets/textures/cards/yellow deck fronts/2 minus yellow.jpg" id="1_war_chest"]
+[ext_resource type="Script" uid="uid://dxnljvcddxql4" path="res://Scripts/CardEffect.gd" id="2_war_chest"]
+[ext_resource type="Script" uid="uid://effectwarchest1" path="res://Scripts/cards/effects/EffectWarChest.gd" id="3_war_chest"]
+[ext_resource type="Script" uid="uid://ur0p531l1ca4" path="res://Scripts/PatternReq.gd" id="4_war_chest"]
+[ext_resource type="Script" uid="uid://b1ylg81nigak7" path="res://Scripts/CardDef.gd" id="5_war_chest"]
+
+[sub_resource type="Resource" id="Resource_war_chest_effect"]
+script = ExtResource("3_war_chest")
+metadata/_custom_type_script = "uid://effectwarchest1"
+
+[sub_resource type="Resource" id="Resource_war_chest_pattern"]
+script = ExtResource("4_war_chest")
+kind = 2
+seq_counts = null
+mix_owners = PackedInt32Array(0, 0, 0)
+mix_mins = PackedInt32Array(2, 2, 2)
+mix_maxs = PackedInt32Array(15, 15, 15)
+mix_requires_empty = PackedInt32Array(0, 0, 0)
+metadata/_custom_type_script = "uid://ur0p531l1ca4"
+
+[resource]
+script = ExtResource("5_war_chest")
+id = "war_chest"
+title = "War Chest"
+category = 0
+tooltip_summary = "For the rest of the round: +10 gold whenever white hits black, and lose 5 gold whenever black hits white."
+pip_value = -2
+pattern = Array[ExtResource("4_war_chest")]([SubResource("Resource_war_chest_pattern")])
+effect = SubResource("Resource_war_chest_effect")
+art_texture = ExtResource("1_war_chest")
+metadata/_custom_type_script = "uid://b1ylg81nigak7"
