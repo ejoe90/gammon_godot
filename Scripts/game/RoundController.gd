@@ -130,6 +130,8 @@ var _entanglement_turns_left: int = 0
 var _last_black_dice: Array[int] = []
 var _profiteering_active: bool = false
 var _profiteering_pattern: Array[PatternReq] = []
+var _profiteering_points: PackedInt32Array = PackedInt32Array()
+var _profiteering_min_counts: PackedInt32Array = PackedInt32Array()
 
 # --- Pip Boost choice prompt (Tier 1+) ---
 var _pip_choice_menu: PopupMenu = null
@@ -617,6 +619,7 @@ func activate_plunder(plunder_point: int, card: CardInstance) -> void:
 	_plunder_point = plunder_point
 	if board != null and board.has_method("sync_from_state_full"):
 		board.call("sync_from_state_full", state)
+	_sync_plunder_ui()
 	if card != null:
 		emit_signal("card_consumed", card.uid)
 
@@ -639,11 +642,18 @@ func activate_convoy(checker_ids: Array[int], card: CardInstance) -> void:
 	if card != null:
 		emit_signal("card_consumed", card.uid)
 
-func activate_profiteering(card: CardInstance) -> void:
+func activate_profiteering(start_point: int, counts: PackedInt32Array, card: CardInstance) -> void:
 	if card == null or card.def == null:
+		return
+	if start_point < 0 or counts.is_empty():
 		return
 	_profiteering_active = true
 	_profiteering_pattern = card.def.pattern
+	_profiteering_points = PackedInt32Array()
+	_profiteering_min_counts = counts
+	for offset in range(counts.size()):
+		var point: int = start_point + offset
+		_profiteering_points.append(point)
 	if card != null:
 		emit_signal("card_consumed", card.uid)
 
@@ -1067,6 +1077,8 @@ func start_round(rs: RunState) -> void:
 	_last_black_dice.clear()
 	_profiteering_active = false
 	_profiteering_pattern.clear()
+	_profiteering_points = PackedInt32Array()
+	_profiteering_min_counts = PackedInt32Array()
 
 	state = BoardState.new()
 	state.reset_standard()
@@ -1108,6 +1120,7 @@ func start_round(rs: RunState) -> void:
 	_sync_no_mans_land_ui()
 	_sync_stopgap_ui()
 	_sync_wormhole_ui()
+	_sync_plunder_ui()
 	_sync_overwatch_ui()
 	_sync_detente_ui()
 	_sync_friction_ui()
@@ -1714,6 +1727,12 @@ func _clear_convoy_tags() -> void:
 	if changed and board != null and board.has_method("sync_from_state_full"):
 		board.call("sync_from_state_full", state)
 
+func _clear_profiteering_state() -> void:
+	_profiteering_active = false
+	_profiteering_pattern.clear()
+	_profiteering_points = PackedInt32Array()
+	_profiteering_min_counts = PackedInt32Array()
+
 func _gain_gold(amount: int) -> void:
 	if run_state == null:
 		return
@@ -1728,8 +1747,7 @@ func _apply_profiteering_die_used(die_used: int) -> void:
 	if not _profiteering_active:
 		return
 	if not _profiteering_intact():
-		_profiteering_active = false
-		_profiteering_pattern.clear()
+		_clear_profiteering_state()
 		return
 	var gain: int = absi(int(die_used))
 	if gain > 0:
@@ -1994,8 +2012,7 @@ func _refresh_persistent_effects() -> void:
 		_recon_active = false
 		_recon_pattern = null
 	if _profiteering_active and not _profiteering_intact():
-		_profiteering_active = false
-		_profiteering_pattern.clear()
+		_clear_profiteering_state()
 	_refresh_stockpile()
 	_refresh_no_mans_land()
 	_refresh_stopgap_modifiers()
@@ -2059,10 +2076,23 @@ func _recon_intact() -> bool:
 	return PatternMatcher.find_run_sequence_mixed_start(_recon_pattern, ctx) != -1
 
 func _profiteering_intact() -> bool:
-	if state == null or _profiteering_pattern.is_empty():
+	if state == null or _profiteering_points.is_empty() or _profiteering_min_counts.is_empty():
 		return false
-	var ctx := PatternContext.new(state, BoardState.Player.WHITE)
-	return PatternMatcher.matches_all(_profiteering_pattern, ctx)
+	if _profiteering_points.size() != _profiteering_min_counts.size():
+		return false
+	for i in range(_profiteering_points.size()):
+		var point: int = int(_profiteering_points[i])
+		var min_count: int = int(_profiteering_min_counts[i])
+		if point < 0 or point > 23:
+			return false
+		var st: PackedInt32Array = state.points[point]
+		if st.size() < min_count:
+			return false
+		if st.is_empty():
+			return false
+		if state.owner_of(int(st[0])) != BoardState.Player.WHITE:
+			return false
+	return true
 
 func _tunnel_intact() -> bool:
 	if state == null or _tunnel_points.size() != 2:
@@ -2283,6 +2313,14 @@ func _sync_overwatch_ui() -> void:
 	if board == null or not board.has_method("set_overwatch_active"):
 		return
 	board.call("set_overwatch_active", _overwatch_active)
+
+func _sync_plunder_ui() -> void:
+	if board == null or not board.has_method("set_plunder_point"):
+		return
+	var point := -1
+	if _plunder_active:
+		point = _plunder_point
+	board.call("set_plunder_point", point)
 
 func _sync_detente_ui() -> void:
 	if board == null or not board.has_method("set_detente_active"):
