@@ -137,6 +137,7 @@ func _ensure_node(state: BoardState, id: int) -> void:
 	_apply_stealth_visual(state, id, piece)
 	_apply_stockpile_visual(state, id, piece)
 	_apply_supply_line_visual(state, id, piece)
+	_apply_convoy_visual(state, id, piece)
 
 func _apply_zero_sum_visual(state: BoardState, id: int, piece: Node2D) -> void:
 	if not piece.has_method("set_zero_sum_state"):
@@ -189,6 +190,13 @@ func _apply_supply_line_visual(state: BoardState, id: int, piece: Node2D) -> voi
 	var info: CheckerInfo = state.checkers.get(id, null)
 	var active: bool = info != null and bool(info.tags.get("supply_line", false))
 	piece.call("set_supply_line_state", active)
+
+func _apply_convoy_visual(state: BoardState, id: int, piece: Node2D) -> void:
+	if not piece.has_method("set_convoy_state"):
+		return
+	var info: CheckerInfo = state.checkers.get(id, null)
+	var active: bool = info != null and bool(info.tags.get("convoy", false))
+	piece.call("set_convoy_state", active)
 
 
 func point_stack_dir_global(i: int) -> Vector2:

@@ -17,6 +17,7 @@ signal bar_clicked(player: int)
 @onready var no_mans_land_layer: Node2D = get_node_or_null("NoMansLandLayer") as Node2D
 @onready var stopgap_layer: Node2D = get_node_or_null("StopgapLayer") as Node2D
 @onready var wormhole_layer: Node2D = get_node_or_null("WormholeLayer") as Node2D
+@onready var plunder_layer: Node2D = get_node_or_null("PlunderLayer") as Node2D
 @onready var overwatch_label: Label = get_node_or_null("OverwatchLabel") as Label
 @onready var detente_label: Label = get_node_or_null("DetenteLabel") as Label
 @onready var friction_label: Label = get_node_or_null("FrictionLabel") as Label
@@ -24,6 +25,7 @@ signal bar_clicked(player: int)
 var _no_mans_land_labels: Dictionary = {}
 var _stopgap_labels: Dictionary = {}
 var _wormhole_labels: Dictionary = {}
+var _plunder_label: Label = null
 
 func show_move_targets(targets: Array[int], player: int) -> void:
 	var is_white: bool = (player == BoardState.Player.WHITE)
@@ -135,6 +137,28 @@ func set_wormhole_points(points: Array) -> void:
 		label.position = pos + Vector2(-6, -10)
 		wormhole_layer.add_child(label)
 		_wormhole_labels[point] = label
+
+func set_plunder_point(point: int) -> void:
+	if plunder_layer == null:
+		return
+	if _plunder_label != null and is_instance_valid(_plunder_label):
+		_plunder_label.queue_free()
+	_plunder_label = null
+
+	if point < 0 or point > 23:
+		return
+
+	var label := Label.new()
+	label.text = "Plunder"
+	label.scale = Vector2(0.7, 0.7)
+	label.z_index = 646
+
+	var pos := Vector2.ZERO
+	if pieces != null:
+		pos = plunder_layer.to_local(pieces.point_slot_global(point, 0))
+	label.position = pos + Vector2(-26, -28)
+	plunder_layer.add_child(label)
+	_plunder_label = label
 
 func set_overwatch_active(active: bool) -> void:
 	if overwatch_label == null:

@@ -119,11 +119,19 @@ var _stockpile_tagged_ids: Array[int] = []
 var _stockpile_min_count: int = 2
 var _supply_line_active: bool = false
 var _supply_line_checker_ids: Array[int] = []
+var _plunder_active: bool = false
+var _plunder_point: int = -1
+var _convoy_active: bool = false
+var _convoy_checker_ids: Array[int] = []
 var _inflation_turns_left: int = 0
 var _inflation_last_black_gold: int = 0
 var _entanglement_active: bool = false
 var _entanglement_turns_left: int = 0
 var _last_black_dice: Array[int] = []
+var _profiteering_active: bool = false
+var _profiteering_pattern: Array[PatternReq] = []
+var _profiteering_points: PackedInt32Array = PackedInt32Array()
+var _profiteering_min_counts: PackedInt32Array = PackedInt32Array()
 
 # --- Pip Boost choice prompt (Tier 1+) ---
 var _pip_choice_menu: PopupMenu = null
@@ -597,6 +605,58 @@ func activate_supply_line(checker_ids: Array[int], card: CardInstance) -> void:
 	if card != null:
 		emit_signal("card_consumed", card.uid)
 
+func activate_plunder(plunder_point: int, card: CardInstance) -> void:
+	if state == null:
+		return
+	if plunder_point < 0 or plunder_point > 23:
+		return
+	var st: PackedInt32Array = state.points[plunder_point]
+	if not st.is_empty():
+		var target_id: int = int(st[st.size() - 1])
+		if state.owner_of(target_id) == BoardState.Player.BLACK:
+			Rules.send_checker_to_bar(state, target_id)
+	_plunder_active = true
+	_plunder_point = plunder_point
+	if board != null and board.has_method("sync_from_state_full"):
+		board.call("sync_from_state_full", state)
+	_sync_plunder_ui()
+	if card != null:
+		emit_signal("card_consumed", card.uid)
+
+func activate_convoy(checker_ids: Array[int], card: CardInstance) -> void:
+	if state == null:
+		return
+	_clear_convoy_tags()
+	_convoy_active = true
+	var changed := false
+	for checker_id in checker_ids:
+		var id: int = int(checker_id)
+		var info: CheckerInfo = state.checkers.get(id, null)
+		if info == null:
+			continue
+		info.tags["convoy"] = true
+		_convoy_checker_ids.append(id)
+		changed = true
+	if changed and board != null and board.has_method("sync_from_state_full"):
+		board.call("sync_from_state_full", state)
+	if card != null:
+		emit_signal("card_consumed", card.uid)
+
+func activate_profiteering(start_point: int, counts: PackedInt32Array, card: CardInstance) -> void:
+	if card == null or card.def == null:
+		return
+	if start_point < 0 or counts.is_empty():
+		return
+	_profiteering_active = true
+	_profiteering_pattern = card.def.pattern
+	_profiteering_points = PackedInt32Array()
+	_profiteering_min_counts = counts
+	for offset in range(counts.size()):
+		var point: int = start_point + offset
+		_profiteering_points.append(point)
+	if card != null:
+		emit_signal("card_consumed", card.uid)
+
 func activate_gold_double_down(multiplier: int, card: CardInstance) -> void:
 	if run_state == null:
 		return
@@ -1006,11 +1066,19 @@ func start_round(rs: RunState) -> void:
 	_stockpile_tagged_ids.clear()
 	_supply_line_active = false
 	_supply_line_checker_ids.clear()
+	_plunder_active = false
+	_plunder_point = -1
+	_convoy_active = false
+	_convoy_checker_ids.clear()
 	_inflation_turns_left = 0
 	_inflation_last_black_gold = 0
 	_entanglement_active = false
 	_entanglement_turns_left = 0
 	_last_black_dice.clear()
+	_profiteering_active = false
+	_profiteering_pattern.clear()
+	_profiteering_points = PackedInt32Array()
+	_profiteering_min_counts = PackedInt32Array()
 
 	state = BoardState.new()
 	state.reset_standard()
@@ -1052,6 +1120,7 @@ func start_round(rs: RunState) -> void:
 	_sync_no_mans_land_ui()
 	_sync_stopgap_ui()
 	_sync_wormhole_ui()
+	_sync_plunder_ui()
 	_sync_overwatch_ui()
 	_sync_detente_ui()
 	_sync_friction_ui()
@@ -1359,10 +1428,12 @@ func _black_ai_consume_die_safe(die_used: int) -> void:
 	if dice.has_method("consume_die"):
 		var ok: bool = bool(dice.call("consume_die", die_used))
 		if ok:
+			_apply_profiteering_die_used(die_used)
 			return
 		# Fallback: remove by magnitude
 		ok = bool(dice.call("consume_die", absi(die_used)))
 		if ok:
+			_apply_profiteering_die_used(die_used)
 			return
 	# Ultimate fallback: drop one remaining die to prevent AI stalling on an unconsumable value.
 	if dice.remaining.size() > 0:
@@ -1495,6 +1566,7 @@ func _apply_move_no_turn_end(die_used: int, move: Dictionary, player: int) -> vo
 	if used_chain_double:
 		_consume_chain_reaction(moving_id)
 	dice.call("consume_die", die_used)
+	_apply_profiteering_die_used(die_used)
 	_update_dice_ui()
 
 	if board != null and board.has_method("sync_from_state_full"):
@@ -1545,6 +1617,8 @@ func _apply_post_move_effects(
 	_apply_no_mans_land_if_needed(landing)
 	_apply_pacifism_if_needed(landing, player, moving_id)
 	_apply_supply_line_post_move(player, moving_id, bool(move.get("hit", false)), hit_victim_id, landed_on_friendly_stack)
+	_apply_convoy_post_move(hit_victim_id, player)
+	_apply_plunder_post_move(landing, player)
 	_refresh_persistent_effects()
 
 func _apply_pacifism_if_needed(landing: int, player: int, moving_id: int) -> void:
@@ -1603,6 +1677,31 @@ func _apply_supply_line_post_move(
 	elif landed_on_friendly_stack:
 		_gain_gold(15)
 
+func _apply_convoy_post_move(hit_victim_id: int, player: int) -> void:
+	if run_state == null or state == null:
+		return
+	if not _convoy_active:
+		return
+	if player != BoardState.Player.WHITE:
+		return
+	if hit_victim_id == -1:
+		return
+	if _checker_has_tag(hit_victim_id, "convoy"):
+		_gain_gold(20)
+
+func _apply_plunder_post_move(landing: int, player: int) -> void:
+	if run_state == null or state == null:
+		return
+	if not _plunder_active:
+		return
+	if player != BoardState.Player.WHITE:
+		return
+	if landing < 0 or landing > 23:
+		return
+	if landing != _plunder_point:
+		return
+	_gain_gold(10)
+
 func _remove_supply_line_tag(checker_id: int) -> void:
 	if state == null:
 		return
@@ -1614,6 +1713,26 @@ func _remove_supply_line_tag(checker_id: int) -> void:
 	if board != null and board.has_method("sync_from_state_full"):
 		board.call("sync_from_state_full", state)
 
+func _clear_convoy_tags() -> void:
+	if state == null:
+		_convoy_checker_ids.clear()
+		return
+	var changed := false
+	for checker_id in _convoy_checker_ids:
+		var info: CheckerInfo = state.checkers.get(int(checker_id), null)
+		if info != null and info.tags.has("convoy"):
+			info.tags.erase("convoy")
+			changed = true
+	_convoy_checker_ids.clear()
+	if changed and board != null and board.has_method("sync_from_state_full"):
+		board.call("sync_from_state_full", state)
+
+func _clear_profiteering_state() -> void:
+	_profiteering_active = false
+	_profiteering_pattern.clear()
+	_profiteering_points = PackedInt32Array()
+	_profiteering_min_counts = PackedInt32Array()
+
 func _gain_gold(amount: int) -> void:
 	if run_state == null:
 		return
@@ -1621,6 +1740,18 @@ func _gain_gold(amount: int) -> void:
 		run_state.add_gold(amount, true)
 	else:
 		run_state.gold += int(amount)
+
+func _apply_profiteering_die_used(die_used: int) -> void:
+	if run_state == null or state == null:
+		return
+	if not _profiteering_active:
+		return
+	if not _profiteering_intact():
+		_clear_profiteering_state()
+		return
+	var gain: int = absi(int(die_used))
+	if gain > 0:
+		_gain_gold(gain)
 
 func _apply_tunnel_if_needed(landing: int) -> int:
 	if not _tunnel_active:
@@ -1880,6 +2011,8 @@ func _refresh_persistent_effects() -> void:
 	if _recon_active and not _recon_intact():
 		_recon_active = false
 		_recon_pattern = null
+	if _profiteering_active and not _profiteering_intact():
+		_clear_profiteering_state()
 	_refresh_stockpile()
 	_refresh_no_mans_land()
 	_refresh_stopgap_modifiers()
@@ -1941,6 +2074,25 @@ func _recon_intact() -> bool:
 		return false
 	var ctx := PatternContext.new(state, BoardState.Player.WHITE)
 	return PatternMatcher.find_run_sequence_mixed_start(_recon_pattern, ctx) != -1
+
+func _profiteering_intact() -> bool:
+	if state == null or _profiteering_points.is_empty() or _profiteering_min_counts.is_empty():
+		return false
+	if _profiteering_points.size() != _profiteering_min_counts.size():
+		return false
+	for i in range(_profiteering_points.size()):
+		var point: int = int(_profiteering_points[i])
+		var min_count: int = int(_profiteering_min_counts[i])
+		if point < 0 or point > 23:
+			return false
+		var st: PackedInt32Array = state.points[point]
+		if st.size() < min_count:
+			return false
+		if st.is_empty():
+			return false
+		if state.owner_of(int(st[0])) != BoardState.Player.WHITE:
+			return false
+	return true
 
 func _tunnel_intact() -> bool:
 	if state == null or _tunnel_points.size() != 2:
@@ -2162,6 +2314,14 @@ func _sync_overwatch_ui() -> void:
 		return
 	board.call("set_overwatch_active", _overwatch_active)
 
+func _sync_plunder_ui() -> void:
+	if board == null or not board.has_method("set_plunder_point"):
+		return
+	var point := -1
+	if _plunder_active:
+		point = _plunder_point
+	board.call("set_plunder_point", point)
+
 func _sync_detente_ui() -> void:
 	if board == null or not board.has_method("set_detente_active"):
 		return
@@ -2238,6 +2398,7 @@ func end_turn() -> void:
 		return
 	if state != null and state.turn == BoardState.Player.WHITE:
 		_apply_stockpile_end_turn()
+		_apply_plunder_end_turn()
 	if state != null and state.turn == BoardState.Player.BLACK:
 		if dice != null:
 			_last_black_dice = dice.dice.duplicate()
@@ -2317,6 +2478,17 @@ func _apply_stockpile_end_turn() -> void:
 			run_state.add_gold(total, true)
 		else:
 			run_state.gold += total
+
+func _apply_plunder_end_turn() -> void:
+	if run_state == null or state == null:
+		return
+	if not _plunder_active:
+		return
+	if _plunder_point < 0 or _plunder_point > 23:
+		return
+	if state.points[_plunder_point].is_empty():
+		return
+	_gain_gold(20)
 
 func _sync_distant_threat_tag() -> void:
 	if state == null or _distant_threat_checker_id == -1:
@@ -2648,6 +2820,7 @@ func _apply_move_and_continue(die_used: int, move: Dictionary, player: int) -> v
 	if used_chain_double:
 		_consume_chain_reaction(moving_id)
 	dice.call("consume_die", die_used)
+	_apply_profiteering_die_used(die_used)
 	_update_dice_ui()
 
 	if board != null and board.has_method("sync_from_state_full"):

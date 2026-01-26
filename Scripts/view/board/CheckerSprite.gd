@@ -20,6 +20,7 @@ var _chain_reaction_label: Label = null
 var _stealth_label: Label = null
 var _stockpile_label: Label = null
 var _supply_line_label: Label = null
+var _convoy_label: Label = null
 
 const ZERO_SUM_SHADER_PATH := "res://Shaders/zero_sum_overlay.gdshader"
 const DISTANT_THREAT_SHADER_PATH := "res://Shaders/distant_threat_glow.gdshader"
@@ -111,6 +112,11 @@ func set_supply_line_state(enabled: bool) -> void:
 	_ensure_supply_line_label()
 	if _supply_line_label != null:
 		_supply_line_label.visible = enabled
+
+func set_convoy_state(enabled: bool) -> void:
+	_ensure_convoy_label()
+	if _convoy_label != null:
+		_convoy_label.visible = enabled
 
 func _ensure_distant_threat_label() -> void:
 	if _distant_threat_label != null:
@@ -225,6 +231,25 @@ func _ensure_supply_line_label() -> void:
 	label.visible = false
 	add_child(label)
 	_supply_line_label = label
+
+func _ensure_convoy_label() -> void:
+	if _convoy_label != null:
+		return
+	var existing: Label = get_node_or_null("ConvoyLabel") as Label
+	if existing != null:
+		_convoy_label = existing
+		return
+	var label := Label.new()
+	label.name = "ConvoyLabel"
+	label.text = "C"
+	label.z_index = 2006
+	label.scale = Vector2(0.75, 0.75)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.position = Vector2(12, -16)
+	label.visible = false
+	add_child(label)
+	_convoy_label = label
 
 func _on_click_area_input_event(_vp: Viewport, event: InputEvent, _shape_idx: int) -> void:
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
