@@ -70,14 +70,12 @@ func roll_with_sides(sides: int) -> void:
 	_set_regular_roll(d1, d2)
 
 func reroll_non_bonus() -> void:
-	for i in range(dice.size()):
-		if i < dice_is_bonus.size() and dice_is_bonus[i]:
-			continue
-		dice[i] = randi_range(1, 6)
 	for i in range(remaining.size()):
 		if i < remaining_is_bonus.size() and remaining_is_bonus[i]:
 			continue
 		remaining[i] = randi_range(1, 6)
+	dice = remaining.duplicate()
+	dice_is_bonus = remaining_is_bonus.duplicate()
 
 func has_moves() -> bool:
 	return remaining.size() > 0
