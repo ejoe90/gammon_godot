@@ -54,6 +54,7 @@ var aux_used_this_turn: Dictionary = {}  # aux_id -> bool (per WHITE turn)
 @onready var debug_menu: DebugMenu = get_node_or_null("DebugMenu") as DebugMenu
 @onready var stats_hud: Node = get_node_or_null("HUD/StatsHUD")
 @onready var aux_cards_hud: Node = get_node_or_null("HUD/AuxCardsHUD")
+@onready var deck_status_hud: Node = get_node_or_null("HUD/DeckStatusHUD")
 
 # --- Skill tree wiring (MVP) ---
 @onready var skill_tree: SkillTreeManager = get_node_or_null("SkillTreeManager") as SkillTreeManager
@@ -3933,8 +3934,12 @@ func request_redraw_hand() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey:
 		var key_event := event as InputEventKey
-		if key_event.pressed and not key_event.echo and key_event.keycode == KEY_R:
-			request_redraw_hand()
+		if key_event.pressed and not key_event.echo:
+			if key_event.keycode == KEY_R:
+				request_redraw_hand()
+			elif key_event.keycode == KEY_D:
+				if deck_status_hud != null and deck_status_hud.has_method("toggle"):
+					deck_status_hud.call("toggle")
 	if event is InputEventMouseButton and event.pressed:
 		var mb := event as InputEventMouseButton
 		if mb.button_index == MOUSE_BUTTON_LEFT and not mb.shift_pressed:
