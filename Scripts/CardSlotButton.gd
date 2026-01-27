@@ -280,10 +280,10 @@ func _update_hold_visual() -> void:
 	if _held:
 		if _hold_style == null:
 			_hold_style = StyleBoxFlat.new()
-			_hold_style.border_width_left = 3
-			_hold_style.border_width_top = 3
-			_hold_style.border_width_right = 3
-			_hold_style.border_width_bottom = 3
+			_hold_style.border_width_left = 5
+			_hold_style.border_width_top = 5
+			_hold_style.border_width_right = 5
+			_hold_style.border_width_bottom = 5
 			_hold_style.border_color = Color(0.72, 0.34, 0.95)
 			_hold_style.bg_color = Color(0, 0, 0, 0)
 		add_theme_stylebox_override("normal", _hold_style)
@@ -291,10 +291,10 @@ func _update_hold_visual() -> void:
 		add_theme_stylebox_override("pressed", _hold_style)
 		add_theme_stylebox_override("disabled", _hold_style)
 	else:
-		add_theme_stylebox_override("normal", null)
-		add_theme_stylebox_override("hover", null)
-		add_theme_stylebox_override("pressed", null)
-		add_theme_stylebox_override("disabled", null)
+		remove_theme_stylebox_override("normal")
+		remove_theme_stylebox_override("hover")
+		remove_theme_stylebox_override("pressed")
+		remove_theme_stylebox_override("disabled")
 
 func _on_card_consumed(uid: int) -> void:
 	if card != null and uid == card.uid:

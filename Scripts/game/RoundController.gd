@@ -3935,6 +3935,20 @@ func _unhandled_input(event: InputEvent) -> void:
 		var key_event := event as InputEventKey
 		if key_event.pressed and not key_event.echo and key_event.keycode == KEY_R:
 			request_redraw_hand()
+	if event is InputEventMouseButton and event.pressed:
+		var mb := event as InputEventMouseButton
+		if mb.button_index == MOUSE_BUTTON_LEFT and not mb.shift_pressed:
+			var hovered := get_viewport().gui_get_hovered_control()
+			if not _is_card_slot_hovered(hovered):
+				clear_all_holds()
+
+func _is_card_slot_hovered(control: Control) -> bool:
+	var current := control
+	while current != null:
+		if current is CardSlotButton:
+			return true
+		current = current.get_parent() as Control
+	return false
 
 func request_reroll_dice() -> void:
 	if not round_active:
@@ -3965,6 +3979,16 @@ func is_slot_held(index: int) -> bool:
 	if index < 0 or index >= held_slots.size():
 		return false
 	return bool(held_slots[index])
+
+func clear_all_holds() -> void:
+	_ensure_hold_slots()
+	var changed := false
+	for i in range(held_slots.size()):
+		if held_slots[i]:
+			held_slots[i] = false
+			changed = true
+	if changed:
+		emit_signal("hand_changed", hand)
 
 func set_overlay_visibility(visible: bool) -> void:
 	if stats_hud != null:
