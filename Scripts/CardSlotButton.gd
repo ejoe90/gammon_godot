@@ -15,6 +15,9 @@ class_name CardSlotButton
 
 var round: RoundController = null
 var card: CardInstance = null
+var slot_index: int = -1
+var _held: bool = false
+var _hold_style: StyleBoxFlat = null
 
 var _accum: float = 0.0
 var _primed_last: bool = false
@@ -85,6 +88,7 @@ func set_card_instance(ci: CardInstance) -> void:
 	disabled = false
 	_targeting = false
 	_refresh()
+	_update_hold_visual()
 	
 	
 
@@ -93,6 +97,7 @@ func clear_card() -> void:
 	visible = true
 	disabled = true
 	text = "(empty)"
+	set_hold_state(false)
 	
 
 func _process(delta: float) -> void:
@@ -248,6 +253,8 @@ func _refresh() -> void:
 func _on_pressed() -> void:
 	if round == null or card == null:
 		return
+	if Input.is_key_pressed(KEY_SHIFT) and slot_index >= 0:
+		return
 	round.request_activate_card(card)
 	_refresh()
 
@@ -256,9 +263,38 @@ func _on_gui_input(event: InputEvent) -> void:
 		return
 	if event is InputEventMouseButton and event.pressed:
 		var mb := event as InputEventMouseButton
+		if mb.button_index == MOUSE_BUTTON_LEFT and mb.shift_pressed:
+			if slot_index >= 0:
+				round.toggle_hold_slot(slot_index)
+				set_hold_state(round.is_slot_held(slot_index))
+			return
 		if mb.button_index == MOUSE_BUTTON_RIGHT:
 			round.request_burn_card_for_pips(card)
 			_refresh()
+
+func set_hold_state(held: bool) -> void:
+	_held = held
+	_update_hold_visual()
+
+func _update_hold_visual() -> void:
+	if _held:
+		if _hold_style == null:
+			_hold_style = StyleBoxFlat.new()
+			_hold_style.border_width_left = 3
+			_hold_style.border_width_top = 3
+			_hold_style.border_width_right = 3
+			_hold_style.border_width_bottom = 3
+			_hold_style.border_color = Color(0.72, 0.34, 0.95)
+			_hold_style.bg_color = Color(0, 0, 0, 0)
+		add_theme_stylebox_override("normal", _hold_style)
+		add_theme_stylebox_override("hover", _hold_style)
+		add_theme_stylebox_override("pressed", _hold_style)
+		add_theme_stylebox_override("disabled", _hold_style)
+	else:
+		add_theme_stylebox_override("normal", null)
+		add_theme_stylebox_override("hover", null)
+		add_theme_stylebox_override("pressed", null)
+		add_theme_stylebox_override("disabled", null)
 
 func _on_card_consumed(uid: int) -> void:
 	if card != null and uid == card.uid:

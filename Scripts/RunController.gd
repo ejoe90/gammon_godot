@@ -58,9 +58,11 @@ func _start_new_run() -> void:
 	_awaiting_deck_selection = false
 	if deck_select != null and deck_select.has_method("open"):
 		_awaiting_deck_selection = true
+		_set_overlay_visibility(false)
 		deck_select.call("open")
 	else:
 		_assign_default_deck()
+		_set_overlay_visibility(true)
 
 
 func _start_current_round() -> void:
@@ -134,7 +136,12 @@ func _on_deck_selection_confirmed(selected_ids: Array[String]) -> void:
 	_awaiting_deck_selection = false
 	if deck_select != null and deck_select.has_method("close"):
 		deck_select.call("close")
+	_set_overlay_visibility(true)
 	_maybe_start_round()
+
+func _set_overlay_visibility(visible: bool) -> void:
+	if round != null and round.has_method("set_overlay_visibility"):
+		round.call("set_overlay_visibility", visible)
 
 func _unhandled_input(event: InputEvent) -> void:
 	# Debug: F2 cycles Gold Boost conversion mode (requires tier4-A to actually convert).

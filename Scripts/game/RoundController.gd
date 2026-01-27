@@ -11,6 +11,7 @@ signal hand_changed(hand: Array[CardInstance])
 var hand: Array[CardInstance] = []
 var draw_pile: Array[String] = []
 var discard_pile: Array[String] = []
+var held_slots: Array[bool] = []
 
 # --- Phase 2 targeting/card signals (Step 2.5) ---
 signal card_consumed(card_uid: int)
@@ -47,8 +48,12 @@ var aux_used_this_turn: Dictionary = {}  # aux_id -> bool (per WHITE turn)
 @onready var dice_ui: Node = get_node_or_null("HUD/DiceUI")
 @onready var round_end: Node = get_node_or_null("HUD/RoundEndOverlay")
 @onready var end_turn_button: Button = get_node_or_null("HUD/EndTurnButton") as Button
+@onready var reroll_button: Button = get_node_or_null("HUD/RerollDiceButton") as Button
+@onready var redraw_button: Button = get_node_or_null("HUD/RedrawButton") as Button
 @onready var tempo_accelerator_toggle: Button = get_node_or_null("HUD/AcceleratorToggle") as Button
 @onready var debug_menu: DebugMenu = get_node_or_null("DebugMenu") as DebugMenu
+@onready var stats_hud: Node = get_node_or_null("HUD/StatsHUD")
+@onready var aux_cards_hud: Node = get_node_or_null("HUD/AuxCardsHUD")
 
 # --- Skill tree wiring (MVP) ---
 @onready var skill_tree: SkillTreeManager = get_node_or_null("SkillTreeManager") as SkillTreeManager
@@ -1008,6 +1013,12 @@ func _ready() -> void:
 		end_turn_button.pressed.connect(_on_end_turn_pressed)
 		end_turn_button.disabled = true
 		end_turn_button.visible = false
+	if reroll_button != null:
+		reroll_button.pressed.connect(_on_reroll_pressed)
+		reroll_button.disabled = true
+	if redraw_button != null:
+		redraw_button.pressed.connect(_on_redraw_pressed)
+		redraw_button.disabled = true
 	if tempo_accelerator_toggle != null:
 		tempo_accelerator_toggle.toggle_mode = true
 		tempo_accelerator_toggle.toggled.connect(_on_tempo_accelerator_toggle)
@@ -3212,11 +3223,24 @@ func _update_end_turn_button() -> void:
 		return
 	var manual: bool = round_active and _is_manual_turn()
 	end_turn_button.visible = manual
+	if reroll_button != null:
+		reroll_button.visible = manual
+	if redraw_button != null:
+		redraw_button.visible = manual
 	if not manual:
 		end_turn_button.disabled = true
+		if reroll_button != null:
+			reroll_button.disabled = true
+		if redraw_button != null:
+			redraw_button.disabled = true
 		_sync_tempo_accelerator_toggle()
 		return
 	end_turn_button.disabled = not _can_end_turn_now()
+	var ap_action_ready := ap_left >= 1 and not targeting_active and not skill_tree_blocking
+	if reroll_button != null:
+		reroll_button.disabled = not ap_action_ready
+	if redraw_button != null:
+		redraw_button.disabled = not ap_action_ready
 	_sync_tempo_accelerator_toggle()
 
 func _on_end_turn_pressed() -> void:
@@ -3225,6 +3249,12 @@ func _on_end_turn_pressed() -> void:
 	if not _can_end_turn_now():
 		return
 	end_turn()
+
+func _on_reroll_pressed() -> void:
+	request_reroll_dice()
+
+func _on_redraw_pressed() -> void:
+	request_redraw_hand()
 
 func _sync_tempo_accelerator_toggle() -> void:
 	if tempo_accelerator_toggle == null:
@@ -3874,8 +3904,13 @@ func request_redraw_hand() -> void:
 
 	ap_left -= cost
 	_ensure_hand_slots()
+	_ensure_hold_slots()
 
 	for i in range(hand.size()):
+		if hand[i] == null:
+			held_slots[i] = false
+		if held_slots[i]:
+			continue
 		if hand[i] != null and hand[i].def != null:
 			discard_pile.append(String(hand[i].def.id))
 		hand[i] = null
@@ -3883,6 +3918,8 @@ func request_redraw_hand() -> void:
 	for i in range(hand.size()):
 		if draw_pile.is_empty():
 			break
+		if held_slots[i]:
+			continue
 		var id: String = String(draw_pile.pop_back())
 		var def := CardDB.get_def(id)
 		if def == null:
@@ -3891,12 +3928,49 @@ func request_redraw_hand() -> void:
 		hand[i] = CardInstance.new(def)
 
 	emit_signal("hand_changed", hand)
+	_update_end_turn_button()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey:
 		var key_event := event as InputEventKey
 		if key_event.pressed and not key_event.echo and key_event.keycode == KEY_R:
 			request_redraw_hand()
+
+func request_reroll_dice() -> void:
+	if not round_active:
+		return
+	if skill_tree_blocking:
+		return
+	if targeting_active:
+		return
+	if state == null or state.turn != BoardState.Player.WHITE:
+		return
+	var cost := 1
+	if ap_left < cost:
+		return
+	ap_left -= cost
+	if dice != null and dice.has_method("reroll_non_bonus"):
+		dice.call("reroll_non_bonus")
+	_update_dice_ui()
+	_update_end_turn_button()
+
+func toggle_hold_slot(index: int) -> void:
+	_ensure_hold_slots()
+	if index < 0 or index >= held_slots.size():
+		return
+	held_slots[index] = not held_slots[index]
+
+func is_slot_held(index: int) -> bool:
+	_ensure_hold_slots()
+	if index < 0 or index >= held_slots.size():
+		return false
+	return bool(held_slots[index])
+
+func set_overlay_visibility(visible: bool) -> void:
+	if stats_hud != null:
+		stats_hud.visible = visible
+	if aux_cards_hud != null:
+		aux_cards_hud.visible = visible
 
 # -----------------------
 # Debug handlers (optional)
@@ -4113,6 +4187,8 @@ func _on_card_consumed_internal(uid: int) -> void:
 			if hand[j].def != null:
 				discard_pile.append(String(hand[j].def.id))
 			hand[j] = null
+			_ensure_hold_slots()
+			held_slots[j] = false
 			removed = true
 			break
 
@@ -4181,6 +4257,15 @@ func _ensure_hand_slots() -> void:
 		hand.resize(hand_size)
 	while hand.size() < hand_size:
 		hand.append(null)
+	_ensure_hold_slots()
+
+func _ensure_hold_slots() -> void:
+	if hand_size < 0:
+		return
+	if held_slots.size() > hand_size:
+		held_slots.resize(hand_size)
+	while held_slots.size() < hand_size:
+		held_slots.append(false)
 
 func _count_empty_hand_slots() -> int:
 	_ensure_hand_slots()
