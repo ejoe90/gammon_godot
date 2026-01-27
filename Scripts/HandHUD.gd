@@ -38,14 +38,18 @@ func _on_hand_changed(hand: Array[CardInstance]) -> void:
 		child.queue_free()
 
 	# Build buttons for current hand (preserve empty slots)
-	for ci in hand:
+	for i in range(hand.size()):
+		var ci := hand[i]
 		var btn := card_button_scene.instantiate() as CardSlotButton
 		card_list.add_child(btn)
+		btn.slot_index = i
 		if ci == null or ci.def == null:
 			btn.self_player = self_player
 			btn.clear_card()
 			continue
 		btn.setup(round, ci, self_player)
+		if round != null and round.has_method("is_slot_held"):
+			btn.set_hold_state(round.is_slot_held(i))
 
 func _find_round_controller() -> RoundController:
 	var rc := get_node_or_null(round_controller_path) as RoundController

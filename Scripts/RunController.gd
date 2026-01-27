@@ -8,8 +8,10 @@ class_name RunController
 
 @onready var round: Node = $Round
 @onready var shop: Node = get_node_or_null("HUD/EndRoundShop")
+@onready var deck_select: Node = get_node_or_null("HUD/StartDeckSelection")
 
 var run_state: RunState
+var _awaiting_deck_selection: bool = false
 
 const TOTAL_ROUNDS: int = 12
 const ROUND_WIN_REWARD_GOLD: int = 10
@@ -18,7 +20,6 @@ const PLAYER_BASE_HP: int = 20
 const ENEMY_BASE_HP: int = 20
 
 func _ready() -> void:
-	_start_new_run()
 	set_process_unhandled_input(true) # debug convenience: allow cycling gold convert mode
 
 	# Connect round signals (RoundController emits these)
@@ -34,7 +35,11 @@ func _ready() -> void:
 	if shop != null and shop.has_signal("finished"):
 		shop.connect("finished", Callable(self, "_on_shop_finished"))
 
-	_start_current_round()
+	if deck_select != null and deck_select.has_signal("selection_confirmed"):
+		deck_select.connect("selection_confirmed", Callable(self, "_on_deck_selection_confirmed"))
+
+	_start_new_run()
+	_maybe_start_round()
 
 func _start_new_run() -> void:
 	run_state = RunState.new()
@@ -50,12 +55,14 @@ func _start_new_run() -> void:
 	# placeholder deck container (safe if RunState already defines it)
 	if "deck" in run_state:
 		run_state.deck.clear()
-	# Use the entire available card catalog for the starting deck.
-	var available_ids := CardDB.all_ids()
-	if available_ids.is_empty():
-		push_warning("[RunController] No card IDs found in CardDB; starting deck is empty.")
+	_awaiting_deck_selection = false
+	if deck_select != null and deck_select.has_method("open"):
+		_awaiting_deck_selection = true
+		_set_overlay_visibility(false)
+		deck_select.call("open")
 	else:
-		run_state.deck = available_ids
+		_assign_default_deck()
+		_set_overlay_visibility(true)
 
 
 func _start_current_round() -> void:
@@ -74,6 +81,19 @@ func _start_current_round() -> void:
 	else:
 		push_error("[RunController] Round child missing start_round(run_state).")
 
+func _maybe_start_round() -> void:
+	if not _awaiting_deck_selection:
+		_start_current_round()
+
+func _assign_default_deck() -> void:
+	# Use the entire available card catalog for the starting deck.
+	var available_ids := CardDB.all_ids()
+	if available_ids.is_empty():
+		push_warning("[RunController] No card IDs found in CardDB; starting deck is empty.")
+		run_state.deck = []
+		return
+	run_state.deck = available_ids
+
 func _on_round_won() -> void:
 	# Reward for winning round
 	if run_state.has_method("add_gold"):
@@ -85,7 +105,7 @@ func _on_round_won() -> void:
 	if run_state.round_index == TOTAL_ROUNDS - 1:
 		print("[RunController] FINAL ROUND WON — RUN COMPLETE")
 		_start_new_run()
-		_start_current_round()
+		_maybe_start_round()
 		return
 
 	# Open end-of-round shop before advancing
@@ -103,11 +123,25 @@ func _on_round_lost() -> void:
 	print("[RunController] RUN FAILED (round %d)" % run_state.round_index)
 	# MVP behavior: restart run immediately
 	_start_new_run()
-	_start_current_round()
+	_maybe_start_round()
 
 func _on_round_restarted() -> void:
 	# No-op for MVP (useful hook later if you want to refund/penalize)
 	pass
+
+func _on_deck_selection_confirmed(selected_ids: Array[String]) -> void:
+	if run_state == null:
+		return
+	run_state.deck = selected_ids
+	_awaiting_deck_selection = false
+	if deck_select != null and deck_select.has_method("close"):
+		deck_select.call("close")
+	_set_overlay_visibility(true)
+	_maybe_start_round()
+
+func _set_overlay_visibility(visible: bool) -> void:
+	if round != null and round.has_method("set_overlay_visibility"):
+		round.call("set_overlay_visibility", visible)
 
 func _unhandled_input(event: InputEvent) -> void:
 	# Debug: F2 cycles Gold Boost conversion mode (requires tier4-A to actually convert).

@@ -1185,6 +1185,30 @@ offset_right = -20.0
 offset_bottom = -60.0
 text = "End Turn"
 
+[node name="RerollDiceButton" type="Button" parent="HUD"]
+layout_mode = 1
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -440.0
+offset_top = -120.0
+offset_right = -240.0
+offset_bottom = -60.0
+text = "Reroll Dice (1 AP)"
+
+[node name="RedrawButton" type="Button" parent="HUD"]
+layout_mode = 1
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -440.0
+offset_top = -175.0
+offset_right = -240.0
+offset_bottom = -135.0
+text = "Redraw (1 AP)"
+
 [node name="AcceleratorToggle" type="Button" parent="HUD"]
 layout_mode = 1
 anchor_left = 1.0

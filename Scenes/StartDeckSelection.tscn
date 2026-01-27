@@ -1,0 +1,65 @@
+[gd_scene load_steps=2 format=3 uid="uid://ck0thl0l0w1x8"]
+
+[ext_resource type="Script" path="res://Scripts/StartDeckSelection.gd" id="1_4m4sw"]
+
+[node name="StartDeckSelection" type="Control"]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_4m4sw")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 1
+color = Color(0, 0, 0, 0.65)
+
+[node name="Panel" type="PanelContainer" parent="."]
+anchors_preset = 8
+anchor_left = 0.1
+anchor_top = 0.05
+anchor_right = 0.9
+anchor_bottom = 0.95
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Margin" type="MarginContainer" parent="Panel"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 1
+offset_left = 20.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = -20.0
+
+[node name="VBox" type="VBoxContainer" parent="Panel/Margin"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+size_flags_vertical = 3
+
+[node name="Title" type="Label" parent="Panel/Margin/VBox"]
+text = "Choose Your Starting Deck"
+horizontal_alignment = 1
+
+[node name="Rules" type="Label" parent="Panel/Margin/VBox"]
+text = "Select 10 cards. You must include at least one Economy, Tempo, Defense, and Attack card."
+autowrap_mode = 3
+horizontal_alignment = 1
+
+[node name="StatusLabel" type="Label" parent="Panel/Margin/VBox"]
+text = "Selected 0/10."
+
+[node name="CardGrid" type="GridContainer" parent="Panel/Margin/VBox"]
+columns = 5
+size_flags_vertical = 3
+h_separation = 10
+v_separation = 10
+
+[node name="ConfirmButton" type="Button" parent="Panel/Margin/VBox"]
+text = "Confirm Deck"
+size_flags_horizontal = 4
