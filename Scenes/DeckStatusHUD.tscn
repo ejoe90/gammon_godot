@@ -1,0 +1,81 @@
+[gd_scene load_steps=2 format=3 uid="uid://deck_status_hud"]
+
+[ext_resource type="Script" path="res://Scripts/DeckStatusHUD.gd" id="1_2s7lq"]
+
+[node name="DeckStatusHUD" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_2s7lq")
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+offset_left = 160.0
+offset_top = 120.0
+offset_right = -160.0
+offset_bottom = -120.0
+
+[node name="MarginContainer" type="MarginContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 15
+offset_left = 16.0
+offset_top = 16.0
+offset_right = -16.0
+offset_bottom = -16.0
+
+[node name="VBox" type="VBoxContainer" parent="Panel/MarginContainer"]
+layout_mode = 1
+anchors_preset = 15
+
+[node name="Title" type="Label" parent="Panel/MarginContainer/VBox"]
+layout_mode = 2
+text = "Deck & Discard (Press D to close)"
+
+[node name="Columns" type="HBoxContainer" parent="Panel/MarginContainer/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_horizontal = 3
+alignment = 0
+theme_override_constants/separation = 24
+
+[node name="Discard" type="VBoxContainer" parent="Panel/MarginContainer/VBox/Columns"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="DiscardHeader" type="Label" parent="Panel/MarginContainer/VBox/Columns/Discard"]
+layout_mode = 2
+text = "Discard Pile"
+
+[node name="Scroll" type="ScrollContainer" parent="Panel/MarginContainer/VBox/Columns/Discard"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="DiscardText" type="RichTextLabel" parent="Panel/MarginContainer/VBox/Columns/Discard/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = "(empty)"
+
+[node name="Draw" type="VBoxContainer" parent="Panel/MarginContainer/VBox/Columns"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="DrawHeader" type="Label" parent="Panel/MarginContainer/VBox/Columns/Draw"]
+layout_mode = 2
+text = "Draw Pile"
+
+[node name="Scroll" type="ScrollContainer" parent="Panel/MarginContainer/VBox/Columns/Draw"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="DrawText" type="RichTextLabel" parent="Panel/MarginContainer/VBox/Columns/Draw/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = "(empty)"

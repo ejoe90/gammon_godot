@@ -13,6 +13,7 @@
 [ext_resource type="PackedScene" uid="uid://bqyhhs7nso515" path="res://Scenes/StatsHUD.tscn" id="10_e87vp"]
 [ext_resource type="PackedScene" uid="uid://cxgpodmyvwvsg" path="res://Scenes/EndRoundShop.tscn" id="11_black_market"]
 [ext_resource type="PackedScene" uid="uid://c5ou1koxgc3o1" path="res://Scenes/AuxCardsHUD.tscn" id="11_k0kue"]
+[ext_resource type="PackedScene" uid="uid://deck_status_hud" path="res://Scenes/DeckStatusHUD.tscn" id="12_deck_status"]
 [ext_resource type="Script" uid="uid://umoarpkqrdyf" path="res://SkillTreeManager.gd" id="12_k0kue"]
 [ext_resource type="Script" uid="uid://bnoikb2cewgg" path="res://Scripts/ai/AIController.gd" id="14_vwgvb"]
 [ext_resource type="Script" uid="uid://31vcv7leafq1" path="res://Scripts/ai/AIConfig.gd" id="15_bvjbw"]
@@ -1260,6 +1261,9 @@ offset_top = 650.0
 offset_right = 1540.0
 offset_bottom = 690.0
 scale = Vector2(1.16, 1.16)
+
+[node name="DeckStatusHUD" parent="HUD" instance=ExtResource("12_deck_status")]
+z_index = 50
 
 [node name="DebugMenu" parent="." instance=ExtResource("8_b8mt7")]
 offset = Vector2(1505.251, 500)
