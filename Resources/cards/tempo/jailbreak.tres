@@ -15,7 +15,7 @@ script = ExtResource("5_jailbreak")
 id = "jailbreak"
 title = "Jailbreak"
 category = 2
-tooltip_summary = "Pattern: 3+ white checkers on the bar. For the rest of the round, white may re-enter from the bar into points 18-23 (1=23, 2=22, etc.) as well as points 0-5."
+tooltip_summary = "Pattern: 2+ white checkers on the bar. For the rest of the round, white may re-enter from the bar into points 18-23 (1=23, 2=22, etc.) as well as points 0-5."
 pip_value = -6
 effect = SubResource("Resource_jailbreak_effect")
 art_texture = ExtResource("1_jailbreak")

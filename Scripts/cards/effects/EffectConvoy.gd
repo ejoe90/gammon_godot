@@ -7,21 +7,21 @@ func apply(round: RoundController, card: CardInstance, ctx: PatternContext) -> v
 
 	var req: PatternReq = null
 	for r: PatternReq in card.def.pattern:
-		if r != null and r.kind == PatternReq.Kind.RUN_SEQUENCE:
+		if r != null and r.kind == PatternReq.Kind.RUN_SEQUENCE_MIXED:
 			req = r
 			break
 
 	if req == null:
-		push_warning("[EffectConvoy] No RUN_SEQUENCE PatternReq on card.")
+		push_warning("[EffectConvoy] No RUN_SEQUENCE_MIXED PatternReq on card.")
 		return
 
-	var start_point: int = PatternMatcher.find_run_sequence_start(req, ctx)
+	var start_point: int = PatternMatcher.find_run_sequence_mixed_start(req, ctx)
 	if start_point == -1:
 		push_warning("[EffectConvoy] Pattern ready but could not locate matched start.")
 		return
 
 	var checker_ids: Array[int] = []
-	for offset in range(req.seq_counts.size()):
+	for offset in range(req.mix_owners.size()):
 		var point: int = start_point + offset
 		if point < 0 or point > 23:
 			continue

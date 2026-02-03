@@ -26,12 +26,11 @@ func apply(round: RoundController, card: CardInstance, ctx: PatternContext) -> v
 		if point_i < 0 or point_i > 23:
 			continue
 		var st: PackedInt32Array = round.state.points[point_i]
-		if st.size() != 1:
-			continue
-		checker_ids.append(int(st[0]))
+		for checker_id in st:
+			checker_ids.append(int(checker_id))
 
-	if checker_ids.size() != req.mix_owners.size():
-		push_warning("[EffectPacifism] Expected %d single checkers, found %d." % [req.mix_owners.size(), checker_ids.size()])
+	if checker_ids.is_empty():
+		push_warning("[EffectPacifism] No checkers found for pacifism.")
 		return
 
 	if round.has_method("activate_pacifism"):

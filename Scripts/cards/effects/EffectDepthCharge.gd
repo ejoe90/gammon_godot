@@ -27,10 +27,14 @@ func apply(round: RoundController, card: CardInstance, ctx: PatternContext) -> v
 		push_warning("[DepthCharge] Pattern ready but could not locate matched start.")
 		return
 
-	# Pattern points (length 4):
-	# [0]=white single, [1]=black 2+, [2]=black 2+, [3]=white single
-	var black_a: int = start_point + 1
-	var black_b: int = start_point + 2
+	# Pattern points (length 3):
+	# white single next to two black stacks (or reversed).
+	var first_point_owner := round.state.owner_of(int(round.state.points[start_point][0]))
+	var black_a: int = start_point
+	var black_b: int = start_point + 1
+	if first_point_owner == BoardState.Player.WHITE:
+		black_a = start_point + 1
+		black_b = start_point + 2
 
 	_hit_top_n_to_bar(round, black_a, hits_per_stack)
 	_hit_top_n_to_bar(round, black_b, hits_per_stack)
