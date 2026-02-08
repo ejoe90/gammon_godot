@@ -14,9 +14,10 @@ metadata/_custom_type_script = "uid://cm401t3w6vaqn"
 script = ExtResource("2_dmgx5")
 kind = 2
 seq_counts = null
-mix_owners = PackedInt32Array(0, 1, 1, 0)
-mix_mins = PackedInt32Array(1, 2, 2, 1)
-mix_maxs = PackedInt32Array(1, 15, 15, 1)
+mix_owners = PackedInt32Array(0, 1, 1)
+mix_mins = PackedInt32Array(1, 2, 2)
+mix_maxs = PackedInt32Array(1, 15, 15)
+mix_allow_reverse = true
 mix_same_half_only = false
 metadata/_custom_type_script = "uid://ur0p531l1ca4"
 

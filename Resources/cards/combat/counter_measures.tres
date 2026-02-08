@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="CardDef" load_steps=8 format=3 uid="uid://e2t4q0x6k0pcp"]
 
-[ext_resource type="Texture2D" uid="uid://bffm7t6w2hb7h" path="res://Assets/textures/cards/red deck fronts/6 plus red.jpg" id="1_cmf3v"]
+[ext_resource type="Texture2D" uid="uid://bffm7t6w2hb7h" path="res://Assets/textures/cards/red deck fronts/6 minus red.jpg" id="1_cmf3v"]
 [ext_resource type="Script" uid="uid://dxnljvcddxql4" path="res://Scripts/CardEffect.gd" id="2_cmf3v"]
 [ext_resource type="Script" uid="uid://k6s6oow45o6e3" path="res://Scripts/cards/effects/EffectCounterMeasures.gd" id="3_cmf3v"]
 [ext_resource type="Script" uid="uid://ur0p531l1ca4" path="res://Scripts/PatternReq.gd" id="4_cmf3v"]

@@ -4,5 +4,5 @@
 
 [resource]
 script = ExtResource("1_req_white_bar_3")
-min_count = 3
+min_count = 2
 metadata/_custom_type_script = "uid://activationreqwhitebar1"
