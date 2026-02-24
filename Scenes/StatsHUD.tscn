@@ -49,3 +49,23 @@ text = "ATK: -"
 [node name="DefenseLabel" type="Label" parent="Bar/MarginContainer/Row"]
 layout_mode = 2
 text = "DEF: -"
+
+[node name="EnemyGap" type="Control" parent="Bar/MarginContainer/Row"]
+custom_minimum_size = Vector2(24, 0)
+layout_mode = 2
+
+[node name="EnemyHPLabel" type="Label" parent="Bar/MarginContainer/Row"]
+layout_mode = 2
+text = "Enemy HP: -"
+
+[node name="EnemyAttackMultLabel" type="Label" parent="Bar/MarginContainer/Row"]
+layout_mode = 2
+text = "Enemy ATK x-"
+
+[node name="PipsWhiteLabel" type="Label" parent="Bar/MarginContainer/Row"]
+layout_mode = 2
+text = "Pips W: -"
+
+[node name="PipsBlackLabel" type="Label" parent="Bar/MarginContainer/Row"]
+layout_mode = 2
+text = "Pips B: -"
