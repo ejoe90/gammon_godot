@@ -1127,8 +1127,8 @@ transform = Transform2D(0.89, 0, 0, 0.89, 1600, 800)
 script = ExtResource("4_e87vp")
 
 [node name="BoardView" parent="." instance=ExtResource("5_3ljpy")]
-position = Vector2(494, 40)
-scale = Vector2(0.72, 0.72)
+position = Vector2(443, 40)
+scale = Vector2(0.8, 0.8)
 
 [node name="HUD" type="CanvasLayer" parent="."]
 

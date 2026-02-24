@@ -5,6 +5,8 @@ class_name CardSlotButton
 @export var self_player: int = BoardState.Player.WHITE
 @export var poll_interval: float = 0.10
 
+@export_range(0.0, 0.5, 0.01) var click_passthrough_top_ratio: float = 0.10
+
 # Primed overlay tuning (requires a ColorRect child named "PrimeGlow")
 @export_range(0.0, 3.0) var primed_alpha_low: float = 0.35
 @export_range(0.0, 10.0) var primed_alpha_high: float = 0.95
@@ -99,6 +101,17 @@ func clear_card() -> void:
 	text = "(empty)"
 	set_hold_state(false)
 	
+
+
+func _has_point(point: Vector2) -> bool:
+	# Let clicks in the top strip pass through to the board so board interactions win
+	# in the intentional HUD/board overlap region.
+	var h: float = size.y
+	if h <= 0.0:
+		return super._has_point(point)
+	if point.y < h * click_passthrough_top_ratio:
+		return false
+	return super._has_point(point)
 
 func _process(delta: float) -> void:
 	if round == null or card == null:
