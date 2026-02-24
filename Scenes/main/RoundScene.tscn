@@ -1246,10 +1246,11 @@ offset_right = -1178.0
 offset_bottom = -532.0
 
 [node name="StatsHUD" parent="HUD" instance=ExtResource("10_e87vp")]
-offset_left = 1510.9999
-offset_top = 18.0
-offset_right = 1671.7406
-offset_bottom = 202.44444
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 34.0
+grow_horizontal = 2
 
 [node name="SkillTreeOverlay" parent="HUD" instance=ExtResource("10_3ljpy")]
 
