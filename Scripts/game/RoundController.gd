@@ -55,6 +55,7 @@ var aux_used_this_turn: Dictionary = {}  # aux_id -> bool (per WHITE turn)
 @onready var stats_hud: Node = get_node_or_null("HUD/StatsHUD")
 @onready var aux_cards_hud: Node = get_node_or_null("HUD/AuxCardsHUD")
 @onready var deck_status_hud: Node = get_node_or_null("HUD/DeckStatusHUD")
+@onready var hand_hud: Control = get_node_or_null("HUD/HandHUD") as Control
 
 # --- Skill tree wiring (MVP) ---
 @onready var skill_tree: SkillTreeManager = get_node_or_null("SkillTreeManager") as SkillTreeManager
@@ -155,6 +156,13 @@ var _counter_measures_pending: Dictionary = {} # {base_ap:int, base_dice:int, bo
 
 var black_turn_index: int = 0
 var _ai_running: bool = false
+
+const BOARD_BASE_SIZE := Vector2(1294.0, 1004.0)
+const BOARD_MIN_SCALE := 0.60
+const BOARD_TOP_MARGIN := 24.0
+const BOARD_SIDE_MARGIN := 24.0
+const HAND_HUD_HEIGHT := 250.0
+const BOARD_GAP_TO_HAND := 20.0
 
 @onready var ai: AIController = get_node_or_null("AIController")
 
@@ -1051,6 +1059,41 @@ func _ready() -> void:
 		skill_overlay.buy_extra_pick_requested.connect(_on_skill_tree_buy_extra_pick)
 		skill_overlay.confirmed.connect(_on_skill_tree_overlay_confirmed)
 		skill_overlay.skipped.connect(_on_skill_tree_overlay_skipped)
+
+	get_viewport().size_changed.connect(_apply_hud_layout)
+	_apply_hud_layout()
+
+func _apply_hud_layout() -> void:
+	var viewport_size: Vector2 = get_viewport().get_visible_rect().size
+
+	if hand_hud != null:
+		hand_hud.anchor_left = 0.0
+		hand_hud.anchor_top = 1.0
+		hand_hud.anchor_right = 1.0
+		hand_hud.anchor_bottom = 1.0
+		hand_hud.offset_left = 0.0
+		hand_hud.offset_top = -HAND_HUD_HEIGHT
+		hand_hud.offset_right = 0.0
+		hand_hud.offset_bottom = 0.0
+
+	if board == null or not (board is Node2D):
+		return
+
+	var available_width: float = maxf(1.0, viewport_size.x - (BOARD_SIDE_MARGIN * 2.0))
+	var available_height: float = maxf(
+		1.0,
+		viewport_size.y - HAND_HUD_HEIGHT - BOARD_TOP_MARGIN - BOARD_GAP_TO_HAND
+	)
+	var scale_to_fit: float = minf(available_width / BOARD_BASE_SIZE.x, available_height / BOARD_BASE_SIZE.y)
+	var final_scale: float = maxf(BOARD_MIN_SCALE, scale_to_fit)
+
+	var board_node := board as Node2D
+	board_node.scale = Vector2.ONE * final_scale
+
+	var board_size: Vector2 = BOARD_BASE_SIZE * final_scale
+	var board_x: float = (viewport_size.x - board_size.x) * 0.5
+	var board_y: float = BOARD_TOP_MARGIN + ((available_height - board_size.y) * 0.5)
+	board_node.position = Vector2(board_x, board_y)
 
 # Called by RunController each round
 func start_round(rs: RunState) -> void:

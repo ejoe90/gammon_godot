@@ -1114,7 +1114,7 @@ metadata/_custom_type_script = "uid://c2qiglxxxkfbj"
 
 [node name="RoundController" type="Node"]
 script = ExtResource("1_137o6")
-hand_size = 4
+hand_size = 5
 base_ap_per_turn = 3
 ai_step_delay_sec = 2.0
 
@@ -1132,13 +1132,15 @@ scale = Vector2(1, 1)
 [node name="HUD" type="CanvasLayer" parent="."]
 
 [node name="HandHUD" type="Control" parent="HUD"]
-custom_minimum_size = Vector2(160, 220)
+custom_minimum_size = Vector2(900, 250)
 layout_mode = 3
-anchors_preset = 0
-offset_left = 1330.0
-offset_top = 15.0
-offset_right = 1434.0
-offset_bottom = 118.0
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -250.0
+grow_horizontal = 2
+grow_vertical = 0
 theme = SubResource("Theme_xdnbs")
 script = ExtResource("8_xdnbs")
 round_controller_path = NodePath("../..")
@@ -1146,21 +1148,35 @@ card_list_path = NodePath("Panel/MarginContainer/CardList")
 card_button_scene = ExtResource("5_g7xfr")
 
 [node name="Panel" type="Panel" parent="HUD/HandHUD"]
-layout_mode = 0
-offset_right = 131.78296
-offset_bottom = 226.0
-scale = Vector2(0.97, 0.97)
+custom_minimum_size = Vector2(860, 236)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -430.0
+offset_top = -118.0
+offset_right = 430.0
+offset_bottom = 118.0
+grow_horizontal = 2
+grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_g7xfr")
 
 [node name="MarginContainer" type="MarginContainer" parent="HUD/HandHUD/Panel"]
-layout_mode = 0
-offset_right = 100.0
-offset_bottom = 100.3
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 18.0
+offset_top = 8.0
+offset_right = -18.0
+offset_bottom = -8.0
 
-[node name="CardList" type="VBoxContainer" parent="HUD/HandHUD/Panel/MarginContainer"]
+[node name="CardList" type="HBoxContainer" parent="HUD/HandHUD/Panel/MarginContainer"]
 layout_mode = 2
 theme = SubResource("Theme_g7xfr")
-theme_override_constants/separation = 50
+theme_override_constants/separation = 12
 
 [node name="DiceUI" type="Control" parent="HUD"]
 layout_mode = 3
